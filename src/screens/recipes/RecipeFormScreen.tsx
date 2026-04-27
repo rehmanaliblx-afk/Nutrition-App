@@ -181,7 +181,7 @@ export default function RecipeFormScreen({ route, navigation }: Props) {
               <List.Item
                 key={ing.id}
                 title={ing.name}
-                description={`P: ${ing.protein}g · C: ${ing.carbs_total}g · F: ${ing.fat_total}g (per 100g)`}
+                description={`P: ${roundMacro(ing.protein * 100)}g · C: ${roundMacro(ing.carbs_total * 100)}g · F: ${roundMacro(ing.fat_total * 100)}g (per 100g)`}
                 onPress={() => addIngredient(ing)}
               />
             ))}

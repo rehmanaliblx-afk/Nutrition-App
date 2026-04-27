@@ -19,7 +19,7 @@ function MacroField({
   return (
     <View style={styles.fieldWrap}>
       <TextInput
-        label={`${label} (g/100g)`}
+        label={`${label} (g/g)`}
         value={String(values[field] === 0 ? '' : values[field])}
         onChangeText={(v) => onChange(field, v)}
         keyboardType="decimal-pad"

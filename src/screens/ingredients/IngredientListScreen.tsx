@@ -50,8 +50,8 @@ export default function IngredientListScreen({ navigation }: Props) {
     }
   }, [deleteTarget, remove]);
 
-  const kcalPer100g = (item: Ingredient) =>
-    roundMacro(calcKcal({ ...item, carbs_total: item.carbs_total }), 0);
+  const kcalPerGram = (item: Ingredient) =>
+    roundMacro(calcKcal({ ...item }) * 100, 0);
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -80,7 +80,7 @@ export default function IngredientListScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <List.Item
             title={item.name}
-            description={`${kcalPer100g(item)} kcal · P: ${item.protein}g · C: ${item.carbs_total}g · F: ${item.fat_total}g (per 100g)`}
+            description={`${kcalPerGram(item)} kcal · P: ${item.protein}g · C: ${item.carbs_total}g · F: ${item.fat_total}g (per 100g)`}
             right={() => (
               <View style={styles.actions}>
                 <IconButton icon="pencil" size={20} onPress={() => navigation.navigate('IngredientForm', { ingredientId: item.id })} />

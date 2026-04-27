@@ -101,12 +101,12 @@ export default function IngredientFormScreen({ route, navigation }: Props) {
 
         <View style={styles.kcalRow}>
           <Text variant="bodyLarge" style={styles.kcalText}>
-            Preview: <Text style={styles.kcalValue}>{kcalPreview} kcal</Text> per 100g
+            Preview: <Text style={styles.kcalValue}>{kcalPreview} kcal</Text> per gram
           </Text>
         </View>
 
         <Divider style={styles.divider} />
-        <Text variant="titleMedium" style={styles.macroTitle}>Macros (per 100g)</Text>
+        <Text variant="titleMedium" style={styles.macroTitle}>Macros (per gram)</Text>
 
         <MacroInputGroup
           values={macroStrings as unknown as MacroSet}

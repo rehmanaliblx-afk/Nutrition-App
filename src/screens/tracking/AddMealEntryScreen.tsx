@@ -9,6 +9,7 @@ import { getAllIngredients, searchIngredients } from '@/db/ingredientsDao';
 import { getAllRecipes, searchRecipes } from '@/db/recipesDao';
 import { Ingredient, Recipe } from '@/db/schema';
 import { MealType, MEAL_TYPES, MEAL_LABELS, FoodType } from '@/constants/macros';
+import { roundMacro } from '@/utils/macroCalculations';
 
 type Props = NativeStackScreenProps<TrackingStackParamList, 'AddMealEntry'>;
 
@@ -137,7 +138,7 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
                   <List.Item
                     key={`ing-${ing.id}`}
                     title={ing.name}
-                    description={`P: ${ing.protein}g · C: ${ing.carbs_total}g · F: ${ing.fat_total}g (per 100g)`}
+                    description={`P: ${roundMacro(ing.protein * 100)}g · C: ${roundMacro(ing.carbs_total * 100)}g · F: ${roundMacro(ing.fat_total * 100)}g (per 100g)`}
                     left={(p) => <List.Icon {...p} icon="nutrition" />}
                     onPress={() => { setSelectedFood({ type: 'ingredient', item: ing }); setPickerVisible(false); }}
                   />

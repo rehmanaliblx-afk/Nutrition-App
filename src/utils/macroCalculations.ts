@@ -32,9 +32,9 @@ export function calcKcal(macros: MacroSet): number {
   );
 }
 
-/** Scale ingredient macros (stored per 100g) to actual grams consumed */
+/** Scale ingredient macros (stored per gram) to actual grams consumed */
 export function scaleIngredientMacros(macros: MacroSet, grams: number): MacroSet {
-  const factor = grams / 100;
+  const factor = grams;
   return {
     carbs_total: macros.carbs_total * factor,
     carbs_sugar: macros.carbs_sugar * factor,
