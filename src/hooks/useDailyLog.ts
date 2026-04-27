@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { getMealEntriesForDate, addMealEntry, deleteMealEntry } from '@/db/trackingDao';
 import { getIngredientById } from '@/db/ingredientsDao';
-import { getRecipeIngredients } from '@/db/recipesDao';
+import { getRecipeIngredients, getRecipeById } from '@/db/recipesDao';
 import { MealEntry, MealEntryInput } from '@/db/schema';
 import { MealType, MEAL_TYPES } from '@/constants/macros';
 import {
@@ -54,7 +54,6 @@ async function resolveEntry(entry: MealEntry): Promise<ResolvedEntry> {
     const recipeTotalMacros = calcRecipeMacros(ingredient_macros_list);
     const totalRecipeGrams = riRows.reduce((s, r) => s + r.grams, 0);
     const macros = scaleRecipeMacros(recipeTotalMacros, totalRecipeGrams, entry.grams);
-    const { getRecipeById } = await import('@/db/recipesDao');
     const recipe = await getRecipeById(entry.food_id);
     return { entry, name: recipe?.name ?? 'Unknown Recipe', macros, kcal: calcKcal(macros) };
   }
