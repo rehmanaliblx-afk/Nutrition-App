@@ -2,6 +2,7 @@
   "expo": {
     "name": "Nutrition-App",
     "slug": "Nutrition-App",
+    "owner": "rehmanali5018",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -25,6 +26,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5c013c5c-28d1-44d7-84ac-d564ab6f6787"
+      }
     }
   }
 }
