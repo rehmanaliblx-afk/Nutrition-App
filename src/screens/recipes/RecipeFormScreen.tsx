@@ -6,9 +6,10 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RecipesStackParamList } from '@/navigation/types';
 import { useRecipes } from '@/hooks/useRecipes';
 import { getRecipeById } from '@/db/recipesDao';
-import { getAllIngredients, searchIngredients } from '@/db/ingredientsDao';
+import { getAllIngredients } from '@/db/ingredientsDao';
 import { Ingredient } from '@/db/schema';
 import { calcRecipeMacros, calcKcal, roundMacro } from '@/utils/macroCalculations';
+import { useDatabase } from '@/context/DatabaseContext';
 
 type Props = NativeStackScreenProps<RecipesStackParamList, 'RecipeForm'>;
 
@@ -20,6 +21,7 @@ interface RowItem {
 export default function RecipeFormScreen({ route, navigation }: Props) {
   const { recipeId } = route.params ?? {};
   const { create, update, loadIngredients } = useRecipes();
+  const { isReady } = useDatabase();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -28,10 +30,23 @@ export default function RecipeFormScreen({ route, navigation }: Props) {
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerQuery, setPickerQuery] = useState('');
+  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [pickerResults, setPickerResults] = useState<Ingredient[]>([]);
 
+  // Load all ingredients on mount
   useEffect(() => {
-    if (!recipeId) return;
+    if (!isReady) return;
+    getAllIngredients()
+      .then((data) => {
+        setAllIngredients(data);
+        setPickerResults(data);
+      })
+      .catch((e) => console.warn('Failed to load ingredients:', e));
+  }, [isReady]);
+
+  // Load existing recipe data if editing
+  useEffect(() => {
+    if (!recipeId || !isReady) return;
     Promise.all([getRecipeById(recipeId), loadIngredients(recipeId)]).then(([r, riRows]) => {
       if (!r) return;
       setName(r.name);
@@ -44,20 +59,23 @@ export default function RecipeFormScreen({ route, navigation }: Props) {
         setRows(rowItems);
       });
     });
-  }, [recipeId, loadIngredients]);
+  }, [recipeId, loadIngredients, isReady]);
 
-  const openPicker = useCallback(async () => {
+  const openPicker = useCallback(() => {
     setPickerQuery('');
-    const all = await getAllIngredients();
-    setPickerResults(all);
+    setPickerResults(allIngredients);
     setPickerVisible(true);
-  }, []);
+  }, [allIngredients]);
 
-  const handlePickerSearch = useCallback(async (q: string) => {
+  const handlePickerSearch = useCallback((q: string) => {
     setPickerQuery(q);
-    const results = q ? await searchIngredients(q) : await getAllIngredients();
-    setPickerResults(results);
-  }, []);
+    if (!q.trim()) {
+      setPickerResults(allIngredients);
+    } else {
+      const lower = q.toLowerCase();
+      setPickerResults(allIngredients.filter((i) => i.name.toLowerCase().includes(lower)));
+    }
+  }, [allIngredients]);
 
   const addIngredient = (ingredient: Ingredient) => {
     if (rows.find((r) => r.ingredient.id === ingredient.id)) {
@@ -174,17 +192,22 @@ export default function RecipeFormScreen({ route, navigation }: Props) {
             value={pickerQuery}
             onChangeText={handlePickerSearch}
             style={styles.modalSearch}
-            autoFocus
           />
           <ScrollView style={styles.modalList} keyboardShouldPersistTaps="handled">
-            {pickerResults.map((ing) => (
-              <List.Item
-                key={ing.id}
-                title={ing.name}
-                description={`P: ${roundMacro(ing.protein * 100)}g · C: ${roundMacro(ing.carbs_total * 100)}g · F: ${roundMacro(ing.fat_total * 100)}g (per 100g)`}
-                onPress={() => addIngredient(ing)}
-              />
-            ))}
+            {pickerResults.length === 0 ? (
+              <Text style={styles.noResults}>
+                {allIngredients.length === 0 ? 'No ingredients saved yet' : 'No results found'}
+              </Text>
+            ) : (
+              pickerResults.map((ing) => (
+                <List.Item
+                  key={ing.id}
+                  title={ing.name}
+                  description={`P: ${roundMacro(ing.protein * 100)}g · C: ${roundMacro(ing.carbs_total * 100)}g · F: ${roundMacro(ing.fat_total * 100)}g (per 100g)`}
+                  onPress={() => addIngredient(ing)}
+                />
+              ))
+            )}
           </ScrollView>
         </Modal>
       </Portal>
@@ -209,4 +232,5 @@ const styles = StyleSheet.create({
   modalTitle: { padding: 16, fontWeight: 'bold' },
   modalSearch: { marginHorizontal: 12, marginBottom: 8 },
   modalList: { flex: 1 },
+  noResults: { textAlign: 'center', padding: 24, opacity: 0.5 },
 });

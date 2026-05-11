@@ -5,11 +5,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TrackingStackParamList } from '@/navigation/types';
 import { useDailyLog } from '@/hooks/useDailyLog';
-import { getAllIngredients, searchIngredients } from '@/db/ingredientsDao';
-import { getAllRecipes, searchRecipes } from '@/db/recipesDao';
+import { getAllIngredients } from '@/db/ingredientsDao';
+import { getAllRecipes } from '@/db/recipesDao';
 import { Ingredient, Recipe } from '@/db/schema';
 import { MealType, MEAL_TYPES, MEAL_LABELS, FoodType } from '@/constants/macros';
 import { roundMacro } from '@/utils/macroCalculations';
+import { useDatabase } from '@/context/DatabaseContext';
 
 type Props = NativeStackScreenProps<TrackingStackParamList, 'AddMealEntry'>;
 
@@ -18,6 +19,7 @@ type FoodItem = { type: FoodType; item: Ingredient | Recipe };
 export default function AddMealEntryScreen({ route, navigation }: Props) {
   const { date, mealType: initialMealType } = route.params;
   const { addEntry } = useDailyLog();
+  const { isReady } = useDatabase();
 
   const [mealType, setMealType] = useState<MealType>(initialMealType);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
@@ -26,23 +28,43 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerQuery, setPickerQuery] = useState('');
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
 
-  const loadPicker = useCallback(async (q: string) => {
-    const [ings, recs] = await Promise.all([
-      q ? searchIngredients(q) : getAllIngredients(),
-      q ? searchRecipes(q) : getAllRecipes(),
-    ]);
-    setIngredients(ings);
-    setRecipes(recs);
-  }, []);
+  const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
+  const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
+  const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
 
-  const openPicker = useCallback(async () => {
+  // Load all food items on mount
+  useEffect(() => {
+    if (!isReady) return;
+    Promise.all([getAllIngredients(), getAllRecipes()])
+      .then(([ings, recs]) => {
+        setAllIngredients(ings);
+        setAllRecipes(recs);
+        setFilteredIngredients(ings);
+        setFilteredRecipes(recs);
+      })
+      .catch((e) => console.warn('Failed to load food items:', e));
+  }, [isReady]);
+
+  const openPicker = useCallback(() => {
     setPickerQuery('');
-    await loadPicker('');
+    setFilteredIngredients(allIngredients);
+    setFilteredRecipes(allRecipes);
     setPickerVisible(true);
-  }, [loadPicker]);
+  }, [allIngredients, allRecipes]);
+
+  const handleSearch = useCallback((q: string) => {
+    setPickerQuery(q);
+    if (!q.trim()) {
+      setFilteredIngredients(allIngredients);
+      setFilteredRecipes(allRecipes);
+    } else {
+      const lower = q.toLowerCase();
+      setFilteredIngredients(allIngredients.filter((i) => i.name.toLowerCase().includes(lower)));
+      setFilteredRecipes(allRecipes.filter((r) => r.name.toLowerCase().includes(lower)));
+    }
+  }, [allIngredients, allRecipes]);
 
   const handleSave = async () => {
     if (!selectedFood) {
@@ -102,7 +124,6 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
               onChangeText={setGramsStr}
               keyboardType="decimal-pad"
               mode="outlined"
-              autoFocus
               right={<TextInput.Affix text="g" />}
             />
           </>
@@ -126,15 +147,14 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
           <Searchbar
             placeholder="Search..."
             value={pickerQuery}
-            onChangeText={(q) => { setPickerQuery(q); loadPicker(q); }}
+            onChangeText={handleSearch}
             style={styles.modalSearch}
-            autoFocus
           />
           <ScrollView style={styles.modalList} keyboardShouldPersistTaps="handled">
-            {ingredients.length > 0 && (
+            {filteredIngredients.length > 0 && (
               <>
                 <List.Subheader>Ingredients</List.Subheader>
-                {ingredients.map((ing) => (
+                {filteredIngredients.map((ing) => (
                   <List.Item
                     key={`ing-${ing.id}`}
                     title={ing.name}
@@ -145,10 +165,10 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
                 ))}
               </>
             )}
-            {recipes.length > 0 && (
+            {filteredRecipes.length > 0 && (
               <>
                 <List.Subheader>Recipes</List.Subheader>
-                {recipes.map((rec) => (
+                {filteredRecipes.map((rec) => (
                   <List.Item
                     key={`rec-${rec.id}`}
                     title={rec.name}
@@ -159,8 +179,12 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
                 ))}
               </>
             )}
-            {ingredients.length === 0 && recipes.length === 0 && (
-              <Text style={styles.noResults}>No results found</Text>
+            {filteredIngredients.length === 0 && filteredRecipes.length === 0 && (
+              <Text style={styles.noResults}>
+                {allIngredients.length === 0 && allRecipes.length === 0
+                  ? 'No ingredients or recipes saved yet'
+                  : 'No results found'}
+              </Text>
             )}
           </ScrollView>
         </Modal>
