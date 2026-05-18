@@ -222,6 +222,19 @@
   .empty-sub { font-size: 13px; color: var(--on-surface-var); }
 
   .danger-section .card-title { color: var(--red); }
+
+  /* Body diagram */
+  .diagram-card { background: var(--surface); margin: 8px 12px 0; border-radius: 16px; padding: 10px 12px 6px; border: 1px solid var(--outline); flex-shrink: 0; display: flex; flex-direction: column; align-items: center; }
+  .body-view-toggle { display: flex; border: 1px solid var(--outline); border-radius: 22px; overflow: hidden; margin-bottom: 6px; }
+  .view-btn { padding: 5px 22px; border: none; background: transparent; color: var(--on-surface-var); font-size: 11px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px; transition: all 0.15s; }
+  .view-btn.active { background: var(--primary); color: #fff; }
+  .ex-section-hdr { display: flex; align-items: center; padding: 7px 16px; background: var(--surface2); margin: 4px 0 0; gap: 8px; }
+  .ex-section-hdr-lbl { font-size: 13px; font-weight: 700; flex: 1; color: var(--on-surface); }
+  .ex-cnt-badge { background: rgba(78,205,196,0.2); color: var(--primary); padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 700; }
+  .type-badge { padding: 3px 6px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+  .results-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 16px; flex-shrink: 0; border-bottom: 1px solid var(--outline); }
+  .results-lbl { font-size: 12px; color: var(--on-surface-var); }
+  .clear-btn { background: #fde8e8; color: #E63946; border: none; padding: 4px 12px; border-radius: 10px; font-size: 11px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -482,71 +495,82 @@
   <div class="screen" id="screen-exercise-library">
     <div class="app-bar">
       <div class="menu-btn" onclick="openSidebar()">☰</div>
-      <div class="app-bar-title"><h2>Exercise Library</h2><p>46 exercises</p></div>
+      <div class="app-bar-title"><h2>Exercise Library</h2><p id="ex-lib-count">102 exercises</p></div>
     </div>
-    <div class="search-bar"><input class="search-input" placeholder="Search exercises or muscles…"/></div>
-    <div class="filter-row">
-      <div class="filter-pill active">All</div><div class="filter-pill">Chest</div><div class="filter-pill">Back</div><div class="filter-pill">Shoulders</div><div class="filter-pill">Biceps</div><div class="filter-pill">Triceps</div><div class="filter-pill">Legs</div><div class="filter-pill">Glutes</div><div class="filter-pill">Core</div><div class="filter-pill">Cardio</div>
+    <div class="search-bar"><input class="search-input" id="ex-search" placeholder="Search exercises or muscles…" oninput="renderExLib()"/></div>
+
+    <!-- Interactive body diagram -->
+    <div class="diagram-card">
+      <div class="body-view-toggle">
+        <button class="view-btn active" id="btn-front" onclick="setBodyView('front')">FRONT</button>
+        <button class="view-btn" id="btn-back" onclick="setBodyView('back')">BACK</button>
+      </div>
+      <svg id="body-svg" viewBox="0 0 180 350" width="128" height="248">
+        <!-- Silhouette -->
+        <circle cx="90" cy="23" r="20" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1.5"/>
+        <rect x="83" y="43" width="14" height="14" rx="3" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <path d="M 48,55 L 132,55 L 120,168 L 60,168 Z" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1.5"/>
+        <ellipse cx="43" cy="65" rx="18" ry="14" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <ellipse cx="137" cy="65" rx="18" ry="14" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="27" y="64" width="18" height="74" rx="8" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="135" y="64" width="18" height="74" rx="8" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="21" y="138" width="14" height="58" rx="6" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="145" y="138" width="14" height="58" rx="6" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <ellipse cx="28" cy="202" rx="9" ry="8" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <ellipse cx="152" cy="202" rx="9" ry="8" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="58" y="164" width="64" height="22" rx="10" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="58" y="183" width="28" height="87" rx="10" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="94" y="183" width="28" height="87" rx="10" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <ellipse cx="72" cy="275" rx="14" ry="9" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <ellipse cx="108" cy="275" rx="14" ry="9" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="60" y="282" width="24" height="58" rx="8" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <rect x="96" y="282" width="24" height="58" rx="8" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <ellipse cx="72" cy="344" rx="15" ry="7" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <ellipse cx="108" cy="344" rx="15" ry="7" fill="#e0e0e0" stroke="#bdbdbd" stroke-width="1"/>
+        <!-- Front muscles -->
+        <g id="body-front">
+          <ellipse data-m="chest" cx="90" cy="97" rx="34" ry="22" onclick="toggleMuscle('chest')" style="cursor:pointer"/>
+          <ellipse data-m="shoulders" cx="43" cy="68" rx="16" ry="13" onclick="toggleMuscle('shoulders')" style="cursor:pointer"/>
+          <ellipse data-m="shoulders" cx="137" cy="68" rx="16" ry="13" onclick="toggleMuscle('shoulders')" style="cursor:pointer"/>
+          <ellipse data-m="biceps" cx="33" cy="108" rx="10" ry="26" onclick="toggleMuscle('biceps')" style="cursor:pointer"/>
+          <ellipse data-m="biceps" cx="147" cy="108" rx="10" ry="26" onclick="toggleMuscle('biceps')" style="cursor:pointer"/>
+          <ellipse data-m="forearms" cx="26" cy="162" rx="8" ry="22" onclick="toggleMuscle('forearms')" style="cursor:pointer"/>
+          <ellipse data-m="forearms" cx="154" cy="162" rx="8" ry="22" onclick="toggleMuscle('forearms')" style="cursor:pointer"/>
+          <ellipse data-m="core" cx="90" cy="143" rx="24" ry="26" onclick="toggleMuscle('core')" style="cursor:pointer"/>
+          <ellipse data-m="quads" cx="71" cy="230" rx="15" ry="34" onclick="toggleMuscle('quads')" style="cursor:pointer"/>
+          <ellipse data-m="quads" cx="109" cy="230" rx="15" ry="34" onclick="toggleMuscle('quads')" style="cursor:pointer"/>
+          <ellipse data-m="calves" cx="72" cy="308" rx="12" ry="22" onclick="toggleMuscle('calves')" style="cursor:pointer"/>
+          <ellipse data-m="calves" cx="108" cy="308" rx="12" ry="22" onclick="toggleMuscle('calves')" style="cursor:pointer"/>
+        </g>
+        <!-- Back muscles -->
+        <g id="body-back" style="display:none">
+          <ellipse data-m="traps" cx="90" cy="70" rx="36" ry="15" onclick="toggleMuscle('traps')" style="cursor:pointer"/>
+          <ellipse data-m="back" cx="61" cy="108" rx="15" ry="28" onclick="toggleMuscle('back')" style="cursor:pointer"/>
+          <ellipse data-m="back" cx="119" cy="108" rx="15" ry="28" onclick="toggleMuscle('back')" style="cursor:pointer"/>
+          <ellipse data-m="back" cx="90" cy="152" rx="22" ry="16" onclick="toggleMuscle('back')" style="cursor:pointer"/>
+          <ellipse data-m="triceps" cx="33" cy="106" rx="10" ry="26" onclick="toggleMuscle('triceps')" style="cursor:pointer"/>
+          <ellipse data-m="triceps" cx="147" cy="106" rx="10" ry="26" onclick="toggleMuscle('triceps')" style="cursor:pointer"/>
+          <ellipse data-m="shoulders" cx="43" cy="68" rx="15" ry="12" onclick="toggleMuscle('shoulders')" style="cursor:pointer"/>
+          <ellipse data-m="shoulders" cx="137" cy="68" rx="15" ry="12" onclick="toggleMuscle('shoulders')" style="cursor:pointer"/>
+          <ellipse data-m="glutes" cx="74" cy="193" rx="20" ry="18" onclick="toggleMuscle('glutes')" style="cursor:pointer"/>
+          <ellipse data-m="glutes" cx="106" cy="193" rx="20" ry="18" onclick="toggleMuscle('glutes')" style="cursor:pointer"/>
+          <ellipse data-m="hamstrings" cx="71" cy="236" rx="15" ry="34" onclick="toggleMuscle('hamstrings')" style="cursor:pointer"/>
+          <ellipse data-m="hamstrings" cx="109" cy="236" rx="15" ry="34" onclick="toggleMuscle('hamstrings')" style="cursor:pointer"/>
+          <ellipse data-m="calves" cx="72" cy="308" rx="12" ry="22" onclick="toggleMuscle('calves')" style="cursor:pointer"/>
+          <ellipse data-m="calves" cx="108" cy="308" rx="12" ry="22" onclick="toggleMuscle('calves')" style="cursor:pointer"/>
+        </g>
+      </svg>
+      <div id="muscle-badge-area" style="height:26px;display:flex;align-items:center;justify-content:center;margin-top:2px;">
+        <span style="font-size:11px;color:var(--on-surface-var)">Tap a muscle to filter exercises</span>
+      </div>
     </div>
-    <div class="content">
-      <div class="cat-header"><span>💪</span><span class="cat-header-title">Chest</span></div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Barbell Bench Press</div><div class="badge badge-orange">intermediate</div></div>
-        <div class="ex-muscles">Pectoralis Major · Anterior Deltoid</div>
-        <div class="ex-sec-muscles">Secondary: Triceps · Serratus Anterior</div>
-        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
-      </div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Incline Dumbbell Press</div><div class="badge badge-orange">intermediate</div></div>
-        <div class="ex-muscles">Upper Pectoralis Major</div>
-        <div class="ex-footer"><div class="ex-equip">🏋️ Dumbbells</div><span>&#8250;</span></div>
-      </div>
 
-      <div class="cat-header"><span>🦅</span><span class="cat-header-title">Back</span></div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Deadlift</div><div class="badge badge-red">advanced</div></div>
-        <div class="ex-muscles">Erector Spinae · Glutes · Hamstrings</div>
-        <div class="ex-sec-muscles">Secondary: Trapezius · Latissimus Dorsi</div>
-        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
-      </div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Pull-Up</div><div class="badge badge-orange">intermediate</div></div>
-        <div class="ex-muscles">Latissimus Dorsi · Biceps Brachii</div>
-        <div class="ex-footer"><div class="ex-equip">🔒 Bodyweight</div><span>&#8250;</span></div>
-      </div>
-
-      <div class="cat-header"><span>🏔️</span><span class="cat-header-title">Shoulders</span></div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Overhead Press</div><div class="badge badge-orange">intermediate</div></div>
-        <div class="ex-muscles">Anterior &amp; Medial Deltoid · Triceps</div>
-        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
-      </div>
-
-      <div class="cat-header"><span>🦵</span><span class="cat-header-title">Legs</span></div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Barbell Back Squat</div><div class="badge badge-orange">intermediate</div></div>
-        <div class="ex-muscles">Quadriceps · Glutes · Hamstrings</div>
-        <div class="ex-sec-muscles">Secondary: Adductors · Erector Spinae</div>
-        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
-      </div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Romanian Deadlift</div><div class="badge badge-orange">intermediate</div></div>
-        <div class="ex-muscles">Hamstrings · Glutes · Erector Spinae</div>
-        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell / Dumbbells</div><span>&#8250;</span></div>
-      </div>
-
-      <div class="cat-header"><span>🧘</span><span class="cat-header-title">Core</span></div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Plank</div><div class="badge badge-green">beginner</div></div>
-        <div class="ex-muscles">Transverse Abdominis · Rectus Abdominis</div>
-        <div class="ex-footer"><div class="ex-equip">🔒 Bodyweight</div><span>&#8250;</span></div>
-      </div>
-      <div class="ex-card" onclick="nav('exercise-detail')">
-        <div class="ex-card-top"><div class="ex-name">Hanging Leg Raise</div><div class="badge badge-orange">intermediate</div></div>
-        <div class="ex-muscles">Rectus Abdominis · Hip Flexors</div>
-        <div class="ex-footer"><div class="ex-equip">🔒 Pull-up Bar</div><span>&#8250;</span></div>
-      </div>
+    <div class="results-row">
+      <span class="results-lbl" id="ex-results-lbl">102 exercises total</span>
+      <button class="clear-btn" id="ex-clear-btn" style="display:none" onclick="clearMuscle()">Clear filter</button>
     </div>
+
+    <div class="content" id="ex-list" style="padding:0 0 40px;"></div>
   </div>
 
   <!-- EXERCISE DETAIL -->
@@ -846,6 +870,257 @@
     if (tx < 40 && dx > 60) openSidebar();
     if (dx < -60 && document.getElementById('sidebar').classList.contains('open')) closeSidebar();
   }, { passive: true });
+
+  // ─── EXERCISE LIBRARY ────────────────────────────────────────────────
+  const MUSCLE_TINTS = {
+    chest:'#E53935', shoulders:'#7B1FA2', biceps:'#1976D2', triceps:'#0288D1',
+    forearms:'#00838F', core:'#F57F17', quads:'#2E7D32', hamstrings:'#4CAF50',
+    glutes:'#FF6F00', calves:'#558B2F', back:'#6A1B9A', traps:'#AD1457',
+  };
+  const MUSCLE_LABELS = {
+    chest:'Chest', shoulders:'Shoulders', biceps:'Biceps', triceps:'Triceps',
+    forearms:'Forearms', core:'Core / Abs', quads:'Quadriceps', hamstrings:'Hamstrings',
+    glutes:'Glutes', calves:'Calves', back:'Back / Lats', traps:'Trapezius',
+  };
+  const MUSCLE_FILTER = {
+    chest: e => e.cat==='chest',
+    shoulders: e => e.cat==='shoulders',
+    biceps: e => e.cat==='biceps',
+    triceps: e => e.cat==='triceps',
+    forearms: e => e.m.toLowerCase().includes('forearm') || e.m.toLowerCase().includes('brachioradialis'),
+    core: e => e.cat==='core',
+    back: e => e.cat==='back',
+    traps: e => e.m.toLowerCase().includes('trapezius') || e.m.toLowerCase().includes('trap'),
+    glutes: e => e.cat==='glutes' || e.m.toLowerCase().includes('glute'),
+    quads: e => e.m.toLowerCase().includes('quad'),
+    hamstrings: e => e.m.toLowerCase().includes('hamstring'),
+    calves: e => e.m.toLowerCase().includes('calf') || e.m.toLowerCase().includes('gastrocnemius') || e.m.toLowerCase().includes('soleus'),
+  };
+
+  // 102 exercises: { n:name, t:'compound'|'isolation', cat, m:muscles, eq:equipment, d:difficulty }
+  const EX_DATA = [
+    // CHEST
+    {n:'Barbell Bench Press',t:'compound',cat:'chest',m:'Chest · Triceps · Front Deltoid',eq:'Barbell',d:'intermediate'},
+    {n:'Incline Bench Press',t:'compound',cat:'chest',m:'Upper Chest · Triceps · Front Deltoid',eq:'Barbell',d:'intermediate'},
+    {n:'Incline Dumbbell Press',t:'compound',cat:'chest',m:'Upper Chest · Front Deltoid',eq:'Dumbbells',d:'intermediate'},
+    {n:'Decline Bench Press',t:'compound',cat:'chest',m:'Lower Chest · Triceps',eq:'Barbell',d:'intermediate'},
+    {n:'Push-Up',t:'compound',cat:'chest',m:'Chest · Triceps · Front Deltoid',eq:'Bodyweight',d:'beginner'},
+    {n:'Dips',t:'compound',cat:'chest',m:'Lower Chest · Triceps · Front Deltoid',eq:'Parallel Bars',d:'intermediate'},
+    {n:'Chest Press Machine',t:'compound',cat:'chest',m:'Chest · Triceps · Front Deltoid',eq:'Machine',d:'beginner'},
+    {n:'Cable Fly',t:'isolation',cat:'chest',m:'Chest · Front Deltoid',eq:'Cable Machine',d:'beginner'},
+    {n:'Pec Deck Fly',t:'isolation',cat:'chest',m:'Chest · Front Deltoid',eq:'Pec Deck Machine',d:'beginner'},
+    {n:'Dumbbell Fly',t:'isolation',cat:'chest',m:'Chest · Front Deltoid',eq:'Dumbbells',d:'beginner'},
+    // BACK
+    {n:'Deadlift',t:'compound',cat:'back',m:'Hamstrings · Glutes · Lower Back · Trapezius',eq:'Barbell',d:'advanced'},
+    {n:'Pull-Up',t:'compound',cat:'back',m:'Lats · Biceps · Rear Deltoid',eq:'Bodyweight / Pull-Up Bar',d:'intermediate'},
+    {n:'Barbell Row',t:'compound',cat:'back',m:'Middle Back · Lats · Biceps',eq:'Barbell',d:'intermediate'},
+    {n:'T-Bar Row',t:'compound',cat:'back',m:'Middle Back · Lats · Biceps',eq:'T-Bar Machine',d:'intermediate'},
+    {n:'Single Arm Dumbbell Row',t:'compound',cat:'back',m:'Lats · Rhomboids · Biceps',eq:'Dumbbell',d:'beginner'},
+    {n:'Chest Supported Row',t:'compound',cat:'back',m:'Middle Back · Rhomboids · Biceps',eq:'Dumbbells',d:'beginner'},
+    {n:'Wide Grip Cable Row',t:'compound',cat:'back',m:'Upper Back · Rear Deltoid · Biceps',eq:'Cable Machine',d:'beginner'},
+    {n:'Lat Pulldown',t:'compound',cat:'back',m:'Lats · Biceps · Rear Deltoid',eq:'Cable Machine',d:'beginner'},
+    {n:'Seated Cable Row',t:'compound',cat:'back',m:'Middle Back · Lats · Biceps',eq:'Cable Machine',d:'beginner'},
+    {n:'Face Pull',t:'isolation',cat:'back',m:'Rear Deltoid · Rotator Cuff · Trapezius',eq:'Cable Machine',d:'beginner'},
+    {n:'Cable Pullover',t:'isolation',cat:'back',m:'Lats · Triceps Long Head',eq:'Cable Machine',d:'intermediate'},
+    {n:'Straight Arm Pulldown',t:'isolation',cat:'back',m:'Lats',eq:'Cable Machine',d:'beginner'},
+    // SHOULDERS
+    {n:'Overhead Press',t:'compound',cat:'shoulders',m:'Front Deltoid · Lateral Deltoid · Triceps',eq:'Barbell',d:'intermediate'},
+    {n:'Dumbbell Shoulder Press',t:'compound',cat:'shoulders',m:'Front Deltoid · Lateral Deltoid · Triceps',eq:'Dumbbells',d:'beginner'},
+    {n:'Arnold Press',t:'compound',cat:'shoulders',m:'Front Deltoid · Lateral Deltoid · Rear Deltoid',eq:'Dumbbells',d:'intermediate'},
+    {n:'Upright Row',t:'compound',cat:'shoulders',m:'Lateral Deltoid · Trapezius · Biceps',eq:'Barbell',d:'intermediate'},
+    {n:'Landmine Press',t:'compound',cat:'shoulders',m:'Front Deltoid · Upper Chest · Triceps',eq:'Landmine',d:'intermediate'},
+    {n:'Lateral Raise',t:'isolation',cat:'shoulders',m:'Lateral Deltoid',eq:'Dumbbells',d:'beginner'},
+    {n:'Cable Lateral Raise',t:'isolation',cat:'shoulders',m:'Lateral Deltoid',eq:'Cable Machine',d:'beginner'},
+    {n:'Front Raise',t:'isolation',cat:'shoulders',m:'Front Deltoid',eq:'Dumbbells / Barbell',d:'beginner'},
+    {n:'Rear Delt Fly',t:'isolation',cat:'shoulders',m:'Rear Deltoid · Rhomboids',eq:'Dumbbells',d:'beginner'},
+    {n:'Reverse Fly',t:'isolation',cat:'shoulders',m:'Rear Deltoid · Middle Trapezius',eq:'Dumbbells',d:'beginner'},
+    {n:'Face Pull (Rope)',t:'isolation',cat:'shoulders',m:'Rear Deltoid · Rotator Cuff',eq:'Cable Machine',d:'beginner'},
+    // BICEPS
+    {n:'Barbell Curl',t:'isolation',cat:'biceps',m:'Biceps · Brachialis',eq:'Barbell',d:'beginner'},
+    {n:'EZ Bar Curl',t:'isolation',cat:'biceps',m:'Biceps · Brachialis · Brachioradialis',eq:'EZ Bar',d:'beginner'},
+    {n:'Hammer Curl',t:'isolation',cat:'biceps',m:'Brachialis · Brachioradialis · Biceps',eq:'Dumbbells',d:'beginner'},
+    {n:'Incline Dumbbell Curl',t:'isolation',cat:'biceps',m:'Biceps Long Head',eq:'Dumbbells',d:'beginner'},
+    {n:'Preacher Curl',t:'isolation',cat:'biceps',m:'Biceps · Brachialis',eq:'Preacher Bench',d:'beginner'},
+    {n:'Concentration Curl',t:'isolation',cat:'biceps',m:'Biceps',eq:'Dumbbell',d:'beginner'},
+    {n:'Cable Curl',t:'isolation',cat:'biceps',m:'Biceps · Brachialis',eq:'Cable Machine',d:'beginner'},
+    {n:'Spider Curl',t:'isolation',cat:'biceps',m:'Biceps · Brachialis',eq:'Dumbbells',d:'intermediate'},
+    {n:'Zottman Curl',t:'isolation',cat:'biceps',m:'Biceps · Brachioradialis · Brachialis',eq:'Dumbbells',d:'intermediate'},
+    {n:'Reverse Curl',t:'isolation',cat:'biceps',m:'Brachioradialis · Brachialis',eq:'Barbell',d:'beginner'},
+    // TRICEPS
+    {n:'Close Grip Bench Press',t:'compound',cat:'triceps',m:'Triceps · Chest · Front Deltoid',eq:'Barbell',d:'intermediate'},
+    {n:'Dips (Tricep)',t:'compound',cat:'triceps',m:'Triceps · Chest · Front Deltoid',eq:'Parallel Bars',d:'intermediate'},
+    {n:'Diamond Push-Up',t:'compound',cat:'triceps',m:'Triceps · Chest · Front Deltoid',eq:'Bodyweight',d:'intermediate'},
+    {n:'Tricep Pushdown',t:'isolation',cat:'triceps',m:'Triceps',eq:'Cable Machine',d:'beginner'},
+    {n:'Skull Crusher',t:'isolation',cat:'triceps',m:'Triceps',eq:'EZ Bar / Barbell',d:'intermediate'},
+    {n:'Overhead Tricep Extension',t:'isolation',cat:'triceps',m:'Triceps Long Head',eq:'Dumbbell / Cable',d:'beginner'},
+    {n:'Cable Overhead Extension',t:'isolation',cat:'triceps',m:'Triceps Long Head',eq:'Cable Machine',d:'beginner'},
+    {n:'Tricep Kickback',t:'isolation',cat:'triceps',m:'Triceps',eq:'Dumbbell',d:'beginner'},
+    // LEGS
+    {n:'Barbell Back Squat',t:'compound',cat:'legs',m:'Quadriceps · Glutes · Hamstrings',eq:'Barbell',d:'intermediate'},
+    {n:'Front Squat',t:'compound',cat:'legs',m:'Quadriceps · Glutes · Core',eq:'Barbell',d:'advanced'},
+    {n:'Hack Squat',t:'compound',cat:'legs',m:'Quadriceps · Glutes · Hamstrings',eq:'Machine',d:'intermediate'},
+    {n:'Leg Press',t:'compound',cat:'legs',m:'Quadriceps · Glutes · Hamstrings',eq:'Leg Press Machine',d:'beginner'},
+    {n:'Romanian Deadlift',t:'compound',cat:'legs',m:'Hamstrings · Glutes · Lower Back',eq:'Barbell',d:'intermediate'},
+    {n:'Dumbbell Romanian Deadlift',t:'compound',cat:'legs',m:'Hamstrings · Glutes · Lower Back',eq:'Dumbbells',d:'beginner'},
+    {n:'Sumo Deadlift',t:'compound',cat:'legs',m:'Hamstrings · Glutes · Quadriceps · Adductors',eq:'Barbell',d:'intermediate'},
+    {n:'Walking Lunge',t:'compound',cat:'legs',m:'Quadriceps · Glutes · Hamstrings',eq:'Dumbbells / Barbell',d:'beginner'},
+    {n:'Bulgarian Split Squat',t:'compound',cat:'legs',m:'Quadriceps · Glutes · Hamstrings',eq:'Dumbbells / Barbell',d:'intermediate'},
+    {n:'Step-Up',t:'compound',cat:'legs',m:'Quadriceps · Glutes · Hamstrings',eq:'Box / Dumbbells',d:'beginner'},
+    {n:'Good Morning',t:'compound',cat:'legs',m:'Hamstrings · Lower Back · Glutes',eq:'Barbell',d:'intermediate'},
+    {n:'Nordic Hamstring Curl',t:'isolation',cat:'legs',m:'Hamstrings · Glutes',eq:'Anchored Feet',d:'advanced'},
+    {n:'Leg Curl',t:'isolation',cat:'legs',m:'Hamstrings',eq:'Leg Curl Machine',d:'beginner'},
+    {n:'Leg Extension',t:'isolation',cat:'legs',m:'Quadriceps',eq:'Leg Extension Machine',d:'beginner'},
+    {n:'Sissy Squat',t:'isolation',cat:'legs',m:'Quadriceps',eq:'Bodyweight',d:'advanced'},
+    {n:'Calf Raise',t:'isolation',cat:'legs',m:'Gastrocnemius · Soleus',eq:'Machine / Bodyweight',d:'beginner'},
+    {n:'Seated Calf Raise',t:'isolation',cat:'legs',m:'Soleus · Gastrocnemius',eq:'Seated Machine',d:'beginner'},
+    {n:'Donkey Calf Raise',t:'isolation',cat:'legs',m:'Gastrocnemius · Soleus',eq:'Bodyweight',d:'beginner'},
+    // GLUTES
+    {n:'Hip Thrust',t:'compound',cat:'glutes',m:'Glutes · Hamstrings · Core',eq:'Barbell / Bench',d:'intermediate'},
+    {n:'Single Leg Hip Thrust',t:'compound',cat:'glutes',m:'Glutes · Hamstrings',eq:'Bench',d:'intermediate'},
+    {n:'Sumo Squat',t:'compound',cat:'glutes',m:'Glutes · Adductors · Quadriceps',eq:'Barbell / Dumbbell',d:'beginner'},
+    {n:'Cable Pull-Through',t:'compound',cat:'glutes',m:'Glutes · Hamstrings',eq:'Cable Machine',d:'beginner'},
+    {n:'Glute Ham Raise',t:'compound',cat:'glutes',m:'Hamstrings · Glutes · Calves',eq:'GHD Machine',d:'advanced'},
+    {n:'Glute Bridge',t:'isolation',cat:'glutes',m:'Glutes · Hamstrings',eq:'Bodyweight / Barbell',d:'beginner'},
+    {n:'Cable Kickback',t:'isolation',cat:'glutes',m:'Glutes',eq:'Cable Machine',d:'beginner'},
+    {n:'Lateral Band Walk',t:'isolation',cat:'glutes',m:'Glutes Medius · Hip Abductors',eq:'Resistance Band',d:'beginner'},
+    // CORE
+    {n:'Plank',t:'compound',cat:'core',m:'Transverse Abdominis · Rectus Abdominis · Core',eq:'Bodyweight',d:'beginner'},
+    {n:'Pallof Press',t:'compound',cat:'core',m:'Obliques · Transverse Abdominis',eq:'Cable / Band',d:'intermediate'},
+    {n:'Dead Bug',t:'compound',cat:'core',m:'Transverse Abdominis · Rectus Abdominis',eq:'Bodyweight',d:'beginner'},
+    {n:'Cable Woodchop',t:'compound',cat:'core',m:'Obliques · Shoulders · Core',eq:'Cable Machine',d:'intermediate'},
+    {n:'Dragon Flag',t:'compound',cat:'core',m:'Rectus Abdominis · Obliques · Lats',eq:'Bench',d:'advanced'},
+    {n:'Ab Wheel Rollout',t:'isolation',cat:'core',m:'Rectus Abdominis · Hip Flexors · Lats',eq:'Ab Wheel',d:'intermediate'},
+    {n:'Crunch',t:'isolation',cat:'core',m:'Rectus Abdominis',eq:'Bodyweight',d:'beginner'},
+    {n:'Cable Crunch',t:'isolation',cat:'core',m:'Rectus Abdominis · Obliques',eq:'Cable Machine',d:'beginner'},
+    {n:'Bicycle Crunch',t:'isolation',cat:'core',m:'Obliques · Rectus Abdominis',eq:'Bodyweight',d:'beginner'},
+    {n:'Russian Twist',t:'isolation',cat:'core',m:'Obliques · Core',eq:'Bodyweight / Plate',d:'beginner'},
+    {n:'Hanging Leg Raise',t:'isolation',cat:'core',m:'Rectus Abdominis · Hip Flexors',eq:'Pull-Up Bar',d:'intermediate'},
+    // FULL BODY
+    {n:'Clean & Press',t:'compound',cat:'full_body',m:'Full Body · Shoulders · Legs · Back',eq:'Barbell',d:'advanced'},
+    {n:'Turkish Get-Up',t:'compound',cat:'full_body',m:'Full Body · Shoulders · Core',eq:'Kettlebell',d:'advanced'},
+    {n:'Thruster',t:'compound',cat:'full_body',m:'Quadriceps · Glutes · Shoulders · Triceps',eq:'Barbell / Dumbbells',d:'advanced'},
+    {n:'Power Clean',t:'compound',cat:'full_body',m:'Hamstrings · Glutes · Trapezius · Shoulders',eq:'Barbell',d:'advanced'},
+    {n:'Kettlebell Swing',t:'compound',cat:'full_body',m:'Glutes · Hamstrings · Lower Back · Core',eq:'Kettlebell',d:'intermediate'},
+    {n:'Man Maker',t:'compound',cat:'full_body',m:'Chest · Shoulders · Back · Legs',eq:'Dumbbells',d:'advanced'},
+    {n:'Battle Ropes',t:'compound',cat:'full_body',m:'Shoulders · Core · Back · Arms',eq:'Battle Ropes',d:'intermediate'},
+    // CARDIO
+    {n:'Treadmill Run',t:'compound',cat:'cardio',m:'Quadriceps · Hamstrings · Calves · Glutes',eq:'Treadmill',d:'beginner'},
+    {n:'Jump Rope',t:'compound',cat:'cardio',m:'Calves · Quadriceps · Shoulders · Core',eq:'Jump Rope',d:'beginner'},
+    {n:'Cycling',t:'compound',cat:'cardio',m:'Quadriceps · Hamstrings · Glutes · Calves',eq:'Bike / Machine',d:'beginner'},
+    {n:'Burpee',t:'compound',cat:'cardio',m:'Full Body · Chest · Legs · Core',eq:'Bodyweight',d:'intermediate'},
+    {n:'Rowing Machine',t:'compound',cat:'cardio',m:'Back · Legs · Core · Arms',eq:'Rowing Ergometer',d:'beginner'},
+    {n:'Stair Climber',t:'compound',cat:'cardio',m:'Glutes · Quadriceps · Hamstrings · Calves',eq:'Stair Climber',d:'beginner'},
+    {n:'Box Jump',t:'compound',cat:'cardio',m:'Quadriceps · Glutes · Hamstrings · Calves',eq:'Plyo Box',d:'intermediate'},
+  ];
+
+  let selectedMuscle = null;
+  let bodyView = 'front';
+
+  function setBodyView(v) {
+    bodyView = v;
+    document.getElementById('body-front').style.display = v === 'front' ? '' : 'none';
+    document.getElementById('body-back').style.display = v === 'back' ? '' : 'none';
+    document.getElementById('btn-front').className = 'view-btn' + (v === 'front' ? ' active' : '');
+    document.getElementById('btn-back').className = 'view-btn' + (v === 'back' ? ' active' : '');
+    updateSvgColors();
+  }
+
+  function toggleMuscle(m) {
+    selectedMuscle = selectedMuscle === m ? null : m;
+    updateSvgColors();
+    updateMuscleBadge();
+    renderExLib();
+  }
+
+  function clearMuscle() {
+    selectedMuscle = null;
+    updateSvgColors();
+    updateMuscleBadge();
+    renderExLib();
+  }
+
+  function hexToRgb(hex) {
+    const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+    return `${r},${g},${b}`;
+  }
+
+  function updateSvgColors() {
+    document.querySelectorAll('#body-svg ellipse[data-m]').forEach(el => {
+      const m = el.getAttribute('data-m');
+      const tint = MUSCLE_TINTS[m] || '#888';
+      const sel = selectedMuscle === m;
+      el.setAttribute('fill', sel ? tint + 'CC' : tint + '40');
+      el.setAttribute('stroke', sel ? tint : tint + '88');
+      el.setAttribute('stroke-width', sel ? '2.5' : '1.5');
+    });
+  }
+
+  function updateMuscleBadge() {
+    const area = document.getElementById('muscle-badge-area');
+    const clearBtn = document.getElementById('ex-clear-btn');
+    if (selectedMuscle) {
+      const tint = MUSCLE_TINTS[selectedMuscle];
+      const rgb = hexToRgb(tint);
+      area.innerHTML = `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;border:1.5px solid ${tint};background:rgba(${rgb},0.13);font-size:12px;font-weight:700;color:${tint}"><span style="width:8px;height:8px;border-radius:50%;background:${tint};display:inline-block"></span>${MUSCLE_LABELS[selectedMuscle]}<span onclick="clearMuscle()" style="cursor:pointer;font-size:16px;line-height:1;padding-left:4px;color:${tint}">×</span></span>`;
+      clearBtn.style.display = 'block';
+    } else {
+      area.innerHTML = '<span style="font-size:11px;color:var(--on-surface-var)">Tap a muscle to filter exercises</span>';
+      clearBtn.style.display = 'none';
+    }
+  }
+
+  function renderExLib() {
+    const q = (document.getElementById('ex-search').value || '').toLowerCase().trim();
+    let list = EX_DATA.slice();
+    if (selectedMuscle && MUSCLE_FILTER[selectedMuscle]) {
+      list = list.filter(MUSCLE_FILTER[selectedMuscle]);
+    }
+    if (q) {
+      list = list.filter(e => e.n.toLowerCase().includes(q) || e.m.toLowerCase().includes(q) || e.eq.toLowerCase().includes(q));
+    }
+    const compound = list.filter(e => e.t === 'compound');
+    const isolation = list.filter(e => e.t === 'isolation');
+    const total = list.length;
+    document.getElementById('ex-lib-count').textContent = `${total} exercise${total!==1?'s':''}`;
+    document.getElementById('ex-results-lbl').textContent = `${total} exercise${total!==1?'s':''} ${selectedMuscle ? 'for '+MUSCLE_LABELS[selectedMuscle] : 'total'}`;
+
+    let html = '';
+    if (compound.length) {
+      html += `<div class="ex-section-hdr"><span class="ex-section-hdr-lbl">💪 Compound</span><span class="ex-cnt-badge">${compound.length}</span></div>`;
+      compound.forEach(e => { html += renderExCard(e); });
+    }
+    if (isolation.length) {
+      html += `<div class="ex-section-hdr"><span class="ex-section-hdr-lbl">🎯 Isolation</span><span class="ex-cnt-badge">${isolation.length}</span></div>`;
+      isolation.forEach(e => { html += renderExCard(e); });
+    }
+    if (!total) {
+      html = '<div style="text-align:center;padding:50px 20px;color:var(--on-surface-var)"><div style="font-size:40px;margin-bottom:12px">🔍</div><div style="font-size:15px">No exercises found</div></div>';
+    }
+    document.getElementById('ex-list').innerHTML = html;
+  }
+
+  function renderExCard(e) {
+    const dc = {beginner:'#4CAF50',intermediate:'#FF9800',advanced:'#F44336'}[e.d]||'#FF9800';
+    const tc = e.t==='compound' ? 'var(--primary)' : '#9C27B0';
+    return `<div class="ex-card" style="margin:4px 12px 0;border-radius:14px;padding:13px;border:1px solid var(--outline);background:var(--surface);cursor:pointer" onclick="nav('exercise-detail')">
+      <div class="ex-card-top" style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
+        <div class="ex-name" style="font-size:13px;font-weight:700;flex:1">${e.n}</div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <span class="type-badge" style="background:${tc}22;color:${tc}">${e.t==='compound'?'Compound':'Isolation'}</span>
+          <span class="type-badge" style="background:${dc}22;color:${dc}">${e.d}</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--primary);margin-bottom:2px;font-weight:600">${e.m}</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:7px">
+        <span style="font-size:11px;color:var(--on-surface-var)">🏋️ ${e.eq}</span>
+        <span style="color:var(--on-surface-var);font-size:16px">›</span>
+      </div>
+    </div>`;
+  }
+
+  // Init exercise library on page load
+  updateSvgColors();
+  renderExLib();
 </script>
 </body>
 </html>
