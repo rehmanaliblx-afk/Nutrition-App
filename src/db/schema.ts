@@ -105,3 +105,31 @@ export interface GoalTemplate {
   fat_goal: number | null;
   water_goal_ml: number;
 }
+
+export interface Supplement {
+  id: number;
+  name: string;
+  role: string | null;
+  timing: string | null;
+  is_daily: number;
+  cycling_info: string | null;
+  dose: string | null;
+  brand_notes: string | null;
+  price_info: string | null;
+  purchase_url: string | null;
+  personal_notes: string | null;
+  created_at: string;
+}
+
+export interface SupplementInput {
+  name: string;
+  role: string | null;
+  timing: string | null;
+  is_daily: number;
+  cycling_info: string | null;
+  dose: string | null;
+  brand_notes: string | null;
+  price_info: string | null;
+  purchase_url: string | null;
+  personal_notes: string | null;
+}

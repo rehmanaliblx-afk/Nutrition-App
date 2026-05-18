@@ -139,4 +139,23 @@ export const migrations: Migration[] = [
       `CREATE INDEX IF NOT EXISTS idx_entries_date_meal2 ON meal_entries(date, meal_type)`,
     ],
   },
+  {
+    version: 4,
+    up: [
+      `CREATE TABLE IF NOT EXISTS supplements (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        name           TEXT NOT NULL,
+        role           TEXT,
+        timing         TEXT,
+        is_daily       INTEGER NOT NULL DEFAULT 1,
+        cycling_info   TEXT,
+        dose           TEXT,
+        brand_notes    TEXT,
+        price_info     TEXT,
+        purchase_url   TEXT,
+        personal_notes TEXT,
+        created_at     TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+    ],
+  },
 ];

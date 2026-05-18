@@ -31,4 +31,9 @@ export type MoreStackParamList = {
   WeightLog: undefined;
   Backup: undefined;
   ManageMeals: undefined;
+  Micronutrients: undefined;
+  MicronutrientDetail: { id: string };
+  Supplements: undefined;
+  SupplementForm: { supplementId?: number };
+  SupplementDetail: { supplementId: number };
 };
