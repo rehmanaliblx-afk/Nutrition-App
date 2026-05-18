@@ -20,6 +20,11 @@ export type NutritionStackParamList = {
   Supplements: undefined;
   SupplementForm: { supplementId?: number };
   SupplementDetail: { supplementId: number };
+  // Body & Meal planning
+  BodyMeasurements: undefined;
+  MealTemplates: undefined;
+  WeeklyReport: undefined;
+  MacroRecommendations: undefined;
 };
 
 export type WorkoutStackParamList = {
@@ -29,6 +34,12 @@ export type WorkoutStackParamList = {
   WorkoutPlanDetail: { planId: number };
   WorkoutPlanForm: { planId?: number };
   WeightLog: undefined;
+  WorkoutSession: { planId?: number; planName?: string } | undefined;
+  WorkoutHistory: undefined;
+  ExerciseProgress: { exerciseId: string; exerciseName: string };
+  WorkoutGenerator: undefined;
+  OneRMCalculator: undefined;
+  RecoveryInsights: undefined;
 };
 
 export type RootDrawerParamList = {
