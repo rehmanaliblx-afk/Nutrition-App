@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, ScrollView, StyleSheet, Alert, Dimensions } from 'react-native';
-import { Text, TextInput, Button, List, Divider, IconButton, Surface } from 'react-native-paper';
+import { View, ScrollView, StyleSheet, Alert, Dimensions, TouchableOpacity, StatusBar } from 'react-native';
+import { Text, TextInput, Button, List, Divider, IconButton, Surface, useTheme } from 'react-native-paper';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Line, Circle, Polyline, Text as SvgText, G } from 'react-native-svg';
 import { useWeight } from '@/hooks/useWeight';
@@ -44,6 +46,8 @@ function linearRegression(pts: Pt[]): { slope: number; intercept: number } | nul
 }
 
 export default function WeightLogScreen() {
+  const theme = useTheme();
+  const drawerNav = useNavigation();
   const { isReady } = useDatabase();
   const { history, todayEntry, loading, loadHistory, loadToday, save, remove } = useWeight();
   const today = todayString();
@@ -266,9 +270,19 @@ export default function WeightLogScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={theme.dark ? 'light-content' : 'dark-content'} />
+      <SafeAreaView edges={['top']} style={{ backgroundColor: theme.colors.primary }}>
+        <View style={styles.appBar}>
+          <TouchableOpacity onPress={() => drawerNav.dispatch(DrawerActions.openDrawer())} style={styles.menuBtn}>
+            <Ionicons name="menu" size={26} color="#fff" />
+          </TouchableOpacity>
+          <Text variant="titleLarge" style={styles.appBarTitle}>Weight Log</Text>
+          <View style={{ width: 38 }} />
+        </View>
+      </SafeAreaView>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text variant="headlineSmall" style={styles.title}>Weight Log</Text>
+        <View style={{ height: 4 }} />
 
         {/* Summary row */}
         <Surface style={styles.card} elevation={1}>
@@ -449,7 +463,7 @@ export default function WeightLogScreen() {
           />
         ))}
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -465,6 +479,9 @@ function StatBox({ label, value, unit, color }: { label: string; value: string; 
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  appBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
+  menuBtn: { padding: 4, marginRight: 8 },
+  appBarTitle: { color: '#fff', fontWeight: '700', flex: 1 },
   content: { padding: 16, gap: 10, paddingBottom: 32 },
   title: { fontWeight: 'bold' },
   card: { borderRadius: 12, padding: 16 },

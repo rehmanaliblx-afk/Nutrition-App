@@ -3,7 +3,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MoreStackParamList } from './types';
 import SettingsScreen from '@/screens/settings/SettingsScreen';
 import HistoryScreen from '@/screens/history/HistoryScreen';
-import WeightLogScreen from '@/screens/tracking/WeightLogScreen';
 import BackupScreen from '@/screens/settings/BackupScreen';
 import ManageMealsScreen from '@/screens/settings/ManageMealsScreen';
 import MicronutrientsScreen from '@/screens/info/MicronutrientsScreen';
@@ -20,8 +19,7 @@ export default function MoreStack() {
     <Stack.Navigator screenOptions={{ headerShown: true }}>
       <Stack.Screen name="SettingsHome" component={SettingsScreen} options={{ title: 'More' }} />
       <Stack.Screen name="History" component={HistoryScreen} options={{ title: 'History & Charts' }} />
-      <Stack.Screen name="WeightLog" component={WeightLogScreen} options={{ title: 'Weight Log' }} />
-      <Stack.Screen name="Backup" component={BackupScreen} options={{ title: 'Backup & Restore' }} />
+<Stack.Screen name="Backup" component={BackupScreen} options={{ title: 'Backup & Restore' }} />
       <Stack.Screen name="ManageMeals" component={ManageMealsScreen} options={{ title: 'Manage Meal Types' }} />
       <Stack.Screen name="Micronutrients" component={MicronutrientsScreen} options={{ title: 'Micronutrients' }} />
       <Stack.Screen

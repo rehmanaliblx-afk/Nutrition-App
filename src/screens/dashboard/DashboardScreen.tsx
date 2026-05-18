@@ -1,7 +1,8 @@
 import React, { useEffect, useCallback, useState } from 'react';
-import { ScrollView, View, StyleSheet, RefreshControl } from 'react-native';
-import { Text, Divider, Button, Surface, ProgressBar } from 'react-native-paper';
+import { ScrollView, View, StyleSheet, RefreshControl, TouchableOpacity, StatusBar } from 'react-native';
+import { Text, Divider, Button, Surface, ProgressBar, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation, DrawerActions } from '@react-navigation/native';
 import { useDailyLog } from '@/hooks/useDailyLog';
 import { useGoals } from '@/hooks/useGoals';
 import { useWater } from '@/hooks/useWater';
@@ -14,6 +15,8 @@ import MacroBar from '@/components/common/MacroBar';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function DashboardScreen() {
+  const theme = useTheme();
+  const drawerNav = useNavigation();
   const [date, setDate] = useState(todayString());
   const { data, loading, load } = useDailyLog();
   const { goal, load: loadGoal } = useGoals();
@@ -30,12 +33,22 @@ export default function DashboardScreen() {
   useEffect(() => { refresh(); }, [refresh]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <StatusBar barStyle={theme.dark ? 'light-content' : 'dark-content'} />
+      <SafeAreaView edges={['top']} style={{ backgroundColor: theme.colors.primary }}>
+        <View style={styles.appBar}>
+          <TouchableOpacity onPress={() => drawerNav.dispatch(DrawerActions.openDrawer())} style={styles.menuBtn}>
+            <Ionicons name="menu" size={26} color="#fff" />
+          </TouchableOpacity>
+          <Text variant="titleLarge" style={styles.appBarTitle}>Dashboard</Text>
+          <View style={{ width: 38 }} />
+        </View>
+      </SafeAreaView>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={refresh} />}
       >
-        {/* Header */}
+        {/* Date Nav */}
         <View style={styles.header}>
           <Button icon="chevron-left" mode="text" compact onPress={() => setDate(addDays(date, -1))}>
             {''}
@@ -148,12 +161,15 @@ export default function DashboardScreen() {
           })}
         </Surface>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  appBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
+  menuBtn: { padding: 4, marginRight: 8 },
+  appBarTitle: { color: '#fff', fontWeight: '700', flex: 1 },
   content: { padding: 16, gap: 12, paddingBottom: 32 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   dateText: { fontWeight: 'bold', flex: 1, textAlign: 'center' },

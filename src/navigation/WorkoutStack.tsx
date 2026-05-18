@@ -1,0 +1,25 @@
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { WorkoutStackParamList } from './types';
+
+import ExerciseLibraryScreen from '@/screens/workout/ExerciseLibraryScreen';
+import ExerciseDetailScreen from '@/screens/workout/ExerciseDetailScreen';
+import WorkoutPlansScreen from '@/screens/workout/WorkoutPlansScreen';
+import WorkoutPlanDetailScreen from '@/screens/workout/WorkoutPlanDetailScreen';
+import WorkoutPlanFormScreen from '@/screens/workout/WorkoutPlanFormScreen';
+import WeightLogScreen from '@/screens/tracking/WeightLogScreen';
+
+const Stack = createNativeStackNavigator<WorkoutStackParamList>();
+
+export default function WorkoutStack() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
+      <Stack.Screen name="ExerciseLibrary" component={ExerciseLibraryScreen} options={{ title: 'Exercise Library', headerShown: false }} />
+      <Stack.Screen name="ExerciseDetail" component={ExerciseDetailScreen} options={{ title: 'Exercise Detail' }} />
+      <Stack.Screen name="WorkoutPlans" component={WorkoutPlansScreen} options={{ title: 'Workout Plans', headerShown: false }} />
+      <Stack.Screen name="WorkoutPlanDetail" component={WorkoutPlanDetailScreen} options={{ title: 'Plan Detail' }} />
+      <Stack.Screen name="WorkoutPlanForm" component={WorkoutPlanFormScreen} options={({ route }) => ({ title: route.params?.planId ? 'Edit Plan' : 'New Plan' })} />
+      <Stack.Screen name="WeightLog" component={WeightLogScreen} options={{ title: 'Weight Log', headerShown: false }} />
+    </Stack.Navigator>
+  );
+}

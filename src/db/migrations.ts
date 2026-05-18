@@ -158,4 +158,25 @@ export const migrations: Migration[] = [
       )`,
     ],
   },
+  {
+    version: 5,
+    up: [
+      `CREATE TABLE IF NOT EXISTS workout_plans (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT NOT NULL UNIQUE,
+        description TEXT,
+        created_at  TEXT NOT NULL DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS workout_plan_exercises (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        plan_id      INTEGER NOT NULL REFERENCES workout_plans(id) ON DELETE CASCADE,
+        exercise_id  TEXT NOT NULL,
+        sets         INTEGER NOT NULL DEFAULT 3,
+        reps         TEXT NOT NULL DEFAULT '8-12',
+        sort_order   INTEGER NOT NULL DEFAULT 0,
+        notes        TEXT
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_wpe_plan ON workout_plan_exercises(plan_id)`,
+    ],
+  },
 ];

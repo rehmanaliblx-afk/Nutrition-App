@@ -70,13 +70,6 @@ export default function SettingsScreen({ navigation }: Props) {
           onPress={() => navigation.navigate('History')}
         />
         <List.Item
-          title="Weight Log"
-          description="Track your daily body weight"
-          left={(p) => <List.Icon {...p} icon="scale-bathroom" />}
-          right={(p) => <List.Icon {...p} icon="chevron-right" />}
-          onPress={() => navigation.navigate('WeightLog')}
-        />
-        <List.Item
           title="Backup & Restore"
           description="Export data to Google Drive or import a backup"
           left={(p) => <List.Icon {...p} icon="cloud-upload" />}
