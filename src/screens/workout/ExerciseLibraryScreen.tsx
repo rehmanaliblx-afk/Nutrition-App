@@ -1,31 +1,21 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, StatusBar } from 'react-native';
-import { Text, Searchbar, Chip, useTheme, Surface } from 'react-native-paper';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  StatusBar,
+} from 'react-native';
+import { Text, Searchbar, useTheme, Surface } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { WorkoutStackParamList } from '@/navigation/types';
-import { EXERCISES, CATEGORY_LABELS, ExerciseCategory, Exercise } from '@/constants/exercises';
 import { useNavigation, DrawerActions } from '@react-navigation/native';
+import { WorkoutStackParamList } from '@/navigation/types';
+import { EXERCISES, Exercise } from '@/constants/exercises';
+import BodyDiagram, { MuscleGroup, MUSCLE_LABELS } from '@/components/workout/BodyDiagram';
 
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'ExerciseLibrary'>;
-
-const CATEGORY_ORDER: ExerciseCategory[] = [
-  'chest', 'back', 'shoulders', 'biceps', 'triceps', 'legs', 'glutes', 'core', 'cardio', 'full_body',
-];
-
-const CATEGORY_ICONS: Record<ExerciseCategory, React.ComponentProps<typeof Ionicons>['name']> = {
-  chest: 'body',
-  back: 'body',
-  shoulders: 'body',
-  biceps: 'body',
-  triceps: 'body',
-  legs: 'walk',
-  glutes: 'body',
-  core: 'body',
-  cardio: 'heart',
-  full_body: 'fitness',
-};
 
 const DIFFICULTY_COLORS = {
   beginner: '#4CAF50',
@@ -33,15 +23,183 @@ const DIFFICULTY_COLORS = {
   advanced: '#F44336',
 };
 
+// ──────────────────────────────────────────────
+// Muscle → exercise filter
+// ──────────────────────────────────────────────
+function filterByMuscle(exercises: Exercise[], muscle: MuscleGroup): Exercise[] {
+  const has = (arr: string[], term: string) =>
+    arr.some((m) => m.toLowerCase().includes(term.toLowerCase()));
+
+  switch (muscle) {
+    case 'chest':
+      return exercises.filter((e) => e.category === 'chest');
+    case 'shoulders':
+      return exercises.filter((e) => e.category === 'shoulders');
+    case 'biceps':
+      return exercises.filter(
+        (e) => e.category === 'biceps' || (e.category !== 'back' && has(e.primaryMuscles, 'bicep'))
+      );
+    case 'triceps':
+      return exercises.filter((e) => e.category === 'triceps');
+    case 'forearms':
+      return exercises.filter((e) =>
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'forearm') ||
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'brachioradialis')
+      );
+    case 'core':
+      return exercises.filter((e) => e.category === 'core');
+    case 'back':
+      return exercises.filter((e) => e.category === 'back');
+    case 'traps':
+      return exercises.filter((e) =>
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'trapezius') ||
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'trap')
+      );
+    case 'glutes':
+      return exercises.filter(
+        (e) =>
+          e.category === 'glutes' ||
+          has(e.primaryMuscles, 'glute')
+      );
+    case 'quads':
+      return exercises.filter((e) =>
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'quad') ||
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'quadricep')
+      );
+    case 'hamstrings':
+      return exercises.filter((e) =>
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'hamstring')
+      );
+    case 'calves':
+      return exercises.filter((e) =>
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'calf') ||
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'calves') ||
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'gastrocnemius') ||
+        has([...e.primaryMuscles, ...e.secondaryMuscles], 'soleus')
+      );
+    default:
+      return exercises;
+  }
+}
+
+type ListItem =
+  | { t: 'header'; label: string; count: number }
+  | { t: 'exercise'; data: Exercise };
+
+// ──────────────────────────────────────────────
+// Exercise card
+// ──────────────────────────────────────────────
+const ExerciseCard = React.memo(
+  ({
+    exercise,
+    onPress,
+  }: {
+    exercise: Exercise;
+    onPress: () => void;
+  }) => {
+    const theme = useTheme();
+    const diffColor = DIFFICULTY_COLORS[exercise.difficulty];
+    const isCompound = (exercise as any).type === 'compound';
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.card,
+          { backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant },
+        ]}
+        onPress={onPress}
+        activeOpacity={0.75}
+      >
+        <View style={styles.cardTop}>
+          <Text
+            variant="titleSmall"
+            style={[styles.exerciseName, { color: theme.colors.onSurface }]}
+          >
+            {exercise.name}
+          </Text>
+          <View style={styles.cardBadges}>
+            <View
+              style={[
+                styles.typeBadge,
+                {
+                  backgroundColor: isCompound
+                    ? theme.colors.primary + '22'
+                    : theme.colors.secondary + '22',
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: '700',
+                  color: isCompound ? theme.colors.primary : theme.colors.secondary,
+                  textTransform: 'uppercase',
+                  letterSpacing: 0.4,
+                }}
+              >
+                {isCompound ? 'Compound' : 'Isolation'}
+              </Text>
+            </View>
+            <View
+              style={[styles.diffBadge, { backgroundColor: diffColor + '22' }]}
+            >
+              <Text
+                style={{ fontSize: 10, fontWeight: '700', color: diffColor, textTransform: 'capitalize' }}
+              >
+                {exercise.difficulty}
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        <Text
+          variant="bodySmall"
+          style={{ color: theme.colors.primary, marginTop: 3, fontWeight: '600' }}
+        >
+          {exercise.primaryMuscles.join(' · ')}
+        </Text>
+        {exercise.secondaryMuscles.length > 0 && (
+          <Text
+            variant="bodySmall"
+            style={{ color: theme.colors.onSurfaceVariant, marginTop: 1 }}
+            numberOfLines={1}
+          >
+            + {exercise.secondaryMuscles.join(', ')}
+          </Text>
+        )}
+
+        <View style={styles.cardBottom}>
+          <View style={styles.equipRow}>
+            <Ionicons
+              name="barbell-outline"
+              size={12}
+              color={theme.colors.onSurfaceVariant}
+            />
+            <Text
+              variant="bodySmall"
+              style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}
+            >
+              {exercise.equipment}
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={theme.colors.onSurfaceVariant} />
+        </View>
+      </TouchableOpacity>
+    );
+  }
+);
+
+// ──────────────────────────────────────────────
+// Main screen
+// ──────────────────────────────────────────────
 export default function ExerciseLibraryScreen({ navigation }: Props) {
   const theme = useTheme();
   const drawerNav = useNavigation();
   const [search, setSearch] = useState('');
-  const [activeCategory, setActiveCategory] = useState<ExerciseCategory | null>(null);
+  const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | null>(null);
 
   const filtered = useMemo(() => {
-    let list = EXERCISES;
-    if (activeCategory) list = list.filter((e) => e.category === activeCategory);
+    let list = selectedMuscle ? filterByMuscle(EXERCISES, selectedMuscle) : EXERCISES;
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -52,139 +210,187 @@ export default function ExerciseLibraryScreen({ navigation }: Props) {
       );
     }
     return list;
-  }, [search, activeCategory]);
+  }, [selectedMuscle, search]);
 
-  const grouped = useMemo(() => {
-    const map: Record<string, Exercise[]> = {};
-    filtered.forEach((ex) => {
-      if (!map[ex.category]) map[ex.category] = [];
-      map[ex.category].push(ex);
-    });
-    return CATEGORY_ORDER.filter((c) => map[c]?.length > 0).map((c) => ({
-      category: c,
-      exercises: map[c],
-    }));
-  }, [filtered]);
+  const compound = useMemo(
+    () => filtered.filter((e) => (e as any).type === 'compound'),
+    [filtered]
+  );
+  const isolation = useMemo(
+    () => filtered.filter((e) => (e as any).type === 'isolation'),
+    [filtered]
+  );
 
-  const renderExercise = useCallback(
-    ({ item }: { item: Exercise }) => (
-      <TouchableOpacity
-        style={[styles.card, { backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant }]}
-        onPress={() => navigation.navigate('ExerciseDetail', { exerciseId: item.id })}
-        activeOpacity={0.75}
-      >
-        <View style={styles.cardTop}>
-          <Text variant="titleSmall" style={[styles.exerciseName, { color: theme.colors.onSurface }]}>
-            {item.name}
-          </Text>
-          <View style={[styles.diffBadge, { backgroundColor: DIFFICULTY_COLORS[item.difficulty] + '22' }]}>
-            <Text style={[styles.diffText, { color: DIFFICULTY_COLORS[item.difficulty] }]}>
-              {item.difficulty}
+  const flatData = useMemo<ListItem[]>(() => {
+    const items: ListItem[] = [];
+    if (compound.length > 0) {
+      items.push({ t: 'header', label: '💪 Compound', count: compound.length });
+      compound.forEach((e) => items.push({ t: 'exercise', data: e }));
+    }
+    if (isolation.length > 0) {
+      items.push({ t: 'header', label: '🎯 Isolation', count: isolation.length });
+      isolation.forEach((e) => items.push({ t: 'exercise', data: e }));
+    }
+    return items;
+  }, [compound, isolation]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ListItem }) => {
+      if (item.t === 'header') {
+        return (
+          <View
+            style={[
+              styles.sectionHeader,
+              { backgroundColor: theme.colors.surfaceVariant },
+            ]}
+          >
+            <Text
+              variant="labelMedium"
+              style={{ color: theme.colors.onSurfaceVariant, fontWeight: '700', flex: 1 }}
+            >
+              {item.label}
             </Text>
+            <View
+              style={[
+                styles.countBadge,
+                { backgroundColor: theme.colors.primary + '22' },
+              ]}
+            >
+              <Text
+                style={{ color: theme.colors.primary, fontSize: 12, fontWeight: '700' }}
+              >
+                {item.count}
+              </Text>
+            </View>
           </View>
-        </View>
-        <Text variant="bodySmall" style={{ color: theme.colors.primary, marginTop: 2 }}>
-          {item.primaryMuscles.join(' · ')}
-        </Text>
-        {item.secondaryMuscles.length > 0 && (
-          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 1 }}>
-            Secondary: {item.secondaryMuscles.join(', ')}
-          </Text>
-        )}
-        <View style={styles.cardBottom}>
-          <View style={styles.equipmentRow}>
-            <Ionicons name="barbell-outline" size={12} color={theme.colors.onSurfaceVariant} />
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginLeft: 4 }}>
-              {item.equipment}
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={16} color={theme.colors.onSurfaceVariant} />
-        </View>
-      </TouchableOpacity>
-    ),
+        );
+      }
+      return (
+        <ExerciseCard
+          exercise={item.data}
+          onPress={() =>
+            navigation.navigate('ExerciseDetail', { exerciseId: item.data.id })
+          }
+        />
+      );
+    },
     [navigation, theme]
   );
 
-  type ListItem =
-    | { type: 'header'; category: ExerciseCategory }
-    | { type: 'exercise'; data: Exercise };
+  const ListHeader = useCallback(
+    () => (
+      <View>
+        <View
+          style={[
+            styles.searchContainer,
+            { backgroundColor: theme.colors.surface },
+          ]}
+        >
+          <Searchbar
+            placeholder="Search exercises or muscles…"
+            value={search}
+            onChangeText={setSearch}
+            style={[
+              styles.searchbar,
+              { backgroundColor: theme.colors.surfaceVariant, elevation: 0 },
+            ]}
+            inputStyle={{ fontSize: 14 }}
+          />
+        </View>
 
-  const flatData: ListItem[] = useMemo(() => {
-    const items: ListItem[] = [];
-    grouped.forEach((g) => {
-      items.push({ type: 'header', category: g.category });
-      g.exercises.forEach((ex) => items.push({ type: 'exercise', data: ex }));
-    });
-    return items;
-  }, [grouped]);
+        {/* Body diagram */}
+        <Surface
+          style={[styles.diagramCard, { backgroundColor: theme.colors.surface }]}
+          elevation={1}
+        >
+          <BodyDiagram selected={selectedMuscle} onSelect={setSelectedMuscle} />
+        </Surface>
+
+        {/* Results summary */}
+        <View style={styles.resultsRow}>
+          <Text
+            variant="labelSmall"
+            style={{ color: theme.colors.onSurfaceVariant }}
+          >
+            {filtered.length} exercise{filtered.length !== 1 ? 's' : ''}
+            {selectedMuscle ? ` for ${MUSCLE_LABELS[selectedMuscle]}` : ' total'}
+          </Text>
+          {selectedMuscle && (
+            <TouchableOpacity
+              onPress={() => setSelectedMuscle(null)}
+              style={[
+                styles.clearBtn,
+                { backgroundColor: theme.colors.errorContainer },
+              ]}
+            >
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: '700',
+                  color: theme.colors.onErrorContainer,
+                }}
+              >
+                Clear filter
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    ),
+    [search, selectedMuscle, filtered.length, theme]
+  );
 
   return (
     <View style={[styles.root, { backgroundColor: theme.colors.background }]}>
       <StatusBar barStyle={theme.dark ? 'light-content' : 'dark-content'} />
-      <SafeAreaView edges={['top']} style={{ backgroundColor: theme.colors.primary }}>
+
+      <SafeAreaView
+        edges={['top']}
+        style={{ backgroundColor: theme.colors.primary }}
+      >
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => drawerNav.dispatch(DrawerActions.openDrawer())} style={styles.menuBtn}>
+          <TouchableOpacity
+            onPress={() => drawerNav.dispatch(DrawerActions.openDrawer())}
+            style={styles.menuBtn}
+          >
             <Ionicons name="menu" size={26} color="#fff" />
           </TouchableOpacity>
-          <View style={styles.headerTitle}>
-            <Text variant="titleLarge" style={styles.headerText}>Exercise Library</Text>
-            <Text variant="bodySmall" style={styles.headerSub}>{EXERCISES.length} exercises</Text>
+          <View style={{ flex: 1 }}>
+            <Text
+              variant="titleLarge"
+              style={{ color: '#fff', fontWeight: '700' }}
+            >
+              Exercise Library
+            </Text>
+            <Text
+              variant="bodySmall"
+              style={{ color: 'rgba(255,255,255,0.75)' }}
+            >
+              {EXERCISES.length} exercises
+            </Text>
           </View>
         </View>
       </SafeAreaView>
 
-      <View style={[styles.searchContainer, { backgroundColor: theme.colors.surface }]}>
-        <Searchbar
-          placeholder="Search exercises or muscles..."
-          value={search}
-          onChangeText={setSearch}
-          style={[styles.searchbar, { elevation: 0, backgroundColor: theme.colors.surfaceVariant }]}
-          inputStyle={{ fontSize: 14 }}
-        />
-      </View>
-
-      {/* Category filter pills */}
-      <View style={{ backgroundColor: theme.colors.surface }}>
-        <FlatList
-          horizontal
-          data={[null, ...CATEGORY_ORDER] as (ExerciseCategory | null)[]}
-          keyExtractor={(item) => item ?? 'all'}
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryList}
-          renderItem={({ item }) => (
-            <Chip
-              selected={activeCategory === item}
-              onPress={() => setActiveCategory(item === activeCategory ? null : item)}
-              style={[styles.categoryChip, activeCategory === item && { backgroundColor: theme.colors.primaryContainer }]}
-              textStyle={{ fontSize: 12 }}
-            >
-              {item ? CATEGORY_LABELS[item] : 'All'}
-            </Chip>
-          )}
-        />
-      </View>
-
       <FlatList
         data={flatData}
-        keyExtractor={(item) => (item.type === 'header' ? `h-${item.category}` : `e-${item.data.id}`)}
+        keyExtractor={(item, idx) =>
+          item.t === 'header' ? `h-${idx}` : `e-${item.data.id}`
+        }
+        renderItem={renderItem}
+        ListHeaderComponent={<ListHeader />}
         contentContainerStyle={styles.listContent}
-        renderItem={({ item }) => {
-          if (item.type === 'header') {
-            return (
-              <View style={styles.categoryHeader}>
-                <Ionicons name={CATEGORY_ICONS[item.category]} size={18} color={theme.colors.primary} />
-                <Text variant="titleSmall" style={[styles.categoryTitle, { color: theme.colors.primary }]}>
-                  {CATEGORY_LABELS[item.category].toUpperCase()}
-                </Text>
-              </View>
-            );
-          }
-          return renderExercise({ item: item.data });
-        }}
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Ionicons name="search" size={48} color={theme.colors.outlineVariant} />
-            <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant, marginTop: 12 }}>
+            <Ionicons
+              name="search"
+              size={48}
+              color={theme.colors.outlineVariant}
+            />
+            <Text
+              variant="bodyLarge"
+              style={{ color: theme.colors.onSurfaceVariant, marginTop: 12 }}
+            >
               No exercises found
             </Text>
           </View>
@@ -196,35 +402,74 @@ export default function ExerciseLibraryScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, gap: 12 },
-  menuBtn: { padding: 4 },
-  headerTitle: { flex: 1 },
-  headerText: { color: '#fff', fontWeight: '700' },
-  headerSub: { color: 'rgba(255,255,255,0.75)' },
-  searchContainer: { paddingHorizontal: 16, paddingVertical: 10, elevation: 2 },
-  searchbar: { borderRadius: 12 },
-  categoryList: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  categoryChip: { borderRadius: 20 },
-  listContent: { padding: 16, paddingTop: 8, gap: 8 },
-  categoryHeader: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    paddingHorizontal: 16,
     paddingVertical: 12,
-    paddingTop: 16,
+    gap: 12,
   },
-  categoryTitle: { fontWeight: '700', letterSpacing: 0.8 },
+  menuBtn: { padding: 4 },
+  searchContainer: { paddingHorizontal: 16, paddingVertical: 10, elevation: 2 },
+  searchbar: { borderRadius: 12 },
+  diagramCard: {
+    marginHorizontal: 16,
+    marginTop: 12,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  resultsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  clearBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginTop: 4,
+  },
+  countBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
+  listContent: { paddingBottom: 40 },
   card: {
+    marginHorizontal: 16,
+    marginVertical: 4,
     borderRadius: 14,
     padding: 14,
     borderWidth: 1,
+  },
+  cardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 2,
   },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  exerciseName: { flex: 1, fontWeight: '600', marginRight: 8 },
-  diffBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  diffText: { fontSize: 11, fontWeight: '600', textTransform: 'capitalize' },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 },
-  equipmentRow: { flexDirection: 'row', alignItems: 'center' },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 80 },
+  exerciseName: { flex: 1, fontWeight: '700', marginRight: 8 },
+  cardBadges: { flexDirection: 'row', gap: 4, flexShrink: 0 },
+  typeBadge: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
+  diffBadge: { paddingHorizontal: 6, paddingVertical: 3, borderRadius: 6 },
+  cardBottom: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  equipRow: { flexDirection: 'row', alignItems: 'center' },
+  empty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 60,
+  },
 });
