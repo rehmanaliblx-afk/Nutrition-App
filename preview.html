@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutrition App Preview</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
+  .phone-wrap { position: relative; }
+  .phone { width: 390px; height: 844px; background: #f5f5f5; border-radius: 50px; border: 8px solid #222; box-shadow: 0 30px 80px rgba(0,0,0,0.7), inset 0 0 0 2px #444; overflow: hidden; position: relative; }
+  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 30px; background: #222; border-radius: 0 0 20px 20px; z-index: 100; }
+  .screen { width: 100%; height: 100%; overflow: hidden; background: #f5f5f5; }
+
+  /* Dark mode toggle */
+  .dark .screen { background: #121212; color: #fff; }
+  .dark .card { background: #1e1e1e !important; }
+  .dark .top-bar { background: #1e1e1e !important; color: #fff !important; }
+  .dark .tab-bar { background: #1e1e1e !important; border-color: #333 !important; }
+  .dark .tab-btn { color: #888 !important; }
+  .dark .tab-btn.active { color: #4ECDC4 !important; }
+  .dark .list-item { border-color: #333 !important; }
+  .dark .modal-bg { background: #1e1e1e !important; }
+  .dark .input-field { background: #2a2a2a !important; border-color: #444 !important; color: #fff !important; }
+  .dark .section-title { color: #aaa !important; }
+  .dark .entry-desc { color: #888 !important; }
+
+  .page { display: none; flex-direction: column; height: 100%; padding-top: 30px; }
+  .page.active { display: flex; }
+
+  /* Top bar */
+  .top-bar { background: #fff; padding: 12px 16px 8px; font-size: 17px; font-weight: 700; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
+  .top-bar .back-btn { cursor: pointer; color: #4ECDC4; font-size: 20px; }
+
+  /* Scrollable content */
+  .scroll { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .scroll::-webkit-scrollbar { width: 3px; }
+  .scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+
+  /* Cards */
+  .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .card-title { font-size: 13px; font-weight: 700; opacity: 0.6; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Calorie ring */
+  .ring-container { display: flex; justify-content: center; padding: 8px 0 4px; }
+  .ring { position: relative; width: 160px; height: 160px; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+  .ring-kcal { font-size: 28px; font-weight: 800; color: #FF6B6B; }
+  .ring-label { font-size: 11px; opacity: 0.5; }
+
+  /* Macro bars */
+  .macro-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .macro-label { font-size: 12px; width: 55px; font-weight: 600; }
+  .macro-track { flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+  .macro-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+  .macro-val { font-size: 11px; opacity: 0.6; width: 45px; text-align: right; }
+
+  /* Sub macros */
+  .sub-row { display: flex; justify-content: space-around; }
+  .sub-item { text-align: center; }
+  .sub-val { font-size: 15px; font-weight: 700; }
+  .sub-lbl { font-size: 10px; opacity: 0.5; margin-top: 2px; }
+
+  /* Water widget */
+  .water-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .water-track { height: 8px; background: #e3f2fd; border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
+  .water-fill { height: 100%; background: #64B5F6; border-radius: 4px; transition: width 0.5s; }
+  .water-btns { display: flex; gap: 6px; flex-wrap: wrap; }
+  .water-btn { background: #e3f2fd; border: none; border-radius: 20px; padding: 4px 10px; font-size: 12px; color: #1565C0; cursor: pointer; font-weight: 600; }
+  .water-btn:hover { background: #bbdefb; }
+
+  /* Quick row */
+  .quick-row { display: flex; gap: 10px; }
+  .quick-card { flex: 1; background: #fff; border-radius: 14px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+
+  /* Meal sections */
+  .meal-section { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .meal-header { display: flex; align-items: center; padding: 10px 12px; background: #fafafa; border-bottom: 1px solid #f0f0f0; }
+  .meal-title { flex: 1; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.6; }
+  .meal-kcal { font-size: 11px; opacity: 0.45; margin-right: 4px; }
+  .meal-icons { display: flex; gap: 2px; }
+  .icon-btn { width: 28px; height: 28px; border: none; background: none; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.2s; }
+  .icon-btn:hover { background: #f0f0f0; }
+  .entry-item { padding: 8px 12px; border-bottom: 1px solid #f5f5f5; display: flex; align-items: center; }
+  .entry-info { flex: 1; }
+  .entry-name { font-size: 13px; font-weight: 600; }
+  .entry-desc { font-size: 11px; opacity: 0.55; margin-top: 1px; }
+  .empty-meal { padding: 10px 12px; font-size: 12px; opacity: 0.35; font-style: italic; }
+
+  /* Tab bar */
+  .tab-bar { background: #fff; border-top: 1px solid #eee; display: flex; padding-bottom: 8px; }
+  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 2px 4px; cursor: pointer; border: none; background: none; color: #999; font-size: 10px; gap: 3px; transition: color 0.2s; }
+  .tab-btn.active { color: #4ECDC4; }
+  .tab-icon { font-size: 20px; }
+
+  /* Chips */
+  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { padding: 5px 12px; border-radius: 20px; border: 1.5px solid #ddd; font-size: 12px; cursor: pointer; background: #fff; font-weight: 500; transition: all 0.2s; }
+  .chip.selected { background: #4ECDC4; border-color: #4ECDC4; color: #fff; }
+
+  /* Input */
+  .input-group { margin-bottom: 8px; }
+  .input-label { font-size: 11px; font-weight: 600; opacity: 0.6; margin-bottom: 4px; }
+  .input-field { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 14px; background: #fff; outline: none; transition: border-color 0.2s; }
+  .input-field:focus { border-color: #4ECDC4; }
+
+  /* Buttons */
+  .btn-primary { width: 100%; padding: 13px; background: #4ECDC4; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .btn-primary:hover { background: #3dbdb4; }
+  .btn-outline { width: 100%; padding: 12px; background: #fff; color: #4ECDC4; border: 1.5px solid #4ECDC4; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
+  .btn-danger { width: 100%; padding: 12px; background: #fff; color: #E63946; border: 1.5px solid #E63946; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+  /* FAB */
+  .fab { position: absolute; right: 20px; bottom: 80px; width: 52px; height: 52px; background: #4ECDC4; border-radius: 50%; border: none; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 4px 14px rgba(78,205,196,0.5); display: flex; align-items: center; justify-content: center; z-index: 10; transition: transform 0.2s; }
+  .fab:hover { transform: scale(1.1); }
+
+  /* List items */
+  .list-item { display: flex; align-items: center; padding: 12px 14px; background: #fff; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.15s; }
+  .list-item:hover { background: #f9f9f9; }
+  .list-item:last-child { border-bottom: none; }
+  .list-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-right: 10px; }
+  .list-content { flex: 1; }
+  .list-title { font-size: 14px; font-weight: 600; }
+  .list-desc { font-size: 12px; opacity: 0.5; margin-top: 1px; }
+  .list-right { color: #bbb; font-size: 16px; }
+  .list-section { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+  .section-title { font-size: 11px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px 6px; }
+
+  /* Modal */
+  .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 50; display: none; align-items: flex-end; }
+  .modal-overlay.show { display: flex; }
+  .modal-bg { background: #fff; border-radius: 24px 24px 0 0; width: 100%; max-height: 75%; display: flex; flex-direction: column; }
+  .modal-header { padding: 16px; font-size: 16px; font-weight: 700; border-bottom: 1px solid #eee; }
+  .modal-list { overflow-y: auto; flex: 1; }
+  .modal-tabs { display: flex; gap: 8px; padding: 8px 12px; }
+  .modal-tab { padding: 5px 14px; border-radius: 20px; border: 1.5px solid #ddd; font-size: 12px; cursor: pointer; background: #fff; font-weight: 500; }
+  .modal-tab.active { background: #4ECDC4; border-color: #4ECDC4; color: #fff; }
+
+  /* Badge */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .badge-green { background: #e8f5e9; color: #2e7d32; }
+  .badge-blue { background: #e3f2fd; color: #1565c0; }
+
+  /* Stats */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
+  .stat-box { text-align: center; }
+  .stat-val { font-size: 18px; font-weight: 800; }
+  .stat-unit { font-size: 10px; opacity: 0.5; }
+  .stat-lbl { font-size: 10px; opacity: 0.45; margin-top: 2px; }
+
+  /* Date nav */
+  .date-nav { display: flex; align-items: center; justify-content: center; padding: 6px 0; }
+  .date-nav-btn { width: 36px; height: 36px; border: none; background: none; font-size: 20px; cursor: pointer; border-radius: 50%; transition: background 0.2s; }
+  .date-nav-btn:hover { background: #f0f0f0; }
+  .date-text { font-size: 16px; font-weight: 700; min-width: 120px; text-align: center; }
+
+  /* Scanner */
+  .scanner-preview { background: #000; border-radius: 12px; height: 160px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; margin: 8px 0; }
+  .scanner-frame { width: 160px; height: 80px; border: 3px solid #4ECDC4; border-radius: 8px; position: relative; }
+  .scanner-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #4ECDC4; animation: scan 1.5s ease-in-out infinite; }
+  @keyframes scan { 0%,100% { top: 20%; } 50% { top: 80%; } }
+  .scanner-hint { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 8px; text-align: center; }
+
+  /* Progress ring helper */
+  .weight-diff-pos { color: #FF5722; font-size: 12px; }
+  .weight-diff-neg { color: #4CAF50; font-size: 12px; }
+
+  /* Subheader */
+  .subheader { font-size: 12px; font-weight: 700; opacity: 0.45; padding: 10px 12px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Controls outside phone */
+  .controls { position: absolute; top: 50%; right: -160px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; }
+  .ctrl-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 8px 14px; cursor: pointer; font-size: 12px; transition: background 0.2s; white-space: nowrap; }
+  .ctrl-btn:hover { background: rgba(255,255,255,0.25); }
+  .ctrl-btn.active { background: #4ECDC4; border-color: #4ECDC4; }
+
+  @media (max-width: 700px) {
+    .controls { position: static; transform: none; flex-direction: row; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+    body { flex-direction: column; padding: 20px 10px; }
+    .phone-wrap { display: flex; flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone-wrap">
+  <div class="phone" id="phone">
+    <div class="notch"></div>
+    <div class="screen">
+
+      <!-- ═══════════════ DASHBOARD ═══════════════ -->
+      <div class="page active" id="page-dashboard">
+        <div class="top-bar">🥗 Nutrition App</div>
+        <div class="scroll">
+          <div class="date-nav">
+            <button class="date-nav-btn">‹</button>
+            <span class="date-text">Today</span>
+            <button class="date-nav-btn" style="opacity:0.3">›</button>
+          </div>
+
+          <div class="ring-container">
+            <div class="ring">
+              <svg width="160" height="160" viewBox="0 0 160 160">
+                <circle cx="80" cy="80" r="65" fill="none" stroke="#f0f0f0" stroke-width="14"/>
+                <circle cx="80" cy="80" r="65" fill="none" stroke="#FF6B6B" stroke-width="14"
+                  stroke-dasharray="408" stroke-dashoffset="102" stroke-linecap="round"/>
+              </svg>
+              <div class="ring-center">
+                <div class="ring-kcal">1,840</div>
+                <div class="ring-label">/ 2000 kcal</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="macro-bar-row">
+              <span class="macro-label" style="color:#FF6B6B">Protein</span>
+              <div class="macro-track"><div class="macro-fill" style="width:75%;background:#FF6B6B"></div></div>
+              <span class="macro-val">112/150g</span>
+            </div>
+            <div class="macro-bar-row">
+              <span class="macro-label" style="color:#FFE66D">Carbs</span>
+              <div class="macro-track"><div class="macro-fill" style="width:82%;background:#FFE66D"></div></div>
+              <span class="macro-val">196/240g</span>
+            </div>
+            <div class="macro-bar-row" style="margin-bottom:0">
+              <span class="macro-label" style="color:#A8E6CF">Fat</span>
+              <div class="macro-track"><div class="macro-fill" style="width:60%;background:#A8E6CF"></div></div>
+              <span class="macro-val">39/65g</span>
+            </div>
+          </div>
+
+          <div class="quick-row">
+            <div class="quick-card">
+              <div style="font-size:11px;font-weight:700;opacity:0.6;margin-bottom:4px">💧 Water</div>
+              <div style="font-size:14px;font-weight:800">1500 <span style="font-size:11px;opacity:0.5;font-weight:400">/ 2000 ml</span></div>
+              <div style="height:5px;background:#e3f2fd;border-radius:3px;margin-top:6px;overflow:hidden">
+                <div style="width:75%;height:100%;background:#64B5F6;border-radius:3px"></div>
+              </div>
+            </div>
+            <div class="quick-card">
+              <div style="font-size:11px;font-weight:700;opacity:0.6;margin-bottom:4px">⚖️ Weight</div>
+              <div style="font-size:14px;font-weight:800">72.3 kg</div>
+              <div class="weight-diff-neg">-0.2 kg</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Meals Today</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:18px">🌅</span>
+                <span style="flex:1;font-size:14px;font-weight:600">Breakfast</span>
+                <span style="font-size:12px;opacity:0.5">480 kcal (2 items)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:18px">☀️</span>
+                <span style="flex:1;font-size:14px;font-weight:600">Lunch</span>
+                <span style="font-size:12px;opacity:0.5">620 kcal (1 item)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:18px">🌙</span>
+                <span style="flex:1;font-size:14px;font-weight:600">Dinner</span>
+                <span style="font-size:12px;opacity:0.5">740 kcal (3 items)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <span style="font-size:18px">☕</span>
+                <span style="flex:1;font-size:14px;font-weight:600">Snack</span>
+                <span style="font-size:12px;opacity:0.5">Empty</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Sub-macro Breakdown</div>
+            <div style="font-size:11px;font-weight:700;opacity:0.5;margin-bottom:6px">Carbs</div>
+            <div class="sub-row" style="margin-bottom:10px">
+              <div class="sub-item"><div class="sub-val">42g</div><div class="sub-lbl">Sugar</div></div>
+              <div class="sub-item"><div class="sub-val">98g</div><div class="sub-lbl">Complex</div></div>
+              <div class="sub-item"><div class="sub-val">18g</div><div class="sub-lbl">Fiber</div></div>
+            </div>
+            <div style="font-size:11px;font-weight:700;opacity:0.5;margin-bottom:6px">Fats</div>
+            <div class="sub-row">
+              <div class="sub-item"><div class="sub-val">22g</div><div class="sub-lbl">Unsat.</div></div>
+              <div class="sub-item"><div class="sub-val">12g</div><div class="sub-lbl">Mono/Poly</div></div>
+              <div class="sub-item"><div class="sub-val">0.2g</div><div class="sub-lbl">Trans</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-bar" id="tab-bar-dashboard"></div>
+      </div>
+
+      <!-- ═══════════════ DAILY LOG ═══════════════ -->
+      <div class="page" id="page-log">
+        <div class="top-bar">📓 Daily Log</div>
+        <div class="date-nav" style="background:#fff;border-bottom:1px solid #eee;padding:4px 0">
+          <button class="date-nav-btn">‹</button>
+          <span class="date-text">Today</span>
+          <button class="date-nav-btn" style="opacity:0.3">›</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-around;padding:8px 12px;background:#fff;border-bottom:1px solid #eee">
+          <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#FF6B6B">1,840</div><div style="font-size:10px;opacity:0.5">/ 2000 kcal</div></div>
+          <div style="text-align:center"><div style="font-size:15px;font-weight:700">112g</div><div style="font-size:10px;opacity:0.5">Protein</div></div>
+          <div style="text-align:center"><div style="font-size:15px;font-weight:700">196g</div><div style="font-size:10px;opacity:0.5">Carbs</div></div>
+          <div style="text-align:center"><div style="font-size:15px;font-weight:700">39g</div><div style="font-size:10px;opacity:0.5">Fat</div></div>
+          <button onclick="showPage('goals')" style="background:none;border:none;color:#4ECDC4;font-size:12px;cursor:pointer;font-weight:600">🎯 Goals</button>
+        </div>
+        <div class="scroll">
+          <!-- Water Widget -->
+          <div class="card">
+            <div class="water-header">
+              <span style="font-size:14px;font-weight:700">💧 Water</span>
+              <span style="font-size:12px;opacity:0.55" id="water-display">1500 / 2000 ml</span>
+            </div>
+            <div class="water-track"><div class="water-fill" id="water-bar" style="width:75%"></div></div>
+            <div class="water-btns">
+              <button class="water-btn" onclick="addWater(250)">+250ml</button>
+              <button class="water-btn" onclick="addWater(500)">+500ml</button>
+              <button class="water-btn" onclick="addWater(750)">+750ml</button>
+              <button class="water-btn" onclick="addWater(1000)">+1000ml</button>
+            </div>
+          </div>
+
+          <!-- Meal Sections -->
+          <div class="meal-section">
+            <div class="meal-header">
+              <span class="meal-title">🌅 Breakfast</span>
+              <span class="meal-kcal">480 kcal</span>
+              <div class="meal-icons">
+                <button class="icon-btn" title="Copy from yesterday">⧉</button>
+                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
+              </div>
+            </div>
+            <div class="entry-item">
+              <div class="entry-info">
+                <div class="entry-name">Eggs — 150g</div>
+                <div class="entry-desc">240 kcal · P: 18g · C: 2g · F: 16g</div>
+              </div>
+              <button class="icon-btn">🗑</button>
+            </div>
+            <div class="entry-item">
+              <div class="entry-info">
+                <div class="entry-name">Brown Bread — 60g</div>
+                <div class="entry-desc">160 kcal · P: 6g · C: 30g · F: 2g</div>
+              </div>
+              <button class="icon-btn">🗑</button>
+            </div>
+          </div>
+
+          <div class="meal-section">
+            <div class="meal-header">
+              <span class="meal-title">☀️ Lunch</span>
+              <span class="meal-kcal">620 kcal</span>
+              <div class="meal-icons">
+                <button class="icon-btn">⧉</button>
+                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
+              </div>
+            </div>
+            <div class="entry-item">
+              <div class="entry-info">
+                <div class="entry-name">Chicken Rice Bowl — 350g</div>
+                <div class="entry-desc">620 kcal · P: 45g · C: 68g · F: 8g</div>
+              </div>
+              <button class="icon-btn">🗑</button>
+            </div>
+          </div>
+
+          <div class="meal-section">
+            <div class="meal-header">
+              <span class="meal-title">🌙 Dinner</span>
+              <span class="meal-kcal">740 kcal</span>
+              <div class="meal-icons">
+                <button class="icon-btn">⧉</button>
+                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
+              </div>
+            </div>
+            <div class="entry-item">
+              <div class="entry-info">
+                <div class="entry-name">Grilled Salmon — 200g</div>
+                <div class="entry-desc">370 kcal · P: 40g · C: 0g · F: 22g</div>
+              </div>
+              <button class="icon-btn">🗑</button>
+            </div>
+            <div class="entry-item">
+              <div class="entry-info">
+                <div class="entry-name">Basmati Rice — 180g</div>
+                <div class="entry-desc">240 kcal · P: 5g · C: 52g · F: 0.5g</div>
+              </div>
+              <button class="icon-btn">🗑</button>
+            </div>
+          </div>
+
+          <div class="meal-section">
+            <div class="meal-header">
+              <span class="meal-title">☕ Snack</span>
+              <span class="meal-kcal"></span>
+              <div class="meal-icons">
+                <button class="icon-btn">⧉</button>
+                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
+              </div>
+            </div>
+            <div class="empty-meal">Nothing logged yet</div>
+          </div>
+        </div>
+        <button class="fab" onclick="showPage('add-entry')">＋</button>
+        <div class="tab-bar" id="tab-bar-log"></div>
+      </div>
+
+      <!-- ═══════════════ ADD ENTRY ═══════════════ -->
+      <div class="page" id="page-add-entry">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('log')">‹</span> Add Food</div>
+        <div class="scroll">
+          <div class="card">
+            <div class="card-title">Meal Type</div>
+            <div class="chip-row">
+              <div class="chip selected">Breakfast</div>
+              <div class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">Lunch</div>
+              <div class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">Dinner</div>
+              <div class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">Snack</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Food</div>
+            <button onclick="document.getElementById('food-modal').classList.add('show')" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-size:14px;color:#666">🔍 Pick Ingredient or Recipe</button>
+          </div>
+
+          <div class="card" id="grams-card" style="display:none">
+            <div class="card-title">Selected: <strong id="selected-food-name"></strong></div>
+            <div class="input-group">
+              <div class="input-label">Grams consumed</div>
+              <input class="input-field" type="number" placeholder="e.g. 150" id="grams-input">
+            </div>
+          </div>
+
+          <button class="btn-primary" style="margin-top:4px" onclick="showPage('log')">＋ Add to Log</button>
+        </div>
+
+        <!-- Food Picker Modal -->
+        <div class="modal-overlay" id="food-modal" onclick="if(event.target===this)this.classList.remove('show')">
+          <div class="modal-bg">
+            <div class="modal-header">Select Food</div>
+            <div style="padding:8px 12px"><input class="input-field" placeholder="🔍 Search..." oninput="filterFoods(this.value)"></div>
+            <div class="modal-tabs">
+              <div class="modal-tab active" onclick="switchTab('recent',this)">Recent</div>
+              <div class="modal-tab" onclick="switchTab('all',this)">All Foods</div>
+            </div>
+            <div class="modal-list" id="food-list">
+              <div class="subheader">Recently Used</div>
+              <div class="list-item" onclick="selectFood('Eggs','ingredient')"><div class="list-icon" style="background:#fff9c4">🥚</div><div class="list-content"><div class="list-title">Eggs</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
+              <div class="list-item" onclick="selectFood('Chicken Breast','ingredient')"><div class="list-icon" style="background:#fff3e0">🍗</div><div class="list-content"><div class="list-title">Chicken Breast</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
+              <div class="list-item" onclick="selectFood('Chicken Rice Bowl','recipe')"><div class="list-icon" style="background:#e8f5e9">🍽️</div><div class="list-content"><div class="list-title">Chicken Rice Bowl</div><div class="list-desc">Recipe</div></div><span class="badge badge-blue">Recipe</span></div>
+              <div class="list-item" onclick="selectFood('Brown Bread','ingredient')"><div class="list-icon" style="background:#fce4ec">🍞</div><div class="list-content"><div class="list-title">Brown Bread</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
+              <div class="list-item" onclick="selectFood('Basmati Rice','ingredient')"><div class="list-icon" style="background:#f3e5f5">🍚</div><div class="list-content"><div class="list-title">Basmati Rice</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ INGREDIENTS ═══════════════ -->
+      <div class="page" id="page-ingredients">
+        <div class="top-bar">🥦 Ingredients</div>
+        <div class="scroll" style="padding:0;gap:0">
+          <div style="padding:10px 12px"><input class="input-field" placeholder="🔍 Search ingredients..."></div>
+          <div class="list-section">
+            <div class="list-item"><div class="list-icon" style="background:#fff9c4">🥚</div><div class="list-content"><div class="list-title">Eggs</div><div class="list-desc">12.5 kcal/g · P: 1.2g · C: 0.1g · F: 1.0g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#fff3e0">🍗</div><div class="list-content"><div class="list-title">Chicken Breast</div><div class="list-desc">1.65 kcal/g · P: 0.31g · C: 0g · F: 0.04g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#fce4ec">🍞</div><div class="list-content"><div class="list-title">Brown Bread</div><div class="list-desc">2.47 kcal/g · P: 0.09g · C: 0.44g · F: 0.03g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#f3e5f5">🍚</div><div class="list-content"><div class="list-title">Basmati Rice (cooked)</div><div class="list-desc">1.29 kcal/g · P: 0.03g · C: 0.28g · F: 0g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#e8f5e9">🥛</div><div class="list-content"><div class="list-title">Milk (full fat)</div><div class="list-desc">0.61 kcal/g · P: 0.03g · C: 0.05g · F: 0.03g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#e3f2fd">🐟</div><div class="list-content"><div class="list-title">Salmon</div><div class="list-desc">2.08 kcal/g · P: 0.20g · C: 0g · F: 0.13g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
+          </div>
+        </div>
+        <button class="fab" onclick="showPage('ingredient-form')">＋</button>
+        <div class="tab-bar" id="tab-bar-ingredients"></div>
+      </div>
+
+      <!-- ═══════════════ INGREDIENT FORM ═══════════════ -->
+      <div class="page" id="page-ingredient-form">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('ingredients')">‹</span> Add Ingredient</div>
+        <div class="scroll">
+          <div style="display:flex;gap:8px;align-items:flex-start">
+            <div style="flex:1"><div class="input-label">Ingredient Name</div><input class="input-field" placeholder="e.g. Chicken Breast" value="Oats"></div>
+            <div style="margin-top:16px"><button style="padding:10px 14px;border:1.5px solid #4ECDC4;border-radius:10px;background:#fff;color:#4ECDC4;font-weight:600;cursor:pointer;font-size:13px" onclick="showPage('barcode')">📷 Scan</button></div>
+          </div>
+          <div style="background:#e8f5e9;border-radius:10px;padding:10px 12px;font-size:13px">Preview: <strong>3.89 kcal</strong> per gram</div>
+          <div class="card">
+            <div class="card-title">Macros (per gram)</div>
+            <div class="input-group"><div class="input-label">Carbs Total</div><input class="input-field" value="0.0668"></div>
+            <div style="padding-left:16px">
+              <div class="input-group"><div class="input-label">↳ Sugar</div><input class="input-field" value="0.0010"></div>
+              <div class="input-group"><div class="input-label">↳ Complex</div><input class="input-field" value="0.0530"></div>
+              <div class="input-group"><div class="input-label">↳ Fiber</div><input class="input-field" value="0.0107"></div>
+            </div>
+            <div class="input-group"><div class="input-label">Protein</div><input class="input-field" value="0.0170"></div>
+            <div class="input-group"><div class="input-label">Fat Total</div><input class="input-field" value="0.0069"></div>
+          </div>
+          <button class="btn-primary" onclick="showPage('ingredients')">💾 Save Ingredient</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════ BARCODE SCANNER ═══════════════ -->
+      <div class="page" id="page-barcode">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('ingredient-form')">‹</span> Barcode Scanner</div>
+        <div class="scroll">
+          <div class="scanner-preview">
+            <div class="scanner-frame">
+              <div class="scanner-line"></div>
+            </div>
+          </div>
+          <div class="scanner-hint">Point camera at product barcode</div>
+          <div style="height:16px"></div>
+          <div class="card" id="scan-result" style="display:none">
+            <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#4ECDC4">✅ Product Found!</div>
+            <div class="list-title">Quaker Oats</div>
+            <div class="list-desc" style="margin-top:4px">P: 0.017/g · C: 0.067/g · F: 0.007/g</div>
+          </div>
+          <button class="btn-primary" onclick="document.getElementById('scan-result').style.display='block';this.textContent='✅ Macros Loaded — Go Back';this.onclick=function(){showPage(\'ingredient-form\')}">Simulate Scan (Quaker Oats)</button>
+          <button class="btn-outline" onclick="showPage('ingredient-form')">Cancel</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════ RECIPES ═══════════════ -->
+      <div class="page" id="page-recipes">
+        <div class="top-bar">🍽️ Recipes</div>
+        <div class="scroll" style="padding:0;gap:0">
+          <div style="padding:10px 12px"><input class="input-field" placeholder="🔍 Search recipes..."></div>
+          <div class="list-section">
+            <div class="list-item"><div class="list-icon" style="background:#e8f5e9">🍚</div><div class="list-content"><div class="list-title">Chicken Rice Bowl</div><div class="list-desc">Protein-rich lunch bowl · 350g total</div></div><button class="icon-btn">›</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#fff9c4">🍳</div><div class="list-content"><div class="list-title">Omelette</div><div class="list-desc">3-egg omelette · 210g total</div></div><button class="icon-btn">›</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#e3f2fd">🥗</div><div class="list-content"><div class="list-title">Protein Salad</div><div class="list-desc">Chicken + veggies · 400g total</div></div><button class="icon-btn">›</button></div>
+            <div class="list-item"><div class="list-icon" style="background:#fce4ec">🥣</div><div class="list-content"><div class="list-title">Oats Bowl</div><div class="list-desc">Overnight oats · 280g total</div></div><button class="icon-btn">›</button></div>
+          </div>
+        </div>
+        <button class="fab">＋</button>
+        <div class="tab-bar" id="tab-bar-recipes"></div>
+      </div>
+
+      <!-- ═══════════════ HISTORY ═══════════════ -->
+      <div class="page" id="page-history">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> History & Charts</div>
+        <div class="scroll">
+          <div class="card">
+            <div class="card-title">Calories — Last 7 Days</div>
+            <canvas id="kcalChart" height="140"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">Macros — Last 7 Days (g)</div>
+            <canvas id="macroChart" height="140"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">💧 Water — Last 7 Days (L)</div>
+            <canvas id="waterChart" height="120"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">⚖️ Weight — Last 30 Days (kg)</div>
+            <canvas id="weightChart" height="120"></canvas>
+          </div>
+          <div class="card">
+            <div class="card-title">7-Day Summary</div>
+            <div class="stats-grid">
+              <div class="stat-box"><div class="stat-val" style="color:#FF6B6B">1,842</div><div class="stat-unit">kcal</div><div class="stat-lbl">Avg Kcal</div></div>
+              <div class="stat-box"><div class="stat-val" style="color:#FF6B6B">108</div><div class="stat-unit">g</div><div class="stat-lbl">Avg Protein</div></div>
+              <div class="stat-box"><div class="stat-val" style="color:#FFE66D">198</div><div class="stat-unit">g</div><div class="stat-lbl">Avg Carbs</div></div>
+              <div class="stat-box"><div class="stat-val" style="color:#A8E6CF">42</div><div class="stat-unit">g</div><div class="stat-lbl">Avg Fat</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ WEIGHT LOG ═══════════════ -->
+      <div class="page" id="page-weight">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Weight Log</div>
+        <div class="scroll">
+          <div class="card" style="text-align:center;padding:20px">
+            <div style="font-size:36px;font-weight:800">72.3 <span style="font-size:18px;opacity:0.5">kg</span></div>
+            <div class="weight-diff-neg">▼ 0.2 kg vs previous</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Log Today's Weight</div>
+            <div class="input-group"><input class="input-field" type="number" placeholder="72.3" value="72.3"><div style="font-size:11px;opacity:0.5;margin-top:4px;padding-left:4px">kg</div></div>
+            <div class="input-group"><div class="input-label">Note (optional)</div><input class="input-field" placeholder="After workout, post-meal..."></div>
+            <button class="btn-primary" style="margin-top:4px">⚖️ Log Weight</button>
+          </div>
+          <div class="list-section">
+            <div class="subheader">History</div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.3 kg</div><div class="list-desc">After workout</div></div><span style="opacity:0.5;font-size:12px">Today</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.5 kg</div><div class="list-desc"></div></div><span style="opacity:0.5;font-size:12px">Yesterday</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.4 kg</div><div class="list-desc"></div></div><span style="opacity:0.5;font-size:12px">2 days ago</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.8 kg</div><div class="list-desc">Cheat day 😅</div></div><span style="opacity:0.5;font-size:12px">3 days ago</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.6 kg</div><div class="list-desc"></div></div><span style="opacity:0.5;font-size:12px">4 days ago</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ GOALS ═══════════════ -->
+      <div class="page" id="page-goals">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('log')">‹</span> Daily Goals</div>
+        <div class="scroll">
+          <div style="font-size:12px;opacity:0.6;padding:4px 2px">Goals apply from today onwards until you change them.</div>
+          <div class="card">
+            <div class="card-title">Quick Load Template</div>
+            <div class="chip-row">
+              <div class="chip" onclick="loadTemplate(2200,160,220,70)">Training Day</div>
+              <div class="chip" onclick="loadTemplate(1800,130,180,55)">Rest Day</div>
+              <div class="chip" onclick="loadTemplate(1500,120,150,50)">Cut</div>
+              <div class="chip" onclick="loadTemplate(2800,200,300,90)">Bulk</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="input-group"><div class="input-label">Calorie Goal (kcal) *</div><input class="input-field" id="goal-kcal" value="2000"></div>
+            <div class="input-group"><div class="input-label">Protein Goal (g)</div><input class="input-field" id="goal-protein" value="150"></div>
+            <div class="input-group"><div class="input-label">Carbs Goal (g)</div><input class="input-field" id="goal-carbs" value="240"></div>
+            <div class="input-group"><div class="input-label">Fat Goal (g)</div><input class="input-field" id="goal-fat" value="65"></div>
+            <div class="input-group"><div class="input-label">Water Goal (ml)</div><input class="input-field" id="goal-water" value="2000"></div>
+          </div>
+          <button class="btn-primary" onclick="showPage('log')">🏁 Save Goals</button>
+          <button class="btn-outline">🔖 Save as Template</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════ BACKUP ═══════════════ -->
+      <div class="page" id="page-backup">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Backup & Restore</div>
+        <div class="scroll">
+          <div style="background:rgba(78,205,196,0.12);border-radius:12px;padding:14px;font-size:13px;line-height:1.6;opacity:0.85">
+            Export your data as a JSON file and save it to <strong>Google Drive</strong> (or any cloud storage). To restore, download the file and use Import below.
+          </div>
+          <button class="btn-primary" style="padding:16px;font-size:15px">📤 Export / Backup Data</button>
+          <button class="btn-outline" style="padding:15px">📥 Import / Restore Data</button>
+          <div class="list-section" style="margin-top:8px">
+            <div class="subheader">How it works</div>
+            <div class="list-item"><div class="list-icon" style="background:#e8f5e9">📤</div><div class="list-content"><div class="list-title">Export</div><div class="list-desc">Creates a .json file → share to Google Drive, email, etc.</div></div></div>
+            <div class="list-item"><div class="list-icon" style="background:#e3f2fd">📥</div><div class="list-content"><div class="list-title">Import</div><div class="list-desc">Pick a previously exported backup file to restore data.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ MORE ═══════════════ -->
+      <div class="page" id="page-more">
+        <div class="top-bar">⋯ More</div>
+        <div class="scroll" style="padding:0;gap:0">
+          <div class="list-section" style="margin:12px">
+            <div class="subheader">Tools</div>
+            <div class="list-item" onclick="showPage('history')"><div class="list-icon" style="background:#e8f5e9">📊</div><div class="list-content"><div class="list-title">History & Charts</div><div class="list-desc">Weekly kcal, macros, water, weight</div></div><span class="list-right">›</span></div>
+            <div class="list-item" onclick="showPage('weight')"><div class="list-icon" style="background:#e3f2fd">⚖️</div><div class="list-content"><div class="list-title">Weight Log</div><div class="list-desc">Track your daily body weight</div></div><span class="list-right">›</span></div>
+            <div class="list-item" onclick="showPage('backup')"><div class="list-icon" style="background:#f3e5f5">☁️</div><div class="list-content"><div class="list-title">Backup & Restore</div><div class="list-desc">Export to Google Drive or import</div></div><span class="list-right">›</span></div>
+          </div>
+          <div class="list-section" style="margin:0 12px">
+            <div class="subheader">App Info</div>
+            <div class="list-item"><div class="list-icon" style="background:#fff9c4">ℹ️</div><div class="list-content"><div class="list-title">Version</div><div class="list-desc">1.1.0</div></div></div>
+            <div class="list-item"><div class="list-icon" style="background:#fce4ec">🗄️</div><div class="list-content"><div class="list-title">Storage</div><div class="list-desc">Local SQLite database</div></div></div>
+          </div>
+          <div style="padding:16px 12px">
+            <button class="btn-danger">🗑️ Reset All Data</button>
+          </div>
+        </div>
+        <div class="tab-bar" id="tab-bar-more"></div>
+      </div>
+
+    </div><!-- end screen -->
+  </div><!-- end phone -->
+
+  <div class="controls">
+    <button class="ctrl-btn active" id="ctrl-dashboard" onclick="showPage('dashboard')">🏠 Dashboard</button>
+    <button class="ctrl-btn" id="ctrl-log" onclick="showPage('log')">📓 Daily Log</button>
+    <button class="ctrl-btn" id="ctrl-add-entry" onclick="showPage('add-entry')">➕ Add Food</button>
+    <button class="ctrl-btn" id="ctrl-ingredients" onclick="showPage('ingredients')">🥦 Ingredients</button>
+    <button class="ctrl-btn" id="ctrl-ingredient-form" onclick="showPage('ingredient-form')">📝 Add Ingredient</button>
+    <button class="ctrl-btn" id="ctrl-barcode" onclick="showPage('barcode')">📷 Barcode Scan</button>
+    <button class="ctrl-btn" id="ctrl-recipes" onclick="showPage('recipes')">🍽️ Recipes</button>
+    <button class="ctrl-btn" id="ctrl-history" onclick="showPage('history')">📊 History Charts</button>
+    <button class="ctrl-btn" id="ctrl-weight" onclick="showPage('weight')">⚖️ Weight Log</button>
+    <button class="ctrl-btn" id="ctrl-goals" onclick="showPage('goals')">🎯 Goals</button>
+    <button class="ctrl-btn" id="ctrl-backup" onclick="showPage('backup')">☁️ Backup</button>
+    <button class="ctrl-btn" id="ctrl-more" onclick="showPage('more')">⋯ More</button>
+    <hr style="border-color:rgba(255,255,255,0.15);margin:4px 0">
+    <button class="ctrl-btn" id="ctrl-dark" onclick="toggleDark()">🌙 Dark Mode</button>
+  </div>
+</div>
+
+<script>
+// Tab bars
+const TABS = [
+  { id:'dashboard', icon:'🏠', label:'Dashboard' },
+  { id:'log',       icon:'📓', label:'Log' },
+  { id:'ingredients', icon:'🥦', label:'Ingredients' },
+  { id:'recipes',   icon:'🍽️', label:'Recipes' },
+  { id:'more',      icon:'⋯', label:'More' },
+];
+
+function buildTabBars() {
+  ['dashboard','log','ingredients','recipes','more'].forEach(pid => {
+    const el = document.getElementById('tab-bar-' + pid);
+    if (!el) return;
+    el.innerHTML = TABS.map(t => `
+      <button class="tab-btn ${t.id === pid ? 'active' : ''}" onclick="showPage('${t.id}')">
+        <span class="tab-icon">${t.icon}</span>
+        <span>${t.label}</span>
+      </button>`).join('');
+  });
+}
+buildTabBars();
+
+let currentPage = 'dashboard';
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  currentPage = id;
+  // update ctrl btns
+  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
+  const cb = document.getElementById('ctrl-' + id);
+  if (cb) cb.classList.add('active');
+  // draw charts when history opens
+  if (id === 'history') setTimeout(drawCharts, 100);
+}
+
+// Water tracker
+let waterMl = 1500;
+function addWater(ml) {
+  waterMl = Math.min(waterMl + ml, 3000);
+  document.getElementById('water-display').textContent = waterMl + ' / 2000 ml';
+  document.getElementById('water-bar').style.width = Math.min(waterMl/2000*100,100) + '%';
+}
+
+// Food picker
+function selectFood(name, type) {
+  document.getElementById('food-modal').classList.remove('show');
+  document.getElementById('selected-food-name').textContent = name;
+  document.getElementById('grams-card').style.display = 'block';
+  document.getElementById('grams-input').focus();
+}
+function switchTab(tab, el) {
+  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+}
+function filterFoods(q) {
+  document.querySelectorAll('#food-list .list-item').forEach(item => {
+    const name = item.querySelector('.list-title').textContent.toLowerCase();
+    item.style.display = name.includes(q.toLowerCase()) ? '' : 'none';
+  });
+  if (q) {
+    document.querySelectorAll('.modal-tab').forEach((t,i) => { t.classList.toggle('active', i===1); });
+  }
+}
+
+// Goal templates
+function loadTemplate(kcal, protein, carbs, fat) {
+  document.getElementById('goal-kcal').value = kcal;
+  document.getElementById('goal-protein').value = protein;
+  document.getElementById('goal-carbs').value = carbs;
+  document.getElementById('goal-fat').value = fat;
+}
+
+// Dark mode
+let dark = false;
+function toggleDark() {
+  dark = !dark;
+  document.getElementById('phone').classList.toggle('dark', dark);
+  document.getElementById('ctrl-dark').textContent = dark ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// Charts
+let chartsDrawn = false;
+function drawCharts() {
+  if (chartsDrawn) return;
+  chartsDrawn = true;
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const cfg = { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f0f0f0' } } } };
+
+  new Chart(document.getElementById('kcalChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: [1920, 1780, 2050, 1650, 1840, 2200, 1840], backgroundColor: 'rgba(255,107,107,0.7)', borderRadius: 6 }] },
+    options: { ...cfg, plugins: { legend: { display: false } } }
+  });
+
+  new Chart(document.getElementById('macroChart'), {
+    type: 'line',
+    data: { labels, datasets: [
+      { label:'Protein', data:[108,95,120,88,112,130,112], borderColor:'#FF6B6B', tension:0.4, pointRadius:3 },
+      { label:'Carbs',   data:[198,180,210,160,196,230,196], borderColor:'#FFE66D', tension:0.4, pointRadius:3 },
+      { label:'Fat',     data:[42,38,48,35,39,55,39], borderColor:'#A8E6CF', tension:0.4, pointRadius:3 },
+    ]},
+    options: { ...cfg, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
+  });
+
+  new Chart(document.getElementById('waterChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ data: [1.8, 2.1, 1.5, 2.0, 1.5, 2.3, 1.9], backgroundColor: 'rgba(100,181,246,0.7)', borderRadius: 6 }] },
+    options: { ...cfg }
+  });
+
+  new Chart(document.getElementById('weightChart'), {
+    type: 'line',
+    data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ data: [72.8,72.6,72.6,72.4,72.5,72.3,72.3], borderColor:'#81C784', backgroundColor:'rgba(129,199,132,0.1)', tension:0.4, fill:true, pointRadius:4 }] },
+    options: { ...cfg, plugins: { legend: { display: false } } }
+  });
+}
+</script>
+</body>
+</html>
