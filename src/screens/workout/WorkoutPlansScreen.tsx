@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, StatusBar, Alert } from 'react-native';
-import { Text, FAB, useTheme } from 'react-native-paper';
+import { Text, FAB, useTheme, Button } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -65,6 +65,15 @@ export default function WorkoutPlansScreen({ navigation }: Props) {
             </Text>
           </View>
           <View style={styles.cardActions}>
+            <Button
+              mode="contained"
+              compact
+              onPress={() => navigation.navigate('WorkoutSession', { planId: item.id, planName: item.name })}
+              style={styles.startBtn}
+              labelStyle={styles.startBtnLabel}
+            >
+              Start
+            </Button>
             <TouchableOpacity
               onPress={() => navigation.navigate('WorkoutPlanForm', { planId: item.id })}
               style={styles.actionBtn}
@@ -119,6 +128,13 @@ export default function WorkoutPlansScreen({ navigation }: Props) {
       />
 
       <FAB
+        icon="play"
+        style={[styles.fabQuick, { backgroundColor: theme.colors.secondary }]}
+        color="#fff"
+        label="Quick Workout"
+        onPress={() => navigation.navigate('WorkoutSession', {})}
+      />
+      <FAB
         icon="plus"
         style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         color="#fff"
@@ -141,4 +157,7 @@ const styles = StyleSheet.create({
   actionBtn: { padding: 8 },
   empty: { alignItems: 'center', paddingTop: 100, paddingHorizontal: 32 },
   fab: { position: 'absolute', right: 20, bottom: 28, borderRadius: 16 },
+  fabQuick: { position: 'absolute', right: 20, bottom: 88, borderRadius: 16 },
+  startBtn: { borderRadius: 8 },
+  startBtnLabel: { fontSize: 12, marginVertical: 4, marginHorizontal: 8 },
 });

@@ -20,6 +20,10 @@ import MicronutrientDetailScreen from '@/screens/info/MicronutrientDetailScreen'
 import SupplementsScreen from '@/screens/supplements/SupplementsScreen';
 import SupplementFormScreen from '@/screens/supplements/SupplementFormScreen';
 import SupplementDetailScreen from '@/screens/supplements/SupplementDetailScreen';
+import BodyMeasurementsScreen from '@/screens/body/BodyMeasurementsScreen';
+import MealTemplatesScreen from '@/screens/tracking/MealTemplatesScreen';
+import WeeklyReportScreen from '@/screens/tracking/WeeklyReportScreen';
+import MacroRecommendationsScreen from '@/screens/settings/MacroRecommendationsScreen';
 
 const Stack = createNativeStackNavigator<NutritionStackParamList>();
 
@@ -56,6 +60,10 @@ export default function NutritionStack() {
         })}
       />
       <Stack.Screen name="SupplementDetail" component={SupplementDetailScreen} options={{ title: 'Supplement Detail' }} />
+      <Stack.Screen name="BodyMeasurements" component={BodyMeasurementsScreen} options={{ title: 'Body Measurements' }} />
+      <Stack.Screen name="MealTemplates" component={MealTemplatesScreen} options={{ title: 'Meal Templates' }} />
+      <Stack.Screen name="WeeklyReport" component={WeeklyReportScreen} options={{ title: 'Weekly Report' }} />
+      <Stack.Screen name="MacroRecommendations" component={MacroRecommendationsScreen} options={{ title: 'Macro Calculator' }} />
     </Stack.Navigator>
   );
 }

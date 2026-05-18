@@ -76,6 +76,30 @@ export default function SettingsScreen({ navigation }: Props) {
           right={(p) => <List.Icon {...p} icon="chevron-right" />}
           onPress={() => navigation.navigate('Backup')}
         />
+        <List.Item
+          title="🧮 Macro Calculator"
+          description="Calculate personalised macro targets"
+          right={(p) => <List.Icon {...p} icon="chevron-right" />}
+          onPress={() => navigation.navigate('MacroRecommendations')}
+        />
+        <List.Item
+          title="📏 Body Measurements"
+          description="Track body measurements over time"
+          right={(p) => <List.Icon {...p} icon="chevron-right" />}
+          onPress={() => navigation.navigate('BodyMeasurements')}
+        />
+        <List.Item
+          title="📋 Meal Templates"
+          description="Save and reuse common meals"
+          right={(p) => <List.Icon {...p} icon="chevron-right" />}
+          onPress={() => navigation.navigate('MealTemplates')}
+        />
+        <List.Item
+          title="📊 Weekly Report"
+          description="View your weekly nutrition summary"
+          right={(p) => <List.Icon {...p} icon="chevron-right" />}
+          onPress={() => navigation.navigate('WeeklyReport')}
+        />
       </List.Section>
 
       <Divider />
