@@ -832,6 +832,8 @@
         <div class="scroll" style="padding:0;gap:0">
           <div class="list-section" style="margin:12px">
             <div class="subheader">Tools</div>
+            <div class="list-item" onclick="showPage('micronutrients')"><div class="list-icon" style="background:#e8f5e9">🧬</div><div class="list-content"><div class="list-title">Micronutrients</div><div class="list-desc">Vitamins &amp; minerals reference guide</div></div><span class="list-right">›</span></div>
+            <div class="list-item" onclick="showPage('supplements')"><div class="list-icon" style="background:#f3e5f5">💊</div><div class="list-content"><div class="list-title">My Supplements</div><div class="list-desc">Track your supplement stack</div></div><span class="list-right">›</span></div>
             <div class="list-item" onclick="showPage('manage-meals')"><div class="list-icon" style="background:#fff3e0">🍴</div><div class="list-content"><div class="list-title">Manage Meal Types</div><div class="list-desc">Add Sehri, Iftar, Pre-workout & more</div></div><span class="list-right">›</span></div>
             <div class="list-item" onclick="showPage('history')"><div class="list-icon" style="background:#e8f5e9">📊</div><div class="list-content"><div class="list-title">History & Charts</div><div class="list-desc">Weekly kcal, macros, water, weight</div></div><span class="list-right">›</span></div>
             <div class="list-item" onclick="showPage('weight')"><div class="list-icon" style="background:#e3f2fd">⚖️</div><div class="list-content"><div class="list-title">Weight Log</div><div class="list-desc">Track your daily body weight</div></div><span class="list-right">›</span></div>
@@ -839,7 +841,7 @@
           </div>
           <div class="list-section" style="margin:0 12px">
             <div class="subheader">App Info</div>
-            <div class="list-item"><div class="list-icon" style="background:#fff9c4">ℹ️</div><div class="list-content"><div class="list-title">Version</div><div class="list-desc">1.1.0</div></div></div>
+            <div class="list-item"><div class="list-icon" style="background:#fff9c4">ℹ️</div><div class="list-content"><div class="list-title">Version</div><div class="list-desc">1.2.0</div></div></div>
             <div class="list-item"><div class="list-icon" style="background:#fce4ec">🗄️</div><div class="list-content"><div class="list-title">Storage</div><div class="list-desc">Local SQLite database</div></div></div>
           </div>
           <div style="padding:16px 12px">
@@ -847,6 +849,176 @@
           </div>
         </div>
         <div class="tab-bar" id="tab-bar-more"></div>
+      </div>
+
+      <!-- ═══════════════ MICRONUTRIENTS LIST ═══════════════ -->
+      <div class="page" id="page-micronutrients">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Micronutrients</div>
+        <div class="scroll" style="padding:8px 12px;gap:0">
+          <input class="input-field" placeholder="🔍 Search vitamins & minerals..." style="margin-bottom:10px" oninput="filterNutrients(this.value)">
+          <div id="nutrient-list">
+            <div class="subheader" style="padding-left:0">Fat-Soluble Vitamins</div>
+            <div class="list-section" style="margin-bottom:10px">
+              <div class="list-item" onclick="showNutrient('vit_a','Vitamin A','Retinol','🥕','fat_vitamin')"><span style="font-size:22px;margin-right:10px">🥕</span><div class="list-content"><div class="list-title">Vitamin A</div><div class="list-desc">Retinol</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_d','Vitamin D','Calciferol','☀️','fat_vitamin')"><span style="font-size:22px;margin-right:10px">☀️</span><div class="list-content"><div class="list-title">Vitamin D</div><div class="list-desc">Calciferol</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_e','Vitamin E','Tocopherol','🥑','fat_vitamin')"><span style="font-size:22px;margin-right:10px">🥑</span><div class="list-content"><div class="list-title">Vitamin E</div><div class="list-desc">Tocopherol</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_k','Vitamin K','','🥬','fat_vitamin')"><span style="font-size:22px;margin-right:10px">🥬</span><div class="list-content"><div class="list-title">Vitamin K</div><div class="list-desc">Phylloquinone / Menaquinone</div></div><span class="list-right">›</span></div>
+            </div>
+            <div class="subheader" style="padding-left:0">Water-Soluble Vitamins</div>
+            <div class="list-section" style="margin-bottom:10px">
+              <div class="list-item" onclick="showNutrient('vit_c','Vitamin C','Ascorbic Acid','🍊','water_vitamin')"><span style="font-size:22px;margin-right:10px">🍊</span><div class="list-content"><div class="list-title">Vitamin C</div><div class="list-desc">Ascorbic Acid</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_b1','Vitamin B1','Thiamine','🌾','water_vitamin')"><span style="font-size:22px;margin-right:10px">🌾</span><div class="list-content"><div class="list-title">Vitamin B1</div><div class="list-desc">Thiamine</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_b2','Vitamin B2','Riboflavin','🥛','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥛</span><div class="list-content"><div class="list-title">Vitamin B2</div><div class="list-desc">Riboflavin</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_b3','Vitamin B3','Niacin','🍗','water_vitamin')"><span style="font-size:22px;margin-right:10px">🍗</span><div class="list-content"><div class="list-title">Vitamin B3</div><div class="list-desc">Niacin</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_b6','Vitamin B6','Pyridoxine','🐟','water_vitamin')"><span style="font-size:22px;margin-right:10px">🐟</span><div class="list-content"><div class="list-title">Vitamin B6</div><div class="list-desc">Pyridoxine</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_b7','Vitamin B7','Biotin','🥚','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥚</span><div class="list-content"><div class="list-title">Vitamin B7</div><div class="list-desc">Biotin</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_b9','Vitamin B9','Folate / Folic Acid','🥦','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥦</span><div class="list-content"><div class="list-title">Vitamin B9</div><div class="list-desc">Folate / Folic Acid</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('vit_b12','Vitamin B12','Cobalamin','🥩','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥩</span><div class="list-content"><div class="list-title">Vitamin B12</div><div class="list-desc">Cobalamin</div></div><span class="list-right">›</span></div>
+            </div>
+            <div class="subheader" style="padding-left:0">Macrominerals</div>
+            <div class="list-section" style="margin-bottom:10px">
+              <div class="list-item" onclick="showNutrient('calcium','Calcium','','🦷','macromineral')"><span style="font-size:22px;margin-right:10px">🦷</span><div class="list-content"><div class="list-title">Calcium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('magnesium','Magnesium','','🌿','macromineral')"><span style="font-size:22px;margin-right:10px">🌿</span><div class="list-content"><div class="list-title">Magnesium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('potassium','Potassium','','🍌','macromineral')"><span style="font-size:22px;margin-right:10px">🍌</span><div class="list-content"><div class="list-title">Potassium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('sodium','Sodium','','🧂','macromineral')"><span style="font-size:22px;margin-right:10px">🧂</span><div class="list-content"><div class="list-title">Sodium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
+            </div>
+            <div class="subheader" style="padding-left:0">Trace Minerals</div>
+            <div class="list-section">
+              <div class="list-item" onclick="showNutrient('iron','Iron','','🥩','trace_mineral')"><span style="font-size:22px;margin-right:10px">🫀</span><div class="list-content"><div class="list-title">Iron</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('zinc','Zinc','','💊','trace_mineral')"><span style="font-size:22px;margin-right:10px">⚡</span><div class="list-content"><div class="list-title">Zinc</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('selenium','Selenium','','🥜','trace_mineral')"><span style="font-size:22px;margin-right:10px">🌰</span><div class="list-content"><div class="list-title">Selenium</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
+              <div class="list-item" onclick="showNutrient('iodine','Iodine','','🧂','trace_mineral')"><span style="font-size:22px;margin-right:10px">🫙</span><div class="list-content"><div class="list-title">Iodine</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ MICRONUTRIENT DETAIL ═══════════════ -->
+      <div class="page" id="page-micronutrient-detail">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('micronutrients')">‹</span> <span id="nd-title">Vitamin D</span></div>
+        <div class="scroll" id="nd-content">
+          <!-- dynamically filled -->
+        </div>
+      </div>
+
+      <!-- ═══════════════ SUPPLEMENTS LIST ═══════════════ -->
+      <div class="page" id="page-supplements">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> My Supplements</div>
+        <div class="scroll">
+          <!-- Supplement cards -->
+          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <div style="flex:1">
+                <div style="font-size:15px;font-weight:700">Creatine Monohydrate</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 5g · Morning with food</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:1px">Increases ATP production, improves strength & muscle</div>
+              </div>
+              <span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Daily</span>
+            </div>
+          </div>
+          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <div style="flex:1">
+                <div style="font-size:15px;font-weight:700">Vitamin D3 + K2</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 2000 IU D3 + 100mcg K2 · With breakfast</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:1px">Bone health, immune function, calcium regulation</div>
+              </div>
+              <span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Daily</span>
+            </div>
+          </div>
+          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <div style="flex:1">
+                <div style="font-size:15px;font-weight:700">Omega-3 Fish Oil</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 2 capsules (1g EPA+DHA) · With meal</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:1px">Heart health, anti-inflammatory, brain function</div>
+              </div>
+              <span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Daily</span>
+            </div>
+          </div>
+          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
+            <div style="display:flex;align-items:flex-start;gap:10px">
+              <div style="flex:1">
+                <div style="font-size:15px;font-weight:700">Ashwagandha (KSM-66)</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 300mg · Bedtime</div>
+                <div style="font-size:12px;opacity:0.55;margin-top:1px">Reduces cortisol, stress, improves sleep & recovery</div>
+              </div>
+              <span style="background:#fff3e0;color:#e65100;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Cycling: 8w on / 4w off</span>
+            </div>
+          </div>
+        </div>
+        <button class="fab" onclick="showPage('supplement-form')">＋</button>
+      </div>
+
+      <!-- ═══════════════ SUPPLEMENT FORM ═══════════════ -->
+      <div class="page" id="page-supplement-form">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('supplements')">‹</span> Add Supplement</div>
+        <div class="scroll">
+          <div class="card">
+            <div class="card-title">Basic Info</div>
+            <div class="input-group"><div class="input-label">Supplement Name *</div><input class="input-field" placeholder="e.g. Creatine Monohydrate" value="Magnesium Glycinate"></div>
+            <div class="input-group"><div class="input-label">Dose</div><input class="input-field" placeholder="e.g. 5g, 2000 IU, 1 capsule" value="400mg"></div>
+            <div class="input-group"><div class="input-label">When to Take</div><input class="input-field" placeholder="e.g. Morning with food, Pre-workout, Bedtime" value="Bedtime"></div>
+            <div class="input-group"><div class="input-label">Role / Purpose</div><input class="input-field" placeholder="What does this supplement do?" value="Improves sleep quality, reduces muscle cramps, lowers cortisol"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Schedule</div>
+            <div style="display:flex;gap:8px">
+              <div class="chip selected" onclick="this.classList.add('selected');this.nextSibling.classList.remove('selected');document.getElementById('cycling-row').style.display='none'">Daily</div>
+              <div class="chip" onclick="this.classList.add('selected');this.previousSibling.classList.remove('selected');document.getElementById('cycling-row').style.display='block'">Cycling</div>
+            </div>
+            <div id="cycling-row" style="display:none;margin-top:10px">
+              <div class="input-label">Cycling Schedule</div>
+              <input class="input-field" placeholder="e.g. 5 days on, 2 days off / 8 weeks on, 4 weeks off">
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Product Info</div>
+            <div class="input-group"><div class="input-label">Best Brands</div><input class="input-field" placeholder="e.g. NOW Foods, Optimum Nutrition, Jarrow" value="Doctor's Best, NOW Foods, Thorne"></div>
+            <div class="input-group"><div class="input-label">Price Range</div><input class="input-field" placeholder="e.g. Rs. 1500-2500 / $15-25" value="Rs. 1800-2500 / month"></div>
+            <div class="input-group"><div class="input-label">Purchase Link</div><input class="input-field" placeholder="https://..." value="https://www.amazon.com/..."></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Personal Notes</div>
+            <textarea class="input-field" rows="3" placeholder="Any personal observations, side effects, or reminders...">Feel less anxious, sleep deeper after ~2 weeks</textarea>
+          </div>
+          <button class="btn-primary" onclick="showPage('supplements')">💾 Save Supplement</button>
+        </div>
+      </div>
+
+      <!-- ═══════════════ SUPPLEMENT DETAIL ═══════════════ -->
+      <div class="page" id="page-supplement-detail">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('supplements')">‹</span> Creatine Monohydrate <span style="margin-left:auto;font-size:13px;color:#4ECDC4;cursor:pointer" onclick="showPage('supplement-form')">Edit</span></div>
+        <div class="scroll">
+          <div class="card" style="text-align:center;padding:20px">
+            <div style="font-size:28px;font-weight:800">Creatine Monohydrate</div>
+            <span style="background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:700;padding:4px 12px;border-radius:12px;margin-top:8px;display:inline-block">Daily</span>
+          </div>
+          <div class="card">
+            <div class="card-title">Role & Purpose</div>
+            <div style="font-size:13px;line-height:1.65;opacity:0.8">Increases phosphocreatine stores in muscles, boosting ATP production during high-intensity exercise. Improves strength, power output, and lean muscle mass. Also has cognitive benefits.</div>
+          </div>
+          <div class="card">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;opacity:0.5;font-weight:600">DOSE</span><span style="font-size:14px;font-weight:700">5g per day</span></div>
+              <div style="height:1px;background:#f0f0f0"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;opacity:0.5;font-weight:600">TIMING</span><span style="font-size:14px;font-weight:700">Morning with food</span></div>
+              <div style="height:1px;background:#f0f0f0"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;opacity:0.5;font-weight:600">SCHEDULE</span><span style="font-size:14px;font-weight:700">Daily (no cycling needed)</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Product Info</div>
+            <div style="font-size:13px;margin-bottom:6px"><span style="opacity:0.5;font-weight:600">Best Brands: </span>Optimum Nutrition, MyProtein, Thorne, NOW Foods</div>
+            <div style="font-size:13px;margin-bottom:10px"><span style="opacity:0.5;font-weight:600">Price: </span>Rs. 1500–2200 / month (500g)</div>
+            <button class="btn-outline" style="padding:10px;font-size:13px">🔗 Open Purchase Link</button>
+          </div>
+          <div class="card">
+            <div class="card-title">Personal Notes</div>
+            <div style="font-size:13px;opacity:0.7;font-style:italic;line-height:1.6">Noticeable strength increase after ~2 weeks of loading. No side effects. Take with juice for better taste. Loading phase: 20g/day for 5 days, then 5g maintenance.</div>
+          </div>
+          <button class="btn-danger" onclick="showPage('supplements')">🗑️ Delete Supplement</button>
+        </div>
       </div>
 
     </div><!-- end screen -->
@@ -866,6 +1038,11 @@
     <button class="ctrl-btn" id="ctrl-goals" onclick="showPage('goals')">🎯 Goals</button>
     <button class="ctrl-btn" id="ctrl-backup" onclick="showPage('backup')">☁️ Backup</button>
     <button class="ctrl-btn" id="ctrl-manage-meals" onclick="showPage('manage-meals')">🍴 Manage Meals</button>
+    <button class="ctrl-btn" id="ctrl-micronutrients" onclick="showPage('micronutrients')">🧬 Micronutrients</button>
+    <button class="ctrl-btn" id="ctrl-micronutrient-detail" onclick="showNutrient('vit_d','Vitamin D','Calciferol','☀️','fat_vitamin')">🧬 Vitamin D Detail</button>
+    <button class="ctrl-btn" id="ctrl-supplements" onclick="showPage('supplements')">💊 Supplements</button>
+    <button class="ctrl-btn" id="ctrl-supplement-form" onclick="showPage('supplement-form')">💊 Add Supplement</button>
+    <button class="ctrl-btn" id="ctrl-supplement-detail" onclick="showPage('supplement-detail')">💊 Supplement Detail</button>
     <button class="ctrl-btn" id="ctrl-more" onclick="showPage('more')">⋯ More</button>
     <hr style="border-color:rgba(255,255,255,0.15);margin:4px 0">
     <button class="ctrl-btn" id="ctrl-dark" onclick="toggleDark()">🌙 Dark Mode</button>
@@ -1029,6 +1206,79 @@ function loadTemplate(kcal, protein, carbs, fat) {
 
 // Dark mode
 let dark = false;
+// Nutrient detail data
+const NUTRIENT_DATA = {
+  vit_a: { role:'Essential for vision (especially night vision), immune function, cell growth, and skin health. Maintains corneal integrity and is needed for rhodopsin production in the eye.', deficiency:['Night blindness','Dry skin and hair','Weakened immunity','Poor wound healing','Bitot\'s spots on the eye'], sources:['Liver','Eggs','Dairy','Carrots','Sweet potatoes','Spinach','Mangoes'], rda:'700–900 mcg RAE/day', upper:'3,000 mcg/day', tip:'Beta-carotene in plants converts to Vitamin A. Fat in the meal helps absorption.' },
+  vit_d: { role:'Regulates calcium and phosphorus absorption for strong bones and teeth. Critical for immune function, muscle function, and mood. Often called the "sunshine vitamin" — skin synthesizes it from sunlight.', deficiency:['Rickets (children)','Osteomalacia (soft bones in adults)','Bone pain and fractures','Muscle weakness','Depression and fatigue','Frequent infections'], sources:['Sunlight (skin synthesis)','Fatty fish (salmon, tuna)','Egg yolks','Fortified milk','Fortified cereals','UV-exposed mushrooms'], rda:'600–800 IU/day (many experts: 1000–2000 IU)', upper:'4,000 IU/day', tip:'15–30 min of midday sun on arms/legs produces ~1000 IU. Deficiency is extremely common in South Asia and low-sunlight regions.' },
+  vit_e: { role:'Powerful antioxidant protecting cells from oxidative damage. Supports immune function, skin health, and prevents abnormal blood clotting. Works synergistically with Vitamin C.', deficiency:['Nerve damage (peripheral neuropathy)','Muscle weakness','Vision problems','Weakened immunity','Rare in healthy adults with normal fat absorption'], sources:['Almonds','Sunflower seeds','Wheat germ oil','Spinach','Avocados','Peanut butter','Olive oil'], rda:'15 mg/day', upper:'1,000 mg/day from supplements', tip:'Fat-soluble — stored in body fat and liver. Works best combined with Vitamin C.' },
+  vit_k: { role:'Essential for blood clotting (prevents excessive bleeding). Vital for bone metabolism and cardiovascular health. K1 (from greens) is primarily for clotting; K2 (from fermented foods) directs calcium into bones.', deficiency:['Excessive bleeding or bruising','Heavy menstrual periods','Blood in stool or urine','Osteoporosis long-term'], sources:['Kale, spinach, broccoli','Brussels sprouts','Natto (K2, highest source)','Cheese (K2)','Liver','Fermented foods'], rda:'90–120 mcg/day', tip:'Gut bacteria produce some K2. People on blood thinners (warfarin) must maintain consistent K intake.' },
+  vit_c: { role:'Powerful antioxidant essential for collagen synthesis (skin, tendons, blood vessels, bones). Dramatically boosts iron absorption. Supports immune function and wound healing. Cannot be stored — needs daily intake.', deficiency:['Scurvy: bleeding gums, joint pain, poor wound healing','Easy bruising','Fatigue and irritability','Frequent infections'], sources:['Citrus fruits (orange, lemon)','Kiwi','Bell peppers (highest per gram)','Strawberries','Broccoli','Amla (Indian gooseberry — richest source)'], rda:'75–90 mg/day; smokers +35 mg', upper:'2,000 mg/day', tip:'Destroyed by heat — raw vegetables have more. Vitamin C with iron-rich plant foods triples iron absorption.' },
+  vit_b1: { role:'Converts carbohydrates into usable energy (glucose metabolism). Essential for nerve and muscle function including the heart. Critical for brain function and neurotransmitter synthesis.', deficiency:['Beriberi: nerve and heart disease','Wernicke-Korsakoff syndrome (common in alcoholics)','Muscle weakness','Fatigue and confusion'], sources:['Pork (richest source)','Whole grains','Lentils and beans','Nuts and seeds','Fortified cereals'], rda:'1.1–1.2 mg/day', tip:'Destroyed by heat and prolonged cooking. Heavy alcohol use severely depletes B1 — a leading cause of deficiency.' },
+  vit_b2: { role:'Key role in energy production and cellular metabolism of fats, carbohydrates, and proteins. Maintains healthy skin, eyes, and nervous system. Acts as an antioxidant cofactor.', deficiency:['Cheilosis: cracked lips and mouth corners','Inflamed, magenta-colored tongue','Skin rash','Light sensitivity in eyes','Anaemia'], sources:['Dairy products (milk, yogurt)','Lean meat and liver','Eggs','Mushrooms','Almonds','Leafy greens'], rda:'1.1–1.3 mg/day', tip:'Destroyed by UV light — store milk in opaque containers. Urine turns bright yellow when taking supplements (harmless sign it\'s working).' },
+  vit_b3: { role:'Essential for energy metabolism, DNA repair, and cell signaling. Supports skin, nerve, and digestive system health. High doses prescribed medically to improve cholesterol levels.', deficiency:['Pellagra: dermatitis, diarrhea, dementia (3 Ds)','Fatigue','Depression','Headaches'], sources:['Chicken and turkey','Tuna and salmon','Beef','Peanuts','Brown rice','Mushrooms','Avocados'], rda:'14–16 mg/day', upper:'35 mg/day from supplements', tip:'Body can convert tryptophan (amino acid) to niacin. High doses cause "niacin flush" — temporary skin redness and tingling.' },
+  vit_b6: { role:'Crucial for protein and amino acid metabolism, and synthesis of neurotransmitters (serotonin, dopamine, GABA). Supports immune function, red blood cell formation, and mood regulation.', deficiency:['Depression and irritability','Brain fog and confusion','Anaemia','Cracked lips','Weakened immunity','Worsened PMS symptoms'], sources:['Chicken and tuna','Salmon','Potatoes','Bananas','Chickpeas','Fortified cereals'], rda:'1.3–1.7 mg/day', upper:'100 mg/day', tip:'Important for athletes and high protein intake. Doses >200mg/day long-term can cause nerve damage — stay within upper limit.' },
+  vit_b7: { role:'Essential for metabolism of carbohydrates, fats, and proteins. Critical for healthy hair, skin, and nail growth. Important during pregnancy for fetal brain development.', deficiency:['Hair thinning and loss','Brittle nails','Skin rash around eyes/nose/mouth','Neurological symptoms in severe cases'], sources:['Egg yolks (cooked)','Organ meats (liver)','Nuts (almonds, peanuts)','Seeds','Sweet potatoes','Spinach'], rda:'30 mcg/day', tip:'Raw egg whites contain avidin which blocks biotin absorption — always cook eggs. Gut bacteria also produce some biotin.' },
+  vit_b9: { role:'Vital for DNA synthesis and cell division. Absolutely critical during early pregnancy to prevent neural tube defects. Supports red blood cell formation and lowers homocysteine (heart disease marker).', deficiency:['Megaloblastic anaemia: large, dysfunctional red cells','Neural tube defects in newborns','Elevated homocysteine','Fatigue and mouth sores'], sources:['Dark leafy greens (spinach, kale)','Lentils and beans','Asparagus','Avocados','Beets','Fortified bread and cereals'], rda:'400 mcg/day; 600 mcg pregnant', upper:'1,000 mcg/day from supplements', tip:'Folic acid (synthetic supplement form) is better absorbed than food folate. All women of childbearing age should supplement folic acid daily.' },
+  vit_b12: { role:'Essential for nerve function, red blood cell formation, and DNA synthesis. Works with folate for cell division. Critical for brain health, energy, and preventing cognitive decline.', deficiency:['Megaloblastic anaemia','Nerve damage: tingling hands/feet, walking difficulty','Memory problems and dementia risk','Depression','Fatigue and weakness'], sources:['All meat and poultry','Fish and shellfish','Dairy products','Eggs','Fortified plant milks','Nutritional yeast'], rda:'2.4 mcg/day', tip:'Vegans MUST supplement B12 — found almost exclusively in animal products. "Intrinsic factor" (stomach protein) needed for absorption; deficiency common in elderly too.' },
+  calcium: { role:'Most abundant mineral — 99% in bones and teeth, providing structural strength. The remaining 1% in blood regulates muscle contraction, nerve signal transmission, and blood clotting. Essential throughout life.', deficiency:['Osteoporosis and frequent fractures','Muscle cramps and spasms','Dental problems','Numbness and tingling in extremities','Severe: hypocalcemia (seizures)'], sources:['Dairy: milk, yogurt, cheese','Sardines and salmon with bones','Tofu (calcium-set)','Bok choy and kale','Almonds','Fortified plant milks'], rda:'1,000–1,200 mg/day', upper:'2,500 mg/day', tip:'Split doses — max 500mg absorbed at once. Vitamin D is essential for calcium absorption. Calcium competes with iron — don\'t take both at the same time.' },
+  magnesium: { role:'Cofactor in 300+ enzyme reactions including energy production, protein synthesis, DNA repair, and blood glucose control. Regulates blood pressure, muscle and nerve function. Critical for sleep and stress response.', deficiency:['Muscle cramps and twitching','Anxiety and poor sleep quality','High blood pressure','Migraines and headaches','Fatigue','Constipation','Irregular heartbeat'], sources:['Dark chocolate','Avocados','Almonds and cashews','Pumpkin seeds','Legumes (black beans, lentils)','Tofu','Whole grains','Leafy greens'], rda:'310–420 mg/day', upper:'350 mg/day from supplements (excess causes diarrhea)', tip:'Up to 80% of people may be low. Magnesium glycinate or malate are best forms — gentler on stomach. Take at night — promotes deeper sleep and relaxation.' },
+  potassium: { role:'Controls fluid balance, muscle contractions, and nerve signals throughout the body. Critical for maintaining healthy heart rhythm, blood pressure regulation, and kidney function.', deficiency:['Muscle weakness and painful cramps','Fatigue and weakness','Heart palpitations and arrhythmia','High blood pressure','Constipation','Mood changes'], sources:['Bananas','Avocados','Potatoes (with skin)','Spinach','Lentils','Salmon','Tomatoes','Coconut water'], rda:'2,600–3,400 mg/day', tip:'High potassium diet counteracts sodium\'s blood-pressure-raising effects. Most people eat far too little. High-dose supplements can be dangerous — get from food.' },
+  sodium: { role:'Regulates fluid balance, blood pressure, and blood volume. Essential for nerve impulse transmission, muscle contraction, and acid-base balance. Electrolyte lost heavily through sweat.', deficiency:['Hyponatremia: nausea, headache, confusion, seizures (rare, mainly from overhydration)','Muscle cramps','Fatigue — deficiency rare; excess is the real concern'], sources:['Iodized table salt','Processed and packaged foods','Canned foods','Cheese','Bread','Sauces and condiments'], rda:'<2,300 mg/day recommended (≈1 tsp salt)', tip:'Average person consumes 3,400mg+ daily — 50% above recommended. Athletes need more due to sweat losses. Use iodized salt to meet iodine needs simultaneously.' },
+  iron: { role:'Core component of hemoglobin (carries oxygen in red blood cells) and myoglobin (stores oxygen in muscles). Required for energy metabolism, immune defense, and DNA synthesis. Most common nutritional deficiency worldwide.', deficiency:['Iron-deficiency anaemia: fatigue, pale skin, weakness, shortness of breath','Cold hands and feet','Brittle nails and hair loss','Difficulty concentrating (brain fog)','Pica: craving non-food items'], sources:['Red meat and liver (heme iron — best absorbed)','Shellfish (clams, oysters)','Lentils and beans','Spinach','Tofu','Pumpkin seeds','Dark chocolate'], rda:'8mg/day (men); 18mg/day (women 19-50); 27mg/day (pregnant)', upper:'45 mg/day', tip:'Heme iron (animal) absorbs 2-3x better than plant iron. Take with Vitamin C to double absorption. Tea, coffee, and calcium block iron absorption — separate by 1-2 hours.' },
+  zinc: { role:'Required for 300+ enzymes. Critical for immune function, wound healing, protein and DNA synthesis, taste/smell perception, and testosterone production. Second most abundant trace mineral after iron.', deficiency:['Loss of taste and smell','Poor wound healing','Hair loss','Frequent infections and weakened immunity','Growth retardation in children','Acne and skin problems','Low testosterone in men'], sources:['Oysters (richest source by far)','Beef and lamb','Crab and shellfish','Legumes','Nuts and seeds','Dairy','Whole grains'], rda:'8–11 mg/day', upper:'40 mg/day', tip:'Phytates in grains reduce zinc absorption — sprouting or fermenting helps. Long-term high zinc depletes copper — maintain 8:1 zinc:copper ratio if supplementing.' },
+  selenium: { role:'Antioxidant mineral protecting cells from oxidative damage. Essential for thyroid hormone metabolism (T4→T3 conversion) and immune function. May play a role in cancer prevention.', deficiency:['Keshan disease: potentially fatal heart condition','Thyroid dysfunction (hypothyroidism)','Weakened immune response','Muscle pain and weakness','Cognitive decline'], sources:['Brazil nuts: 1-2 nuts = full day\'s RDA','Tuna and sardines','Eggs','Chicken','Brown rice','Sunflower seeds'], rda:'55 mcg/day', upper:'400 mcg/day (toxicity risk — hair loss, nail brittleness)', tip:'2-3 Brazil nuts daily is the easiest way to meet selenium needs. Pakistani soil tends to be selenium-poor, making supplementation worth considering.' },
+  iodine: { role:'Sole purpose is producing thyroid hormones (T3 and T4) which regulate metabolism, growth, development, and body temperature. Critical for fetal brain development — even mild deficiency during pregnancy lowers child\'s IQ.', deficiency:['Goiter: enlarged, swollen thyroid gland','Hypothyroidism: fatigue, weight gain, cold intolerance, depression','Intellectual disability in children born to deficient mothers','Cretinism in severe infant cases'], sources:['Iodized salt (most reliable)','Seaweed and kelp','Seafood','Dairy products','Eggs'], rda:'150 mcg/day; 220 mcg pregnant; 290 mcg breastfeeding', tip:'Iodized salt was introduced specifically to combat iodine deficiency. Common in mountainous, inland areas. Use iodized table salt — sea salt is NOT iodized.' },
+};
+
+const CATEGORY_COLORS = { fat_vitamin:'#fff3e0', water_vitamin:'#e3f2fd', macromineral:'#e8f5e9', trace_mineral:'#f3e5f5' };
+const CATEGORY_NAMES = { fat_vitamin:'Fat-Soluble Vitamin', water_vitamin:'Water-Soluble Vitamin', macromineral:'Macromineral', trace_mineral:'Trace Mineral' };
+
+function showNutrient(id, name, alt, emoji, cat) {
+  document.getElementById('nd-title').textContent = name;
+  const d = NUTRIENT_DATA[id] || {};
+  const catColor = CATEGORY_COLORS[cat] || '#f5f5f5';
+  const catName = CATEGORY_NAMES[cat] || '';
+  const defHtml = (d.deficiency || []).map(s => `<div style="display:flex;gap:6px;margin-bottom:4px"><span style="color:#FF5722">•</span><span style="font-size:13px;opacity:0.8">${s}</span></div>`).join('');
+  const srcHtml = (d.sources || []).map(s => `<span style="background:#f5f5f5;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:500">${s}</span>`).join('');
+  document.getElementById('nd-content').innerHTML = `
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:48px;margin-bottom:8px">${emoji}</div>
+      <div style="font-size:20px;font-weight:800">${name}</div>
+      ${alt ? `<div style="font-size:13px;opacity:0.55;margin-top:2px">${alt}</div>` : ''}
+      <span style="background:${catColor};border-radius:12px;padding:4px 12px;font-size:11px;font-weight:700;margin-top:8px;display:inline-block">${catName}</span>
+    </div>
+    <div class="card">
+      <div class="card-title">🔬 Role &amp; Function</div>
+      <div style="font-size:13px;line-height:1.7;opacity:0.82">${d.role || 'No data'}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">⚠️ Deficiency Symptoms</div>
+      ${defHtml}
+    </div>
+    <div class="card">
+      <div class="card-title">🍽️ Food Sources</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${srcHtml}</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Daily Requirements</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f5f5">
+        <span style="font-size:12px;opacity:0.5;font-weight:600">RDA</span>
+        <span style="font-size:13px;font-weight:700">${d.rda || 'Not established'}</span>
+      </div>
+      ${d.upper ? `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"><span style="font-size:12px;opacity:0.5;font-weight:600">UPPER LIMIT</span><span style="font-size:13px;font-weight:700;color:#FF5722">${d.upper}</span></div>` : ''}
+    </div>
+    ${d.tip ? `<div class="card" style="background:#fffde7"><div class="card-title">💡 Pro Tip</div><div style="font-size:13px;line-height:1.65;font-style:italic;opacity:0.82">${d.tip}</div></div>` : ''}
+  `;
+  showPage('micronutrient-detail');
+}
+
+function filterNutrients(q) {
+  document.querySelectorAll('#nutrient-list .list-item').forEach(item => {
+    const text = item.querySelector('.list-title').textContent.toLowerCase() + ' ' + (item.querySelector('.list-desc')?.textContent || '').toLowerCase();
+    item.style.display = text.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
 function toggleDark() {
   dark = !dark;
   document.getElementById('phone').classList.toggle('dark', dark);
