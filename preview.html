@@ -283,8 +283,8 @@
             </div>
             <div style="font-size:11px;font-weight:700;opacity:0.5;margin-bottom:6px">Fats</div>
             <div class="sub-row">
-              <div class="sub-item"><div class="sub-val">22g</div><div class="sub-lbl">Unsat.</div></div>
-              <div class="sub-item"><div class="sub-val">12g</div><div class="sub-lbl">Mono/Poly</div></div>
+              <div class="sub-item"><div class="sub-val">22g</div><div class="sub-lbl">Saturated</div></div>
+              <div class="sub-item"><div class="sub-val">12g</div><div class="sub-lbl">Mono/Poly Unsat.</div></div>
               <div class="sub-item"><div class="sub-val">0.2g</div><div class="sub-lbl">Trans</div></div>
             </div>
           </div>
@@ -496,6 +496,11 @@
             </div>
             <div class="input-group"><div class="input-label">Protein</div><input class="input-field" value="0.0170"></div>
             <div class="input-group"><div class="input-label">Fat Total</div><input class="input-field" value="0.0069"></div>
+            <div style="padding-left:16px">
+              <div class="input-group"><div class="input-label">↳ Saturated Fat</div><input class="input-field" value="0.0012"></div>
+              <div class="input-group"><div class="input-label">↳ Mono/Poly Unsaturated</div><input class="input-field" value="0.0045"></div>
+              <div class="input-group"><div class="input-label">↳ Trans Fat</div><input class="input-field" value="0.0000"></div>
+            </div>
           </div>
           <button class="btn-primary" onclick="showPage('ingredients')">💾 Save Ingredient</button>
         </div>
@@ -534,8 +539,41 @@
             <div class="list-item"><div class="list-icon" style="background:#fce4ec">🥣</div><div class="list-content"><div class="list-title">Oats Bowl</div><div class="list-desc">Overnight oats · 280g total</div></div><button class="icon-btn">›</button></div>
           </div>
         </div>
-        <button class="fab">＋</button>
+        <button class="fab" onclick="showPage('recipe-form')">＋</button>
         <div class="tab-bar" id="tab-bar-recipes"></div>
+      </div>
+
+      <!-- ═══════════════ RECIPE FORM ═══════════════ -->
+      <div class="page" id="page-recipe-form">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('recipes')">‹</span> New Recipe</div>
+        <div class="scroll">
+          <div class="input-group"><div class="input-label">Recipe Name</div><input class="input-field" placeholder="e.g. Chicken Rice Bowl"></div>
+          <div class="input-group"><div class="input-label">Description (optional)</div><input class="input-field" placeholder="e.g. High-protein lunch"></div>
+          <div class="card">
+            <div class="card-title">Ingredients</div>
+            <div id="recipe-ings">
+              <div class="list-item" style="border-radius:10px;margin-bottom:6px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+                <div class="list-content"><div class="list-title">Chicken Breast</div><div class="list-desc">200g · P: 62g · C: 0g · F: 8g</div></div>
+                <button class="icon-btn">🗑</button>
+              </div>
+              <div class="list-item" style="border-radius:10px;margin-bottom:6px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
+                <div class="list-content"><div class="list-title">Basmati Rice</div><div class="list-desc">150g · P: 4g · C: 42g · F: 0g</div></div>
+                <button class="icon-btn">🗑</button>
+              </div>
+            </div>
+            <button class="btn-outline" style="margin-top:8px" onclick="">＋ Add Ingredient</button>
+          </div>
+          <div class="card" style="background:#f9fffe">
+            <div class="card-title">Recipe Totals (350g)</div>
+            <div class="sub-row">
+              <div class="sub-item"><div class="sub-val" style="color:#FF6B6B">66g</div><div class="sub-lbl">Protein</div></div>
+              <div class="sub-item"><div class="sub-val" style="color:#FFE66D">42g</div><div class="sub-lbl">Carbs</div></div>
+              <div class="sub-item"><div class="sub-val" style="color:#A8E6CF">8g</div><div class="sub-lbl">Fat</div></div>
+              <div class="sub-item"><div class="sub-val" style="color:#FF6B6B">500</div><div class="sub-lbl">kcal</div></div>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="showPage('recipes')">💾 Save Recipe</button>
+        </div>
       </div>
 
       <!-- ═══════════════ HISTORY ═══════════════ -->
@@ -574,23 +612,74 @@
       <div class="page" id="page-weight">
         <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Weight Log</div>
         <div class="scroll">
-          <div class="card" style="text-align:center;padding:20px">
-            <div style="font-size:36px;font-weight:800">72.3 <span style="font-size:18px;opacity:0.5">kg</span></div>
-            <div class="weight-diff-neg">▼ 0.2 kg vs previous</div>
-          </div>
+          <!-- Current vs Target summary -->
           <div class="card">
-            <div class="card-title">Log Today's Weight</div>
-            <div class="input-group"><input class="input-field" type="number" placeholder="72.3" value="72.3"><div style="font-size:11px;opacity:0.5;margin-top:4px;padding-left:4px">kg</div></div>
-            <div class="input-group"><div class="input-label">Note (optional)</div><input class="input-field" placeholder="After workout, post-meal..."></div>
-            <button class="btn-primary" style="margin-top:4px">⚖️ Log Weight</button>
+            <div style="display:flex;justify-content:space-around;align-items:center">
+              <div style="text-align:center">
+                <div style="font-size:28px;font-weight:800">72.3 <span style="font-size:14px;opacity:0.5">kg</span></div>
+                <div style="font-size:10px;opacity:0.5;margin-top:2px">Current</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:18px;font-weight:700;color:#4CAF50">-0.2 kg</div>
+                <div style="font-size:10px;opacity:0.5;margin-top:2px">vs yesterday</div>
+              </div>
+              <div style="text-align:center">
+                <div style="font-size:18px;font-weight:700;color:#FF5722">+2.3 kg</div>
+                <div style="font-size:10px;opacity:0.5;margin-top:2px">vs target</div>
+              </div>
+            </div>
           </div>
+
+          <!-- Target weight -->
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:13px;font-weight:700">🎯 Target Weight</span>
+              <button style="background:none;border:none;font-size:16px;cursor:pointer" onclick="document.getElementById('target-row').style.display=document.getElementById('target-row').style.display==='none'?'flex':'none'">✏️</button>
+            </div>
+            <div id="target-row" style="display:none;gap:8px;align-items:center">
+              <input class="input-field" type="number" placeholder="70.0" value="70.0" style="flex:1">
+              <button style="padding:8px 16px;background:#4ECDC4;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer">Set</button>
+            </div>
+            <div id="target-display" style="font-size:14px;opacity:0.7">70.0 kg</div>
+          </div>
+
+          <!-- Dual line chart -->
+          <div class="card">
+            <div class="card-title">Progress Chart</div>
+            <canvas id="weightDualChart" height="150"></canvas>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;opacity:0.65">
+              <span style="display:inline-block;width:12px;height:3px;background:#81C784;border-radius:2px"></span> Actual weight
+              <span style="display:inline-block;width:12px;height:3px;background:#FF6B6B;border-radius:2px;margin-left:8px"></span> Target 70.0 kg
+            </div>
+          </div>
+
+          <!-- Statistics -->
+          <div class="card">
+            <div class="card-title">Statistics (30 days)</div>
+            <div class="stats-grid">
+              <div class="stat-box"><div class="stat-val" style="color:#4CAF50">71.8</div><div class="stat-unit">kg</div><div class="stat-lbl">Lowest</div></div>
+              <div class="stat-box"><div class="stat-val" style="color:#FF5722">73.5</div><div class="stat-unit">kg</div><div class="stat-lbl">Highest</div></div>
+              <div class="stat-box"><div class="stat-val">72.5</div><div class="stat-unit">kg</div><div class="stat-lbl">Average</div></div>
+              <div class="stat-box"><div class="stat-val" style="color:#4CAF50">1.2</div><div class="stat-unit">kg lost</div><div class="stat-lbl">Total</div></div>
+            </div>
+          </div>
+
+          <!-- Log today -->
+          <div class="card">
+            <div class="card-title">Today's Weight</div>
+            <div class="input-group"><input class="input-field" type="number" placeholder="72.3" value="72.3"></div>
+            <div class="input-group"><div class="input-label">Note (optional)</div><input class="input-field" placeholder="After workout, post-meal..."></div>
+            <button class="btn-primary" style="margin-top:4px">⚖️ Update Weight</button>
+          </div>
+
+          <!-- History -->
           <div class="list-section">
             <div class="subheader">History</div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.3 kg</div><div class="list-desc">After workout</div></div><span style="opacity:0.5;font-size:12px">Today</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.5 kg</div><div class="list-desc"></div></div><span style="opacity:0.5;font-size:12px">Yesterday</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.4 kg</div><div class="list-desc"></div></div><span style="opacity:0.5;font-size:12px">2 days ago</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.8 kg</div><div class="list-desc">Cheat day 😅</div></div><span style="opacity:0.5;font-size:12px">3 days ago</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.6 kg</div><div class="list-desc"></div></div><span style="opacity:0.5;font-size:12px">4 days ago</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.3 kg ✅</div><div class="list-desc">After workout</div></div><span style="opacity:0.5;font-size:11px">Today</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.5 kg <span style="color:#FF5722;font-size:11px">(+2.5 kg to target)</span></div></div><span style="opacity:0.5;font-size:11px">Yesterday</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.4 kg <span style="color:#FF5722;font-size:11px">(+2.4 kg to target)</span></div></div><span style="opacity:0.5;font-size:11px">2 days ago</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">72.8 kg <span style="color:#FF5722;font-size:11px">(+2.8 kg to target)</span></div><div class="list-desc">Cheat day 😅</div></div><span style="opacity:0.5;font-size:11px">3 days ago</span></div>
+            <div class="list-item"><div class="list-content"><div class="list-title">73.5 kg <span style="color:#FF5722;font-size:11px">(+3.5 kg to target)</span></div></div><span style="opacity:0.5;font-size:11px">4 days ago</span></div>
           </div>
         </div>
       </div>
@@ -638,12 +727,101 @@
         </div>
       </div>
 
+      <!-- ═══════════════ MANAGE MEALS ═══════════════ -->
+      <div class="page" id="page-manage-meals">
+        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Manage Meal Types</div>
+        <div class="scroll">
+          <div style="font-size:12px;opacity:0.6;padding:2px 2px 4px">Add custom meal types (e.g. Sehri, Iftar, Pre-workout). Rename or reorder as you like.</div>
+          <div class="list-section">
+            <div class="list-item">
+              <div style="font-size:22px;margin-right:10px">🌅</div>
+              <div class="list-content"><div class="list-title">Breakfast</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
+              <button class="icon-btn">✏️</button>
+              <button class="icon-btn" style="color:#ccc">🗑</button>
+            </div>
+            <div class="list-item">
+              <div style="font-size:22px;margin-right:10px">☀️</div>
+              <div class="list-content"><div class="list-title">Lunch</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
+              <button class="icon-btn">✏️</button>
+              <button class="icon-btn" style="color:#ccc">🗑</button>
+            </div>
+            <div class="list-item">
+              <div style="font-size:22px;margin-right:10px">🌙</div>
+              <div class="list-content"><div class="list-title">Dinner</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
+              <button class="icon-btn">✏️</button>
+              <button class="icon-btn" style="color:#ccc">🗑</button>
+            </div>
+            <div class="list-item">
+              <div style="font-size:22px;margin-right:10px">☕</div>
+              <div class="list-content"><div class="list-title">Snack</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
+              <button class="icon-btn">✏️</button>
+              <button class="icon-btn" style="color:#ccc">🗑</button>
+            </div>
+            <div class="list-item">
+              <div style="font-size:22px;margin-right:10px">🕌</div>
+              <div class="list-content"><div class="list-title">Sehri</div></div>
+              <button class="icon-btn">✏️</button>
+              <button class="icon-btn" style="color:#E63946">🗑</button>
+            </div>
+            <div class="list-item">
+              <div style="font-size:22px;margin-right:10px">🌅</div>
+              <div class="list-content"><div class="list-title">Iftar</div></div>
+              <button class="icon-btn">✏️</button>
+              <button class="icon-btn" style="color:#E63946">🗑</button>
+            </div>
+            <div class="list-item">
+              <div style="font-size:22px;margin-right:10px">💪</div>
+              <div class="list-content"><div class="list-title">Pre-workout</div></div>
+              <button class="icon-btn">✏️</button>
+              <button class="icon-btn" style="color:#E63946">🗑</button>
+            </div>
+          </div>
+          <button class="btn-outline" onclick="document.getElementById('add-meal-modal').classList.add('show')">＋ Add Custom Meal Type</button>
+        </div>
+
+        <!-- Add Meal Modal -->
+        <div class="modal-overlay" id="add-meal-modal" onclick="if(event.target===this)this.classList.remove('show')">
+          <div class="modal-bg">
+            <div class="modal-header">New Meal Type</div>
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px">
+              <div><div class="input-label">Name (e.g. Sehri, Pre-workout)</div><input class="input-field" placeholder="Meal name"></div>
+              <div>
+                <div class="input-label" style="margin-bottom:6px">Choose Emoji</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px;background:rgba(78,205,196,0.2)">🌅</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">☀️</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🌙</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">☕</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🥗</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🍎</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">💪</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🏋️</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">⚡</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🌿</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🍽️</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🥤</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🌮</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🍱</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🕌</span>
+                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🥞</span>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
+                <button style="padding:8px 18px;background:none;border:none;color:#4ECDC4;font-weight:600;cursor:pointer" onclick="document.getElementById('add-meal-modal').classList.remove('show')">Cancel</button>
+                <button style="padding:8px 18px;background:#4ECDC4;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer" onclick="document.getElementById('add-meal-modal').classList.remove('show')">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ═══════════════ MORE ═══════════════ -->
       <div class="page" id="page-more">
         <div class="top-bar">⋯ More</div>
         <div class="scroll" style="padding:0;gap:0">
           <div class="list-section" style="margin:12px">
             <div class="subheader">Tools</div>
+            <div class="list-item" onclick="showPage('manage-meals')"><div class="list-icon" style="background:#fff3e0">🍴</div><div class="list-content"><div class="list-title">Manage Meal Types</div><div class="list-desc">Add Sehri, Iftar, Pre-workout & more</div></div><span class="list-right">›</span></div>
             <div class="list-item" onclick="showPage('history')"><div class="list-icon" style="background:#e8f5e9">📊</div><div class="list-content"><div class="list-title">History & Charts</div><div class="list-desc">Weekly kcal, macros, water, weight</div></div><span class="list-right">›</span></div>
             <div class="list-item" onclick="showPage('weight')"><div class="list-icon" style="background:#e3f2fd">⚖️</div><div class="list-content"><div class="list-title">Weight Log</div><div class="list-desc">Track your daily body weight</div></div><span class="list-right">›</span></div>
             <div class="list-item" onclick="showPage('backup')"><div class="list-icon" style="background:#f3e5f5">☁️</div><div class="list-content"><div class="list-title">Backup & Restore</div><div class="list-desc">Export to Google Drive or import</div></div><span class="list-right">›</span></div>
@@ -671,10 +849,12 @@
     <button class="ctrl-btn" id="ctrl-ingredient-form" onclick="showPage('ingredient-form')">📝 Add Ingredient</button>
     <button class="ctrl-btn" id="ctrl-barcode" onclick="showPage('barcode')">📷 Barcode Scan</button>
     <button class="ctrl-btn" id="ctrl-recipes" onclick="showPage('recipes')">🍽️ Recipes</button>
+    <button class="ctrl-btn" id="ctrl-recipe-form" onclick="showPage('recipe-form')">📝 New Recipe</button>
     <button class="ctrl-btn" id="ctrl-history" onclick="showPage('history')">📊 History Charts</button>
     <button class="ctrl-btn" id="ctrl-weight" onclick="showPage('weight')">⚖️ Weight Log</button>
     <button class="ctrl-btn" id="ctrl-goals" onclick="showPage('goals')">🎯 Goals</button>
     <button class="ctrl-btn" id="ctrl-backup" onclick="showPage('backup')">☁️ Backup</button>
+    <button class="ctrl-btn" id="ctrl-manage-meals" onclick="showPage('manage-meals')">🍴 Manage Meals</button>
     <button class="ctrl-btn" id="ctrl-more" onclick="showPage('more')">⋯ More</button>
     <hr style="border-color:rgba(255,255,255,0.15);margin:4px 0">
     <button class="ctrl-btn" id="ctrl-dark" onclick="toggleDark()">🌙 Dark Mode</button>
@@ -716,6 +896,34 @@ function showPage(id) {
   if (cb) cb.classList.add('active');
   // draw charts when history opens
   if (id === 'history') setTimeout(drawCharts, 100);
+  if (id === 'weight') setTimeout(drawWeightChart, 100);
+}
+
+let weightChartDrawn = false;
+function drawWeightChart() {
+  if (weightChartDrawn) return;
+  weightChartDrawn = true;
+  const labels = ['5/1','5/4','5/7','5/10','5/13','5/16','5/18'];
+  const actual = [73.5, 73.1, 72.9, 72.8, 72.6, 72.5, 72.3];
+  const target = [70.0, 70.0, 70.0, 70.0, 70.0, 70.0, 70.0];
+  new Chart(document.getElementById('weightDualChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Actual', data: actual, borderColor: '#81C784', backgroundColor: 'rgba(129,199,132,0.1)', tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#81C784' },
+        { label: 'Target', data: target, borderColor: '#FF6B6B', borderDash: [6,4], tension: 0, pointRadius: 0, borderWidth: 1.5 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+        y: { grid: { color: '#f5f5f5' }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
 }
 
 // Water tracker
