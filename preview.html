@@ -262,6 +262,10 @@
     <div class="sidebar-item" onclick="nav('ingredients')"><span class="s-icon">🥑</span> Ingredients</div>
     <div class="sidebar-item" onclick="nav('recipes')"><span class="s-icon">🍽️</span> Recipes</div>
     <div class="sidebar-item" onclick="nav('history')"><span class="s-icon">📊</span> History &amp; Charts</div>
+    <div class="sidebar-item" onclick="nav('weekly-report')"><span class="s-icon">📊</span> Weekly Report</div>
+    <div class="sidebar-item" onclick="nav('body-measurements')"><span class="s-icon">📏</span> Body Measurements</div>
+    <div class="sidebar-item" onclick="nav('meal-templates')"><span class="s-icon">📋</span> Meal Templates</div>
+    <div class="sidebar-item" onclick="nav('macro-recommendations')"><span class="s-icon">🧮</span> Macro Calculator</div>
     <div class="sidebar-item" onclick="nav('micronutrients')"><span class="s-icon">🧬</span> Micronutrients</div>
     <div class="sidebar-item" onclick="nav('supplements')"><span class="s-icon">💊</span> My Supplements</div>
     <div class="sidebar-item" onclick="nav('more')"><span class="s-icon">⚙️</span> Settings</div>
@@ -270,6 +274,10 @@
     <div class="sidebar-item" onclick="nav('exercise-library')"><span class="s-icon">📚</span> Exercise Library</div>
     <div class="sidebar-item" onclick="nav('workout-plans')"><span class="s-icon">📋</span> Workout Plans</div>
     <div class="sidebar-item" onclick="nav('weight')"><span class="s-icon">⚖️</span> Weight Log</div>
+    <div class="sidebar-item" onclick="nav('workout-history')"><span class="s-icon">📅</span> Workout History</div>
+    <div class="sidebar-item" onclick="nav('workout-generator')"><span class="s-icon">⚡</span> Workout Generator</div>
+    <div class="sidebar-item" onclick="nav('1rm-calculator')"><span class="s-icon">🏆</span> 1RM Calculator</div>
+    <div class="sidebar-item" onclick="nav('recovery-insights')"><span class="s-icon">💤</span> Recovery Insights</div>
   </div>
 
   <!-- DASHBOARD -->
@@ -309,6 +317,36 @@
         <div class="list-row"><div class="list-icon">🌅</div><div class="list-info"><div class="list-title">Breakfast</div><div class="list-sub">Eggs · Oats · Banana</div></div><div style="font-size:13px;font-weight:600">480 kcal</div></div>
         <div class="list-row"><div class="list-icon">☀️</div><div class="list-info"><div class="list-title">Lunch</div><div class="list-sub">Chicken Rice Bowl</div></div><div style="font-size:13px;font-weight:600">620 kcal</div></div>
         <div class="list-row"><div class="list-icon">☕</div><div class="list-info"><div class="list-title">Snack</div><div class="list-sub">Greek Yogurt · Almonds</div></div><div style="font-size:13px;font-weight:600">184 kcal</div></div>
+      </div>
+      <div style="overflow-x:auto;display:flex;gap:8px;padding:0 0 8px;scrollbar-width:none;">
+        <button onclick="nav('workout-session')" style="flex-shrink:0;padding:7px 16px;border-radius:20px;background:var(--primary-container);color:var(--primary);border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">▶ Log Workout</button>
+        <button onclick="nav('body-measurements')" style="flex-shrink:0;padding:7px 16px;border-radius:20px;background:var(--primary-container);color:var(--primary);border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">📏 Measurements</button>
+        <button onclick="nav('1rm-calculator')" style="flex-shrink:0;padding:7px 16px;border-radius:20px;background:var(--primary-container);color:var(--primary);border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🏆 1RM Calc</button>
+        <button onclick="nav('workout-generator')" style="flex-shrink:0;padding:7px 16px;border-radius:20px;background:var(--primary-container);color:var(--primary);border:none;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">⚡ Generator</button>
+      </div>
+      <div class="card" style="display:flex;align-items:center;gap:12px;padding:14px">
+        <span style="font-size:32px">🔥</span>
+        <div>
+          <div style="font-size:22px;font-weight:800;color:var(--on-surface)">7 day streak</div>
+          <div style="font-size:12px;color:var(--on-surface-var)">Keep it up! Log a workout today</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">💤 Recovery Status</div>
+        <div style="display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px">
+          <span style="background:#4CAF5022;color:#4CAF50;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0">✓ Chest</span>
+          <span style="background:#FF980022;color:#FF9800;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0">⏱ Back</span>
+          <span style="background:#F4433622;color:#F44336;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0">● Shoulders</span>
+          <span style="background:#4CAF5022;color:#4CAF50;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0">✓ Legs</span>
+          <span style="background:var(--surface2);color:var(--on-surface-var);padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0">— Biceps</span>
+          <span style="background:#4CAF5022;color:#4CAF50;padding:4px 12px;border-radius:14px;font-size:12px;font-weight:700;white-space:nowrap;flex-shrink:0">✓ Core</span>
+        </div>
+        <div style="font-size:11px;color:var(--on-surface-var);margin-top:8px">
+          <span style="color:#4CAF50">●</span> Ready &nbsp;
+          <span style="color:#FF9800">●</span> Recovering &nbsp;
+          <span style="color:#F44336">●</span> Trained Today &nbsp;
+          <span style="color:#999">●</span> Never
+        </div>
       </div>
     </div>
   </div>
@@ -583,6 +621,64 @@
     <div class="content" id="ex-list" style="padding:0 0 40px;"></div>
   </div>
 
+  <!-- WORKOUT SESSION -->
+  <div class="screen" id="screen-workout-session">
+    <div style="background:var(--primary);padding:44px 16px 12px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+      <div style="flex:1">
+        <div style="color:#fff;font-size:18px;font-weight:700">Chest &amp; Triceps</div>
+        <div style="color:rgba(255,255,255,0.8);font-size:13px">⏱ 00:42</div>
+      </div>
+      <button onclick="back()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 16px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer">Finish</button>
+    </div>
+    <!-- Rest timer chip -->
+    <div style="background:#FF980022;border:1px solid #FF9800;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <span style="color:#FF9800;font-size:13px;font-weight:700">⏸ Rest: 0:47</span>
+      <span style="color:#FF9800;cursor:pointer;font-size:18px">×</span>
+    </div>
+    <div class="content">
+      <!-- Exercise 1 -->
+      <div class="card" style="margin-bottom:10px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:10px;color:var(--primary)">Barbell Bench Press</div>
+        <!-- Set rows -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;background:var(--surface2);padding:8px;border-radius:10px">
+          <div style="width:24px;height:24px;background:var(--primary);border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0">1</div>
+          <input placeholder="kg" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center" value="80"/>
+          <span style="color:var(--on-surface-var);font-size:12px">×</span>
+          <input placeholder="reps" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center" value="10"/>
+          <div style="width:32px;height:32px;background:#4CAF5022;border:1px solid #4CAF50;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px">✓</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;background:var(--surface2);padding:8px;border-radius:10px">
+          <div style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--outline);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--on-surface-var);font-size:12px;font-weight:700;flex-shrink:0">2</div>
+          <input placeholder="kg" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center" value="80"/>
+          <span style="color:var(--on-surface-var);font-size:12px">×</span>
+          <input placeholder="reps" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center"/>
+          <div style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--outline);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--on-surface-var)">✓</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;background:var(--surface2);padding:8px;border-radius:10px">
+          <div style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--outline);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--on-surface-var);font-size:12px;font-weight:700;flex-shrink:0">3</div>
+          <input placeholder="kg" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center"/>
+          <span style="color:var(--on-surface-var);font-size:12px">×</span>
+          <input placeholder="reps" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center"/>
+          <div style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--outline);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--on-surface-var)">✓</div>
+        </div>
+        <button style="width:100%;padding:8px;background:var(--primary-container);color:var(--primary);border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Set</button>
+      </div>
+      <!-- Exercise 2 -->
+      <div class="card" style="margin-bottom:10px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:10px;color:var(--primary)">Incline Dumbbell Press</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;background:var(--surface2);padding:8px;border-radius:10px">
+          <div style="width:24px;height:24px;background:var(--surface2);border:1px solid var(--outline);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--on-surface-var);font-size:12px;font-weight:700;flex-shrink:0">1</div>
+          <input placeholder="kg" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center"/>
+          <span style="color:var(--on-surface-var);font-size:12px">×</span>
+          <input placeholder="reps" style="flex:1;padding:6px;border:1px solid var(--outline);border-radius:8px;background:var(--surface);color:var(--on-surface);font-size:14px;text-align:center"/>
+          <div style="width:32px;height:32px;background:var(--surface2);border:1px solid var(--outline);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;color:var(--on-surface-var)">✓</div>
+        </div>
+        <button style="width:100%;padding:8px;background:var(--primary-container);color:var(--primary);border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Set</button>
+      </div>
+      <button onclick="back()" style="width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px">🏁 Finish Workout</button>
+    </div>
+  </div>
+
   <!-- EXERCISE DETAIL -->
   <div class="screen" id="screen-exercise-detail">
     <div class="app-bar">
@@ -826,6 +922,443 @@
     </div>
   </div>
 
+  <!-- WORKOUT HISTORY -->
+  <div class="screen" id="screen-workout-history">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Workout History</h2><p>All sessions</p></div>
+    </div>
+    <div class="content">
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val">24</div><div class="stat-label">Sessions</div></div>
+        <div class="stat-box"><div class="stat-val">7</div><div class="stat-label">🔥 Streak</div></div>
+        <div class="stat-box"><div class="stat-val">312</div><div class="stat-label">Total Sets</div></div>
+      </div>
+      <!-- Session cards -->
+      <div class="card-sm" style="cursor:pointer">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-weight:700;font-size:14px">Chest &amp; Triceps</div>
+            <div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">Mon, 18 May 2026</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;font-weight:700;color:var(--primary)">42 min</div>
+            <div style="font-size:12px;color:var(--on-surface-var)">18 sets</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-sm" style="cursor:pointer">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-weight:700;font-size:14px">Back &amp; Biceps</div>
+            <div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">Sat, 16 May 2026</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;font-weight:700;color:var(--primary)">55 min</div>
+            <div style="font-size:12px;color:var(--on-surface-var)">22 sets</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-sm" style="cursor:pointer">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-weight:700;font-size:14px">Leg Day</div>
+            <div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">Thu, 14 May 2026</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;font-weight:700;color:var(--primary)">48 min</div>
+            <div style="font-size:12px;color:var(--on-surface-var)">20 sets</div>
+          </div>
+        </div>
+      </div>
+      <div class="card-sm" style="cursor:pointer">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            <div style="font-weight:700;font-size:14px">Push Day</div>
+            <div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">Tue, 12 May 2026</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:13px;font-weight:700;color:var(--primary)">38 min</div>
+            <div style="font-size:12px;color:var(--on-surface-var)">16 sets</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKOUT GENERATOR -->
+  <div class="screen" id="screen-workout-generator">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Workout Generator</h2></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">🎯 Split</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span class="filter-pill active">Push</span><span class="filter-pill">Pull</span><span class="filter-pill">Legs</span><span class="filter-pill">Full Body</span><span class="filter-pill">Upper</span><span class="filter-pill">Lower</span><span class="filter-pill">Arms</span><span class="filter-pill">Chest &amp; Back</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏋️ Equipment</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span class="filter-pill active">Any</span><span class="filter-pill">Barbell</span><span class="filter-pill">Dumbbells</span><span class="filter-pill">Bodyweight</span><span class="filter-pill">Machines</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">📈 Difficulty</div>
+        <div style="display:flex;gap:6px">
+          <span class="filter-pill">Beginner</span><span class="filter-pill active">Intermediate</span><span class="filter-pill">Advanced</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Focus</div>
+        <div style="display:flex;gap:6px">
+          <span class="filter-pill active">Hypertrophy</span><span class="filter-pill">Strength</span>
+        </div>
+      </div>
+      <button style="width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:16px">⚡ Generate Workout</button>
+      <!-- Generated results -->
+      <div class="card">
+        <div class="card-title">💪 Generated: Push Day</div>
+        <div class="plan-ex-row">
+          <div class="plan-ex-top"><div class="plan-ex-num">1</div><div><div style="font-weight:700;font-size:14px">Barbell Bench Press</div><div style="font-size:12px;color:var(--on-surface-var)">Compound · Chest</div></div></div>
+          <div style="display:flex;gap:8px"><span class="badge badge-orange">4 × 8–12</span><span class="badge" style="background:#e0e0e022;color:var(--on-surface-var)">90s rest</span></div>
+        </div>
+        <div class="plan-ex-row">
+          <div class="plan-ex-top"><div class="plan-ex-num">2</div><div><div style="font-weight:700;font-size:14px">Overhead Press</div><div style="font-size:12px;color:var(--on-surface-var)">Compound · Shoulders</div></div></div>
+          <div style="display:flex;gap:8px"><span class="badge badge-orange">4 × 8–12</span><span class="badge" style="background:#e0e0e022;color:var(--on-surface-var)">90s rest</span></div>
+        </div>
+        <div class="plan-ex-row">
+          <div class="plan-ex-top"><div class="plan-ex-num">3</div><div><div style="font-weight:700;font-size:14px">Incline Dumbbell Press</div><div style="font-size:12px;color:var(--on-surface-var)">Compound · Chest</div></div></div>
+          <div style="display:flex;gap:8px"><span class="badge badge-orange">3 × 10–12</span><span class="badge" style="background:#e0e0e022;color:var(--on-surface-var)">60s rest</span></div>
+        </div>
+        <div class="plan-ex-row">
+          <div class="plan-ex-top"><div class="plan-ex-num">4</div><div><div style="font-weight:700;font-size:14px">Lateral Raise</div><div style="font-size:12px;color:var(--on-surface-var)">Isolation · Shoulders</div></div></div>
+          <div style="display:flex;gap:8px"><span class="badge badge-green">3 × 12–15</span><span class="badge" style="background:#e0e0e022;color:var(--on-surface-var)">45s rest</span></div>
+        </div>
+        <div class="plan-ex-row">
+          <div class="plan-ex-top"><div class="plan-ex-num">5</div><div><div style="font-weight:700;font-size:14px">Tricep Pushdown</div><div style="font-size:12px;color:var(--on-surface-var)">Isolation · Triceps</div></div></div>
+          <div style="display:flex;gap:8px"><span class="badge badge-green">3 × 12–15</span><span class="badge" style="background:#e0e0e022;color:var(--on-surface-var)">45s rest</span></div>
+        </div>
+        <button style="width:100%;padding:12px;background:var(--primary-container);color:var(--primary);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px">💾 Save as Plan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1RM CALCULATOR -->
+  <div class="screen" id="screen-1rm-calculator">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>1RM Calculator</h2></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">📊 Input</div>
+        <div class="form-row">
+          <div style="flex:1"><div class="form-label">Weight (kg)</div><input class="form-input" value="100" style="margin-bottom:0"/></div>
+          <div style="flex:1"><div class="form-label">Reps</div><input class="form-input" value="5" style="margin-bottom:0"/></div>
+        </div>
+        <button style="width:100%;padding:12px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px">Calculate</button>
+      </div>
+      <!-- Result -->
+      <div class="card" style="text-align:center;background:var(--primary);border:none">
+        <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-bottom:4px">Estimated 1RM</div>
+        <div style="color:#fff;font-size:48px;font-weight:800;line-height:1">117</div>
+        <div style="color:rgba(255,255,255,0.8);font-size:13px;margin-top:4px">kg</div>
+      </div>
+      <!-- Percentage table -->
+      <div class="card">
+        <div class="card-title">📋 Percentage Table</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--outline);border-radius:10px;overflow:hidden">
+          <div style="background:var(--surface2);padding:8px;font-size:11px;font-weight:700;color:var(--on-surface-var);text-align:center">%</div>
+          <div style="background:var(--surface2);padding:8px;font-size:11px;font-weight:700;color:var(--on-surface-var);text-align:center">Weight</div>
+          <div style="background:var(--surface2);padding:8px;font-size:11px;font-weight:700;color:var(--on-surface-var);text-align:center">Reps</div>
+          <div style="background:var(--surface);padding:8px;font-size:13px;font-weight:700;color:var(--primary);text-align:center">100%</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">117 kg</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">1</div>
+          <div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">95%</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">111 kg</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">2–3</div>
+          <div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">90%</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">105 kg</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">4–5</div>
+          <div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">85%</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">99 kg</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">6</div>
+          <div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">80%</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">94 kg</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">7–8</div>
+          <div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">75%</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">88 kg</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">9–10</div>
+          <div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">70%</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">82 kg</div><div style="background:var(--surface);padding:8px;font-size:13px;text-align:center">11–12</div>
+          <div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">65%</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">76 kg</div><div style="background:var(--surface2);padding:8px;font-size:13px;text-align:center">15</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECOVERY INSIGHTS -->
+  <div class="screen" id="screen-recovery-insights">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Recovery Insights</h2><p>Based on recent sessions</p></div>
+    </div>
+    <div class="content">
+      <!-- Legend -->
+      <div style="display:flex;gap:16px;flex-wrap:wrap;padding:4px 0 8px;font-size:12px">
+        <span><span style="color:#4CAF50">●</span> Ready (&gt;48h)</span>
+        <span><span style="color:#FF9800">●</span> Recovering (24–48h)</span>
+        <span><span style="color:#F44336">●</span> Trained Today</span>
+        <span><span style="color:#9E9E9E">●</span> Never</span>
+      </div>
+      <!-- Ready group -->
+      <div style="font-size:11px;font-weight:700;color:#4CAF50;letter-spacing:1px;padding:8px 0 4px">READY TO TRAIN</div>
+      <div class="card-sm" style="border-left:3px solid #4CAF50;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:700">Chest</div><div style="font-size:12px;color:var(--on-surface-var)">Last trained: 3 days ago</div></div>
+        <span style="background:#4CAF5022;color:#4CAF50;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700">Ready ✓</span>
+      </div>
+      <div class="card-sm" style="border-left:3px solid #4CAF50;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:700">Legs</div><div style="font-size:12px;color:var(--on-surface-var)">Last trained: 4 days ago</div></div>
+        <span style="background:#4CAF5022;color:#4CAF50;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700">Ready ✓</span>
+      </div>
+      <!-- Recovering group -->
+      <div style="font-size:11px;font-weight:700;color:#FF9800;letter-spacing:1px;padding:12px 0 4px">RECOVERING</div>
+      <div class="card-sm" style="border-left:3px solid #FF9800;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:700">Back</div><div style="font-size:12px;color:var(--on-surface-var)">Last trained: 36 hours ago</div></div>
+        <span style="background:#FF980022;color:#FF9800;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700">⏱ ~12h left</span>
+      </div>
+      <div class="card-sm" style="border-left:3px solid #FF9800;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:700">Biceps</div><div style="font-size:12px;color:var(--on-surface-var)">Last trained: 36 hours ago</div></div>
+        <span style="background:#FF980022;color:#FF9800;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700">⏱ ~12h left</span>
+      </div>
+      <!-- Trained today -->
+      <div style="font-size:11px;font-weight:700;color:#F44336;letter-spacing:1px;padding:12px 0 4px">TRAINED TODAY</div>
+      <div class="card-sm" style="border-left:3px solid #F44336;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:700">Shoulders</div><div style="font-size:12px;color:var(--on-surface-var)">Last trained: today</div></div>
+        <span style="background:#F4433622;color:#F44336;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700">Fresh</span>
+      </div>
+      <!-- Never -->
+      <div style="font-size:11px;font-weight:700;color:#9E9E9E;letter-spacing:1px;padding:12px 0 4px">NEVER TRAINED</div>
+      <div class="card-sm" style="border-left:3px solid #9E9E9E;display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:700">Core</div><div style="font-size:12px;color:var(--on-surface-var)">No sessions recorded</div></div>
+        <span style="background:var(--surface2);color:var(--on-surface-var);padding:4px 12px;border-radius:12px;font-size:12px;font-weight:700">— Never</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY MEASUREMENTS -->
+  <div class="screen" id="screen-body-measurements">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Body Measurements</h2></div>
+    </div>
+    <div class="content">
+      <!-- Latest card -->
+      <div class="card">
+        <div class="card-title">📏 Latest — 18 May 2026</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">82.5</div><div style="font-size:11px;color:var(--on-surface-var)">Weight (kg)</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">96</div><div style="font-size:11px;color:var(--on-surface-var)">Chest (cm)</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">78</div><div style="font-size:11px;color:var(--on-surface-var)">Waist (cm)</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">38</div><div style="font-size:11px;color:var(--on-surface-var)">Biceps (cm)</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">58</div><div style="font-size:11px;color:var(--on-surface-var)">Thighs (cm)</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">18.5%</div><div style="font-size:11px;color:var(--on-surface-var)">Body Fat</div></div>
+        </div>
+      </div>
+      <!-- Charts row -->
+      <div style="display:flex;gap:10px;margin-bottom:12px">
+        <div class="card" style="flex:1;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px">Weight Trend</div>
+          <svg viewBox="0 0 140 60" width="100%" height="60">
+            <polyline points="10,45 30,40 50,38 70,35 90,33 110,30 130,28" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="10" cy="45" r="3" fill="var(--primary)"/>
+            <circle cx="50" cy="38" r="3" fill="var(--primary)"/>
+            <circle cx="90" cy="33" r="3" fill="var(--primary)"/>
+            <circle cx="130" cy="28" r="3" fill="var(--primary)"/>
+            <text x="0" y="55" font-size="8" fill="var(--on-surface-var)">Mar</text>
+            <text x="40" y="55" font-size="8" fill="var(--on-surface-var)">Apr</text>
+            <text x="80" y="55" font-size="8" fill="var(--on-surface-var)">May</text>
+          </svg>
+        </div>
+        <div class="card" style="flex:1;padding:12px">
+          <div style="font-size:12px;font-weight:700;color:#E53935;margin-bottom:8px">Waist Trend</div>
+          <svg viewBox="0 0 140 60" width="100%" height="60">
+            <polyline points="10,30 30,32 50,35 70,33 90,36 110,38 130,40" fill="none" stroke="#E53935" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="10" cy="30" r="3" fill="#E53935"/>
+            <circle cx="50" cy="35" r="3" fill="#E53935"/>
+            <circle cx="90" cy="36" r="3" fill="#E53935"/>
+            <circle cx="130" cy="40" r="3" fill="#E53935"/>
+            <text x="0" y="55" font-size="8" fill="var(--on-surface-var)">Mar</text>
+            <text x="40" y="55" font-size="8" fill="var(--on-surface-var)">Apr</text>
+            <text x="80" y="55" font-size="8" fill="var(--on-surface-var)">May</text>
+          </svg>
+        </div>
+      </div>
+      <!-- History -->
+      <div class="card">
+        <div class="card-title">📅 History</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--outline)">
+          <div><div style="font-weight:700;font-size:14px">18 May 2026</div><div style="font-size:12px;color:var(--on-surface-var)">82.5 kg · 78cm waist</div></div>
+          <span style="color:var(--on-surface-var)">›</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--outline)">
+          <div><div style="font-weight:700;font-size:14px">11 May 2026</div><div style="font-size:12px;color:var(--on-surface-var)">83.2 kg · 79cm waist</div></div>
+          <span style="color:var(--on-surface-var)">›</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0">
+          <div><div style="font-weight:700;font-size:14px">4 May 2026</div><div style="font-size:12px;color:var(--on-surface-var)">84.0 kg · 80cm waist</div></div>
+          <span style="color:var(--on-surface-var)">›</span>
+        </div>
+      </div>
+    </div>
+    <div class="fab">+</div>
+  </div>
+
+  <!-- MEAL TEMPLATES -->
+  <div class="screen" id="screen-meal-templates">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Meal Templates</h2><p>Save &amp; reuse full day plans</p></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-size:15px;font-weight:700">Lean Bulk Day</div>
+            <div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">High protein, moderate carbs · 6 meals</div>
+          </div>
+          <span class="badge badge-green">3,200 kcal</span>
+        </div>
+        <div style="font-size:12px;color:var(--on-surface-var);margin-bottom:12px">Breakfast, Lunch, Pre-workout, Post-workout, Dinner, Snack</div>
+        <div style="display:flex;gap:8px">
+          <button style="flex:1;padding:8px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">▶ Apply Today</button>
+          <button style="padding:8px 12px;background:var(--surface2);color:var(--on-surface-var);border:1px solid var(--outline);border-radius:10px;font-size:13px;cursor:pointer">🗑</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px">
+          <div>
+            <div style="font-size:15px;font-weight:700">Cut Day</div>
+            <div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">High protein, low carbs · 4 meals</div>
+          </div>
+          <span class="badge badge-orange">2,100 kcal</span>
+        </div>
+        <div style="font-size:12px;color:var(--on-surface-var);margin-bottom:12px">Breakfast, Lunch, Dinner, Evening Snack</div>
+        <div style="display:flex;gap:8px">
+          <button style="flex:1;padding:8px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">▶ Apply Today</button>
+          <button style="padding:8px 12px;background:var(--surface2);color:var(--on-surface-var);border:1px solid var(--outline);border-radius:10px;font-size:13px;cursor:pointer">🗑</button>
+        </div>
+      </div>
+    </div>
+    <div class="fab">+</div>
+  </div>
+
+  <!-- WEEKLY REPORT -->
+  <div class="screen" id="screen-weekly-report">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Weekly Report</h2></div>
+    </div>
+    <div class="content">
+      <!-- Week selector -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0 12px">
+        <button style="background:var(--surface2);border:1px solid var(--outline);padding:6px 14px;border-radius:10px;cursor:pointer;font-size:16px;color:var(--on-surface)">‹</button>
+        <span style="font-weight:700;font-size:15px">12–18 May 2026</span>
+        <button style="background:var(--surface2);border:1px solid var(--outline);padding:6px 14px;border-radius:10px;cursor:pointer;font-size:16px;color:var(--on-surface)">›</button>
+      </div>
+      <!-- Nutrition chart -->
+      <div class="card">
+        <div class="card-title">🍽️ Nutrition</div>
+        <svg viewBox="0 0 300 100" width="100%" height="80">
+          <!-- 7 bars Mon-Sun -->
+          <rect x="10" y="30" width="28" height="60" rx="4" fill="#4CAF50" opacity="0.8"/>
+          <rect x="48" y="20" width="28" height="70" rx="4" fill="#4CAF50" opacity="0.8"/>
+          <rect x="86" y="45" width="28" height="45" rx="4" fill="#F44336" opacity="0.8"/>
+          <rect x="124" y="35" width="28" height="55" rx="4" fill="#4CAF50" opacity="0.8"/>
+          <rect x="162" y="25" width="28" height="65" rx="4" fill="#4CAF50" opacity="0.8"/>
+          <rect x="200" y="50" width="28" height="40" rx="4" fill="#F44336" opacity="0.8"/>
+          <rect x="238" y="40" width="28" height="50" rx="4" fill="#4CAF50" opacity="0.8"/>
+          <!-- Day labels -->
+          <text x="18" y="98" font-size="9" fill="var(--on-surface-var)">M</text>
+          <text x="57" y="98" font-size="9" fill="var(--on-surface-var)">T</text>
+          <text x="95" y="98" font-size="9" fill="var(--on-surface-var)">W</text>
+          <text x="133" y="98" font-size="9" fill="var(--on-surface-var)">T</text>
+          <text x="171" y="98" font-size="9" fill="var(--on-surface-var)">F</text>
+          <text x="209" y="98" font-size="9" fill="var(--on-surface-var)">S</text>
+          <text x="247" y="98" font-size="9" fill="var(--on-surface-var)">S</text>
+        </svg>
+        <div class="stats-row" style="margin-top:4px">
+          <div class="stat-box"><div class="stat-val" style="font-size:18px">2,340</div><div class="stat-label">Avg kcal</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:18px">71%</div><div class="stat-label">Adherence</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:18px">5/7</div><div class="stat-label">Days Logged</div></div>
+        </div>
+      </div>
+      <!-- Workout summary -->
+      <div class="card">
+        <div class="card-title">💪 Workouts</div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val" style="font-size:18px">3</div><div class="stat-label">Sessions</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:18px">7🔥</div><div class="stat-label">Streak</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:18px">58</div><div class="stat-label">Total Sets</div></div>
+        </div>
+        <div style="margin-top:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--on-surface-var);margin-bottom:6px">MUSCLES TRAINED</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            <span class="chip chip-primary">Chest</span><span class="chip chip-secondary">Back</span><span class="chip chip-primary">Shoulders</span><span class="chip chip-secondary">Legs</span><span class="chip" style="background:var(--primary-container);color:var(--primary)">Biceps</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MACRO RECOMMENDATIONS -->
+  <div class="screen" id="screen-macro-recommendations">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Macro Calculator</h2></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">👤 Your Stats</div>
+        <div class="form-row">
+          <div style="flex:1"><div class="form-label">Weight (kg)</div><input class="form-input" value="80" style="margin-bottom:0"/></div>
+          <div style="flex:1"><div class="form-label">Height (cm)</div><input class="form-input" value="178" style="margin-bottom:0"/></div>
+        </div>
+        <div class="form-row" style="margin-top:10px">
+          <div style="flex:1"><div class="form-label">Age</div><input class="form-input" value="26" style="margin-bottom:0"/></div>
+          <div style="flex:1"><div class="form-label">Sex</div>
+            <div style="display:flex;gap:6px;margin-top:4px">
+              <span class="filter-pill active" style="flex:1;text-align:center">Male</span>
+              <span class="filter-pill" style="flex:1;text-align:center">Female</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏃 Activity Level</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span class="filter-pill">Sedentary (desk job)</span>
+          <span class="filter-pill active">Moderately Active (3–4x/week)</span>
+          <span class="filter-pill">Active (5–6x/week)</span>
+          <span class="filter-pill">Very Active (athlete)</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Goal</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          <span class="filter-pill">Cut</span><span class="filter-pill active">Maintain</span><span class="filter-pill">Bulk</span><span class="filter-pill">Recomp</span>
+        </div>
+      </div>
+      <button style="width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:16px">🧮 Calculate</button>
+      <!-- Results -->
+      <div class="card">
+        <div class="card-title">📊 Recommendations</div>
+        <div class="stats-row">
+          <div class="stat-box"><div class="stat-val" style="font-size:16px">1,847</div><div class="stat-unit">kcal/day</div><div class="stat-label">BMR</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:16px">2,863</div><div class="stat-unit">kcal/day</div><div class="stat-label">TDEE</div></div>
+          <div class="stat-box"><div class="stat-val" style="font-size:16px">2,863</div><div class="stat-unit">target</div><div class="stat-label">Goal</div></div>
+        </div>
+        <div style="margin-top:12px">
+          <div class="macro-bar"><div class="macro-bar-label"><span style="font-weight:700">Protein</span><span style="color:var(--primary)">160g · 640 kcal · 22%</span></div><div class="macro-bar-track"><div class="macro-bar-fill" style="width:22%;background:#4ECDC4"></div></div></div>
+          <div class="macro-bar"><div class="macro-bar-label"><span style="font-weight:700">Carbs</span><span style="color:#FF9800">358g · 1431 kcal · 50%</span></div><div class="macro-bar-track"><div class="macro-bar-fill" style="width:50%;background:#FF9800"></div></div></div>
+          <div class="macro-bar"><div class="macro-bar-label"><span style="font-weight:700">Fat</span><span style="color:#9C27B0">88g · 792 kcal · 28%</span></div><div class="macro-bar-track"><div class="macro-bar-fill" style="width:28%;background:#9C27B0"></div></div></div>
+        </div>
+        <button style="width:100%;padding:12px;background:var(--primary-container);color:var(--primary);border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:12px">✓ Apply as Daily Goal</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -839,6 +1372,15 @@
     'workout-plan-form': 'screen-workout-plan-form',
     micronutrients: 'screen-micronutrients', 'micronutrient-detail': 'screen-micronutrient-detail',
     supplements: 'screen-supplements', more: 'screen-more',
+    'workout-session': 'screen-workout-session',
+    'workout-history': 'screen-workout-history',
+    'workout-generator': 'screen-workout-generator',
+    '1rm-calculator': 'screen-1rm-calculator',
+    'recovery-insights': 'screen-recovery-insights',
+    'body-measurements': 'screen-body-measurements',
+    'meal-templates': 'screen-meal-templates',
+    'weekly-report': 'screen-weekly-report',
+    'macro-recommendations': 'screen-macro-recommendations',
   };
   let current = 'dashboard';
 
