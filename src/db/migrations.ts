@@ -179,4 +179,65 @@ export const migrations: Migration[] = [
       `CREATE INDEX IF NOT EXISTS idx_wpe_plan ON workout_plan_exercises(plan_id)`,
     ],
   },
+  {
+    version: 6,
+    up: [
+      `CREATE TABLE IF NOT EXISTS workout_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plan_id INTEGER REFERENCES workout_plans(id) ON DELETE SET NULL,
+        plan_name TEXT,
+        started_at TEXT NOT NULL,
+        ended_at TEXT,
+        duration_sec INTEGER,
+        total_sets INTEGER DEFAULT 0,
+        notes TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS workout_session_sets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER NOT NULL REFERENCES workout_sessions(id) ON DELETE CASCADE,
+        exercise_id TEXT NOT NULL,
+        exercise_name TEXT NOT NULL,
+        set_number INTEGER NOT NULL,
+        weight_kg REAL,
+        reps INTEGER,
+        completed INTEGER DEFAULT 0,
+        notes TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_wss_session ON workout_session_sets(session_id)`,
+      `CREATE INDEX IF NOT EXISTS idx_wss_exercise ON workout_session_sets(exercise_id)`,
+      `CREATE TABLE IF NOT EXISTS body_measurements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date TEXT NOT NULL UNIQUE,
+        weight_kg REAL,
+        chest_cm REAL,
+        waist_cm REAL,
+        hips_cm REAL,
+        biceps_cm REAL,
+        thighs_cm REAL,
+        calves_cm REAL,
+        shoulders_cm REAL,
+        body_fat_pct REAL,
+        photo_path TEXT,
+        notes TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS meal_templates (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT,
+        created_at TEXT DEFAULT (datetime('now'))
+      )`,
+      `CREATE TABLE IF NOT EXISTS meal_template_entries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        template_id INTEGER NOT NULL REFERENCES meal_templates(id) ON DELETE CASCADE,
+        meal_type TEXT NOT NULL,
+        food_type TEXT NOT NULL,
+        food_id INTEGER NOT NULL,
+        food_name TEXT NOT NULL,
+        grams REAL NOT NULL
+      )`,
+    ],
+  },
 ];
