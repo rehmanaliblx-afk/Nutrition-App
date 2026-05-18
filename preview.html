@@ -2,1325 +2,850 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nutrition App Preview</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FitTrack — Nutrition & Workout App Preview</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; min-height: 100vh; font-family: 'Segoe UI', sans-serif; }
-  .phone-wrap { position: relative; }
-  .phone { width: 390px; height: 844px; background: #f5f5f5; border-radius: 50px; border: 8px solid #222; box-shadow: 0 30px 80px rgba(0,0,0,0.7), inset 0 0 0 2px #444; overflow: hidden; position: relative; }
-  .notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 30px; background: #222; border-radius: 0 0 20px 20px; z-index: 100; }
-  .screen { width: 100%; height: 100%; overflow: hidden; background: #f5f5f5; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --primary: #4ECDC4; --primary-dark: #3ab5ad; --primary-container: #d0f4f2;
+    --bg: #f5f7fa; --surface: #ffffff; --surface2: #f0f0f5;
+    --on-surface: #1a1a2e; --on-surface-var: #666; --outline: #e0e0e0;
+    --red: #E63946; --orange: #FF9800; --green: #4CAF50;
+    --sidebar-w: 280px;
+  }
+  .dark {
+    --bg: #121212; --surface: #1e1e2e; --surface2: #2a2a3e;
+    --on-surface: #e0e0e0; --on-surface-var: #999; --outline: #333;
+    --primary-container: #1a3a38;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--on-surface); height: 100vh; overflow: hidden; }
 
-  /* Dark mode toggle */
-  .dark .screen { background: #121212; color: #fff; }
-  .dark .card { background: #1e1e1e !important; }
-  .dark .top-bar { background: #1e1e1e !important; color: #fff !important; }
-  .dark .tab-bar { background: #1e1e1e !important; border-color: #333 !important; }
-  .dark .tab-btn { color: #888 !important; }
-  .dark .tab-btn.active { color: #4ECDC4 !important; }
-  .dark .list-item { border-color: #333 !important; }
-  .dark .modal-bg { background: #1e1e1e !important; }
-  .dark .input-field { background: #2a2a2a !important; border-color: #444 !important; color: #fff !important; }
-  .dark .section-title { color: #aaa !important; }
-  .dark .entry-desc { color: #888 !important; }
+  /* Phone shell */
+  .phone-shell { width: 390px; height: 844px; margin: 20px auto; background: var(--surface); border-radius: 44px; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,0.25), 0 0 0 12px #1a1a1a, inset 0 0 0 2px #333; }
+  @media (max-height: 900px) { .phone-shell { height: calc(100vh - 40px); } }
 
-  .page { display: none; flex-direction: column; height: 100%; padding-top: 30px; }
-  .page.active { display: flex; }
+  /* Sidebar */
+  .sidebar-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); pointer-events: none; transition: background 0.3s; z-index: 50; }
+  .sidebar-overlay.open { background: rgba(0,0,0,0.45); pointer-events: all; }
+  .sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: var(--sidebar-w); background: var(--surface); z-index: 51; transform: translateX(-100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); overflow-y: auto; }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-header { background: var(--primary); padding: 44px 20px 20px; display: flex; align-items: center; gap: 14px; }
+  .sidebar-logo { width: 44px; height: 44px; background: rgba(255,255,255,0.2); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+  .sidebar-app-name { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: 0.3px; }
+  .sidebar-app-sub { color: rgba(255,255,255,0.75); font-size: 12px; margin-top: 2px; }
+  .sidebar-section-label { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--primary); background: var(--primary-container); padding: 8px 16px; display: flex; align-items: center; gap: 8px; }
+  .sidebar-item { display: flex; align-items: center; gap: 14px; padding: 13px 16px; margin: 2px 8px; border-radius: 12px; cursor: pointer; color: var(--on-surface-var); font-size: 14px; transition: all 0.15s; }
+  .sidebar-item:hover, .sidebar-item.active { background: var(--primary-container); color: var(--primary); font-weight: 600; }
+  .sidebar-item .s-icon { font-size: 20px; width: 26px; text-align: center; }
+  .sidebar-divider { height: 1px; background: var(--outline); margin: 8px 16px; }
 
-  /* Top bar */
-  .top-bar { background: #fff; padding: 12px 16px 8px; font-size: 17px; font-weight: 700; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 8px; }
-  .top-bar .back-btn { cursor: pointer; color: #4ECDC4; font-size: 20px; }
+  /* Screen area */
+  .screen { position: absolute; inset: 0; overflow: hidden; display: none; flex-direction: column; }
+  .screen.active { display: flex; }
 
-  /* Scrollable content */
-  .scroll { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-  .scroll::-webkit-scrollbar { width: 3px; }
-  .scroll::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+  /* App bar */
+  .app-bar { background: var(--primary); color: #fff; padding: 44px 16px 12px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .app-bar .back-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; background: rgba(255,255,255,0.15); font-size: 18px; flex-shrink: 0; }
+  .app-bar .menu-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 22px; flex-shrink: 0; }
+  .app-bar-title { flex: 1; }
+  .app-bar-title h2 { font-size: 20px; font-weight: 700; }
+  .app-bar-title p { font-size: 12px; opacity: 0.75; margin-top: 1px; }
+  .app-bar .action-btn { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+
+  /* Content */
+  .content { flex: 1; overflow-y: auto; padding: 16px; }
+  .content::-webkit-scrollbar { display: none; }
 
   /* Cards */
-  .card { background: #fff; border-radius: 14px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-  .card-title { font-size: 13px; font-weight: 700; opacity: 0.6; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .card { background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--outline); }
+  .card-sm { background: var(--surface); border-radius: 12px; padding: 12px; margin-bottom: 8px; border: 1px solid var(--outline); }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .card-title::after { content: ''; flex: 1; height: 1px; background: var(--outline); }
+
+  /* Hero section */
+  .hero { background: var(--primary); color: #fff; padding: 20px; margin-bottom: 0; }
+  .hero h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .hero p { font-size: 13px; opacity: 0.8; }
+  .hero-badges { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .badge { padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+  .badge-white { background: rgba(255,255,255,0.2); color: #fff; }
+  .badge-green { background: #4CAF5022; color: #4CAF50; }
+  .badge-orange { background: #FF980022; color: #FF9800; }
+  .badge-red { background: #E6394622; color: #E63946; }
+
+  /* Muscle chips */
+  .chip-group { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .chip { padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+  .chip-primary { background: #E5393522; color: #E53935; }
+  .chip-secondary { background: #FB8C0022; color: #FB8C00; }
+  .chip-stabilizer { background: #43A04722; color: #43A047; }
+  .chip-cat { background: var(--primary-container); color: var(--primary); }
 
   /* Calorie ring */
-  .ring-container { display: flex; justify-content: center; padding: 8px 0 4px; }
-  .ring { position: relative; width: 160px; height: 160px; }
+  .ring-container { display: flex; justify-content: center; padding: 16px 0; }
+  .ring { position: relative; width: 140px; height: 140px; }
   .ring svg { transform: rotate(-90deg); }
-  .ring-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
-  .ring-kcal { font-size: 28px; font-weight: 800; color: #FF6B6B; }
-  .ring-label { font-size: 11px; opacity: 0.5; }
+  .ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .ring-kcal { font-size: 28px; font-weight: 800; color: var(--on-surface); }
+  .ring-label { font-size: 11px; color: var(--on-surface-var); }
 
   /* Macro bars */
-  .macro-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .macro-label { font-size: 12px; width: 55px; font-weight: 600; }
-  .macro-track { flex: 1; height: 8px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
-  .macro-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
-  .macro-val { font-size: 11px; opacity: 0.6; width: 45px; text-align: right; }
+  .macro-bar { margin-bottom: 10px; }
+  .macro-bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .macro-bar-track { height: 6px; background: var(--outline); border-radius: 3px; overflow: hidden; }
+  .macro-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
 
-  /* Sub macros */
-  .sub-row { display: flex; justify-content: space-around; }
-  .sub-item { text-align: center; }
-  .sub-val { font-size: 15px; font-weight: 700; }
-  .sub-lbl { font-size: 10px; opacity: 0.5; margin-top: 2px; }
+  /* List rows */
+  .list-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--outline); cursor: pointer; }
+  .list-row:last-child { border-bottom: none; }
+  .list-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; background: var(--primary-container); }
+  .list-info { flex: 1; min-width: 0; }
+  .list-title { font-size: 14px; font-weight: 600; color: var(--on-surface); }
+  .list-sub { font-size: 12px; color: var(--on-surface-var); margin-top: 1px; }
+  .list-right { font-size: 18px; color: var(--on-surface-var); }
 
-  /* Water widget */
-  .water-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .water-track { height: 8px; background: #e3f2fd; border-radius: 4px; overflow: hidden; margin-bottom: 10px; }
-  .water-fill { height: 100%; background: #64B5F6; border-radius: 4px; transition: width 0.5s; }
-  .water-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-  .water-btn { background: #e3f2fd; border: none; border-radius: 20px; padding: 4px 10px; font-size: 12px; color: #1565C0; cursor: pointer; font-weight: 600; }
-  .water-btn:hover { background: #bbdefb; }
+  /* Steps */
+  .step-row { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+  .step-num { width: 28px; height: 28px; border-radius: 8px; background: var(--primary-container); color: var(--primary); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-text { font-size: 14px; line-height: 22px; color: var(--on-surface); padding-top: 3px; }
 
-  /* Quick row */
-  .quick-row { display: flex; gap: 10px; }
-  .quick-card { flex: 1; background: #fff; border-radius: 14px; padding: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-
-  /* Meal sections */
-  .meal-section { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-  .meal-header { display: flex; align-items: center; padding: 10px 12px; background: #fafafa; border-bottom: 1px solid #f0f0f0; }
-  .meal-title { flex: 1; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; opacity: 0.6; }
-  .meal-kcal { font-size: 11px; opacity: 0.45; margin-right: 4px; }
-  .meal-icons { display: flex; gap: 2px; }
-  .icon-btn { width: 28px; height: 28px; border: none; background: none; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: background 0.2s; }
-  .icon-btn:hover { background: #f0f0f0; }
-  .entry-item { padding: 8px 12px; border-bottom: 1px solid #f5f5f5; display: flex; align-items: center; }
-  .entry-info { flex: 1; }
-  .entry-name { font-size: 13px; font-weight: 600; }
-  .entry-desc { font-size: 11px; opacity: 0.55; margin-top: 1px; }
-  .empty-meal { padding: 10px 12px; font-size: 12px; opacity: 0.35; font-style: italic; }
-
-  /* Tab bar */
-  .tab-bar { background: #fff; border-top: 1px solid #eee; display: flex; padding-bottom: 8px; }
-  .tab-btn { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 2px 4px; cursor: pointer; border: none; background: none; color: #999; font-size: 10px; gap: 3px; transition: color 0.2s; }
-  .tab-btn.active { color: #4ECDC4; }
-  .tab-icon { font-size: 20px; }
-
-  /* Chips */
-  .chip-row { display: flex; gap: 6px; flex-wrap: wrap; }
-  .chip { padding: 5px 12px; border-radius: 20px; border: 1.5px solid #ddd; font-size: 12px; cursor: pointer; background: #fff; font-weight: 500; transition: all 0.2s; }
-  .chip.selected { background: #4ECDC4; border-color: #4ECDC4; color: #fff; }
-
-  /* Input */
-  .input-group { margin-bottom: 8px; }
-  .input-label { font-size: 11px; font-weight: 600; opacity: 0.6; margin-bottom: 4px; }
-  .input-field { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 14px; background: #fff; outline: none; transition: border-color 0.2s; }
-  .input-field:focus { border-color: #4ECDC4; }
-
-  /* Buttons */
-  .btn-primary { width: 100%; padding: 13px; background: #4ECDC4; color: #fff; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-  .btn-primary:hover { background: #3dbdb4; }
-  .btn-outline { width: 100%; padding: 12px; background: #fff; color: #4ECDC4; border: 1.5px solid #4ECDC4; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 6px; }
-  .btn-danger { width: 100%; padding: 12px; background: #fff; color: #E63946; border: 1.5px solid #E63946; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+  /* Tip rows */
+  .tip-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; font-size: 14px; line-height: 21px; }
+  .tip-icon { flex-shrink: 0; margin-top: 2px; }
 
   /* FAB */
-  .fab { position: absolute; right: 20px; bottom: 80px; width: 52px; height: 52px; background: #4ECDC4; border-radius: 50%; border: none; color: #fff; font-size: 26px; cursor: pointer; box-shadow: 0 4px 14px rgba(78,205,196,0.5); display: flex; align-items: center; justify-content: center; z-index: 10; transition: transform 0.2s; }
-  .fab:hover { transform: scale(1.1); }
+  .fab { position: absolute; right: 20px; bottom: 28px; width: 56px; height: 56px; border-radius: 18px; background: var(--primary); color: #fff; font-size: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 20px rgba(78,205,196,0.45); }
 
-  /* List items */
-  .list-item { display: flex; align-items: center; padding: 12px 14px; background: #fff; border-bottom: 1px solid #f5f5f5; cursor: pointer; transition: background 0.15s; }
-  .list-item:hover { background: #f9f9f9; }
-  .list-item:last-child { border-bottom: none; }
-  .list-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-right: 10px; }
-  .list-content { flex: 1; }
-  .list-title { font-size: 14px; font-weight: 600; }
-  .list-desc { font-size: 12px; opacity: 0.5; margin-top: 1px; }
-  .list-right { color: #bbb; font-size: 16px; }
-  .list-section { background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-  .section-title { font-size: 11px; font-weight: 700; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px; padding: 10px 14px 6px; }
+  /* Workout plan card */
+  .plan-card { background: var(--surface); border: 1px solid var(--outline); border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .plan-card-icon { width: 44px; height: 44px; border-radius: 12px; background: var(--primary-container); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
 
-  /* Modal */
-  .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 50; display: none; align-items: flex-end; }
-  .modal-overlay.show { display: flex; }
-  .modal-bg { background: #fff; border-radius: 24px 24px 0 0; width: 100%; max-height: 75%; display: flex; flex-direction: column; }
-  .modal-header { padding: 16px; font-size: 16px; font-weight: 700; border-bottom: 1px solid #eee; }
-  .modal-list { overflow-y: auto; flex: 1; }
-  .modal-tabs { display: flex; gap: 8px; padding: 8px 12px; }
-  .modal-tab { padding: 5px 14px; border-radius: 20px; border: 1.5px solid #ddd; font-size: 12px; cursor: pointer; background: #fff; font-weight: 500; }
-  .modal-tab.active { background: #4ECDC4; border-color: #4ECDC4; color: #fff; }
+  /* Exercise card */
+  .ex-card { background: var(--surface); border: 1px solid var(--outline); border-radius: 14px; padding: 14px; margin-bottom: 8px; cursor: pointer; }
+  .ex-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+  .ex-name { font-size: 14px; font-weight: 700; flex: 1; }
+  .ex-muscles { font-size: 12px; color: var(--primary); margin-bottom: 2px; }
+  .ex-sec-muscles { font-size: 11px; color: var(--on-surface-var); }
+  .ex-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+  .ex-equip { font-size: 12px; color: var(--on-surface-var); }
 
-  /* Badge */
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
-  .badge-green { background: #e8f5e9; color: #2e7d32; }
-  .badge-blue { background: #e3f2fd; color: #1565c0; }
+  /* Category header */
+  .cat-header { display: flex; align-items: center; gap: 8px; padding: 14px 0 6px; }
+  .cat-header-title { font-size: 13px; font-weight: 700; color: var(--primary); letter-spacing: 0.7px; text-transform: uppercase; }
+
+  /* Filter pills */
+  .filter-row { display: flex; gap: 8px; overflow-x: auto; padding: 10px 16px; scrollbar-width: none; flex-shrink: 0; background: var(--surface); border-bottom: 1px solid var(--outline); }
+  .filter-row::-webkit-scrollbar { display: none; }
+  .filter-pill { padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; background: var(--surface2); color: var(--on-surface-var); white-space: nowrap; cursor: pointer; border: 1px solid var(--outline); transition: all 0.15s; flex-shrink: 0; }
+  .filter-pill.active { background: var(--primary-container); color: var(--primary); border-color: var(--primary); }
+
+  /* Search bar */
+  .search-bar { padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--outline); }
+  .search-input { width: 100%; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--outline); background: var(--surface2); font-size: 14px; color: var(--on-surface); outline: none; }
+
+  /* Form */
+  .form-label { font-size: 12px; font-weight: 600; color: var(--on-surface-var); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--outline); background: var(--surface); font-size: 14px; color: var(--on-surface); outline: none; margin-bottom: 14px; }
+  .form-input:focus { border-color: var(--primary); }
+  .form-row { display: flex; gap: 10px; }
+  .form-row .form-input { flex: 1; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-outlined { background: transparent; border: 1px solid var(--outline); color: var(--on-surface); }
+  .btn-danger { background: #E6394622; color: var(--red); border: 1px solid var(--red); }
+  .btn-yt { background: #FF0000; color: #fff; width: 100%; justify-content: center; border-radius: 14px; padding: 14px; font-size: 15px; margin-bottom: 16px; }
+
+  /* Progress */
+  .progress-track { height: 8px; background: var(--outline); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; background: var(--primary); }
+
+  /* Water */
+  .water-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .water-btn { flex: 1; min-width: 70px; padding: 8px 0; background: var(--primary-container); color: var(--primary); border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  /* Chart */
+  .chart-wrap { background: var(--surface); border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--outline); overflow: hidden; }
 
   /* Stats */
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
-  .stat-box { text-align: center; }
-  .stat-val { font-size: 18px; font-weight: 800; }
-  .stat-unit { font-size: 10px; opacity: 0.5; }
-  .stat-lbl { font-size: 10px; opacity: 0.45; margin-top: 2px; }
+  .stats-row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .stat-box { flex: 1; background: var(--surface); border: 1px solid var(--outline); border-radius: 14px; padding: 14px 12px; text-align: center; }
+  .stat-val { font-size: 22px; font-weight: 800; color: var(--on-surface); }
+  .stat-unit { font-size: 11px; color: var(--on-surface-var); }
+  .stat-label { font-size: 11px; color: var(--on-surface-var); margin-top: 2px; }
 
-  /* Date nav */
-  .date-nav { display: flex; align-items: center; justify-content: center; padding: 6px 0; }
-  .date-nav-btn { width: 36px; height: 36px; border: none; background: none; font-size: 20px; cursor: pointer; border-radius: 50%; transition: background 0.2s; }
-  .date-nav-btn:hover { background: #f0f0f0; }
-  .date-text { font-size: 16px; font-weight: 700; min-width: 120px; text-align: center; }
+  /* Alt exercise */
+  .alt-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--outline); cursor: pointer; }
+  .alt-row:last-child { border-bottom: none; }
 
-  /* Scanner */
-  .scanner-preview { background: #000; border-radius: 12px; height: 160px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; margin: 8px 0; }
-  .scanner-frame { width: 160px; height: 80px; border: 3px solid #4ECDC4; border-radius: 8px; position: relative; }
-  .scanner-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: #4ECDC4; animation: scan 1.5s ease-in-out infinite; }
-  @keyframes scan { 0%,100% { top: 20%; } 50% { top: 80%; } }
-  .scanner-hint { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 8px; text-align: center; }
+  /* Detail rows */
+  .detail-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--outline); }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-key { font-size: 12px; font-weight: 700; color: var(--on-surface-var); width: 120px; flex-shrink: 0; }
+  .detail-val { font-size: 13px; color: var(--on-surface); flex: 1; }
 
-  /* Progress ring helper */
-  .weight-diff-pos { color: #FF5722; font-size: 12px; }
-  .weight-diff-neg { color: #4CAF50; font-size: 12px; }
+  /* Source chips */
+  .source-chip { display: inline-block; padding: 4px 10px; background: var(--surface2); border: 1px solid var(--outline); border-radius: 8px; font-size: 12px; margin: 3px; }
 
-  /* Subheader */
-  .subheader { font-size: 12px; font-weight: 700; opacity: 0.45; padding: 10px 12px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  /* Dark toggle */
+  .dark-toggle { position: fixed; top: 20px; right: 20px; background: var(--surface); border: 1px solid var(--outline); border-radius: 12px; padding: 8px 16px; cursor: pointer; font-size: 13px; color: var(--on-surface); z-index: 999; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
-  /* Controls outside phone */
-  .controls { position: absolute; top: 50%; right: -160px; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; }
-  .ctrl-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 8px 14px; cursor: pointer; font-size: 12px; transition: background 0.2s; white-space: nowrap; }
-  .ctrl-btn:hover { background: rgba(255,255,255,0.25); }
-  .ctrl-btn.active { background: #4ECDC4; border-color: #4ECDC4; }
+  /* Plan exercise row */
+  .plan-ex-row { border: 1px solid var(--outline); border-radius: 12px; padding: 12px; margin-bottom: 8px; background: var(--surface2); }
+  .plan-ex-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .plan-ex-num { width: 28px; height: 28px; border-radius: 8px; background: var(--primary-container); color: var(--primary); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
-  @media (max-width: 700px) {
-    .controls { position: static; transform: none; flex-direction: row; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
-    body { flex-direction: column; padding: 20px 10px; }
-    .phone-wrap { display: flex; flex-direction: column; align-items: center; }
-  }
+  /* Exercise list row in plan detail */
+  .ex-list-row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--outline); border-radius: 14px; margin-bottom: 8px; background: var(--surface); cursor: pointer; }
+  .ex-list-num { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-container); color: var(--primary); font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .ex-sets-badge { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--on-surface-var); margin-top: 4px; }
+
+  /* Supp */
+  .supp-card { background: var(--surface); border: 1px solid var(--outline); border-radius: 14px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+  .supp-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+  .supp-name { font-size: 15px; font-weight: 700; }
+  .supp-dose { font-size: 12px; color: var(--primary); margin-top: 2px; }
+  .supp-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+
+  /* Micro */
+  .micro-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--outline); cursor: pointer; }
+  .micro-emoji { font-size: 22px; width: 36px; text-align: center; }
+  .micro-info { flex: 1; }
+  .micro-name { font-size: 14px; font-weight: 600; }
+  .micro-cat { font-size: 11px; color: var(--on-surface-var); margin-top: 1px; }
+
+  /* Empty */
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 32px; gap: 8px; text-align: center; }
+  .empty-icon { font-size: 48px; opacity: 0.3; }
+  .empty-text { font-size: 16px; font-weight: 600; color: var(--on-surface-var); }
+  .empty-sub { font-size: 13px; color: var(--on-surface-var); }
+
+  .danger-section .card-title { color: var(--red); }
 </style>
 </head>
 <body>
+<button class="dark-toggle" onclick="document.body.classList.toggle('dark')">🌙 Dark</button>
 
-<div class="phone-wrap">
-  <div class="phone" id="phone">
-    <div class="notch"></div>
-    <div class="screen">
+<div class="phone-shell">
 
-      <!-- ═══════════════ DASHBOARD ═══════════════ -->
-      <div class="page active" id="page-dashboard">
-        <div class="top-bar">🥗 Nutrition App</div>
-        <div class="scroll">
-          <div class="date-nav">
-            <button class="date-nav-btn">‹</button>
-            <span class="date-text">Today</span>
-            <button class="date-nav-btn" style="opacity:0.3">›</button>
-          </div>
-
-          <div class="ring-container">
-            <div class="ring">
-              <svg width="160" height="160" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r="65" fill="none" stroke="#f0f0f0" stroke-width="14"/>
-                <circle cx="80" cy="80" r="65" fill="none" stroke="#FF6B6B" stroke-width="14"
-                  stroke-dasharray="408" stroke-dashoffset="102" stroke-linecap="round"/>
-              </svg>
-              <div class="ring-center">
-                <div class="ring-kcal">1,840</div>
-                <div class="ring-label">/ 2000 kcal</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="macro-bar-row">
-              <span class="macro-label" style="color:#FF6B6B">Protein</span>
-              <div class="macro-track"><div class="macro-fill" style="width:75%;background:#FF6B6B"></div></div>
-              <span class="macro-val">112/150g</span>
-            </div>
-            <div class="macro-bar-row">
-              <span class="macro-label" style="color:#FFE66D">Carbs</span>
-              <div class="macro-track"><div class="macro-fill" style="width:82%;background:#FFE66D"></div></div>
-              <span class="macro-val">196/240g</span>
-            </div>
-            <div class="macro-bar-row" style="margin-bottom:0">
-              <span class="macro-label" style="color:#A8E6CF">Fat</span>
-              <div class="macro-track"><div class="macro-fill" style="width:60%;background:#A8E6CF"></div></div>
-              <span class="macro-val">39/65g</span>
-            </div>
-          </div>
-
-          <div class="quick-row">
-            <div class="quick-card">
-              <div style="font-size:11px;font-weight:700;opacity:0.6;margin-bottom:4px">💧 Water</div>
-              <div style="font-size:14px;font-weight:800">1500 <span style="font-size:11px;opacity:0.5;font-weight:400">/ 2000 ml</span></div>
-              <div style="height:5px;background:#e3f2fd;border-radius:3px;margin-top:6px;overflow:hidden">
-                <div style="width:75%;height:100%;background:#64B5F6;border-radius:3px"></div>
-              </div>
-            </div>
-            <div class="quick-card">
-              <div style="font-size:11px;font-weight:700;opacity:0.6;margin-bottom:4px">⚖️ Weight</div>
-              <div style="font-size:14px;font-weight:800">72.3 kg</div>
-              <div class="weight-diff-neg">-0.2 kg</div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Meals Today</div>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:18px">🌅</span>
-                <span style="flex:1;font-size:14px;font-weight:600">Breakfast</span>
-                <span style="font-size:12px;opacity:0.5">480 kcal (2 items)</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:18px">☀️</span>
-                <span style="flex:1;font-size:14px;font-weight:600">Lunch</span>
-                <span style="font-size:12px;opacity:0.5">620 kcal (1 item)</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:18px">🌙</span>
-                <span style="flex:1;font-size:14px;font-weight:600">Dinner</span>
-                <span style="font-size:12px;opacity:0.5">740 kcal (3 items)</span>
-              </div>
-              <div style="display:flex;align-items:center;gap:10px">
-                <span style="font-size:18px">☕</span>
-                <span style="flex:1;font-size:14px;font-weight:600">Snack</span>
-                <span style="font-size:12px;opacity:0.5">Empty</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Sub-macro Breakdown</div>
-            <div style="font-size:11px;font-weight:700;opacity:0.5;margin-bottom:6px">Carbs</div>
-            <div class="sub-row" style="margin-bottom:10px">
-              <div class="sub-item"><div class="sub-val">42g</div><div class="sub-lbl">Sugar</div></div>
-              <div class="sub-item"><div class="sub-val">98g</div><div class="sub-lbl">Complex</div></div>
-              <div class="sub-item"><div class="sub-val">18g</div><div class="sub-lbl">Fiber</div></div>
-            </div>
-            <div style="font-size:11px;font-weight:700;opacity:0.5;margin-bottom:6px">Fats</div>
-            <div class="sub-row">
-              <div class="sub-item"><div class="sub-val">22g</div><div class="sub-lbl">Saturated</div></div>
-              <div class="sub-item"><div class="sub-val">12g</div><div class="sub-lbl">Mono/Poly Unsat.</div></div>
-              <div class="sub-item"><div class="sub-val">0.2g</div><div class="sub-lbl">Trans</div></div>
-            </div>
-          </div>
-        </div>
-        <div class="tab-bar" id="tab-bar-dashboard"></div>
+  <!-- SIDEBAR -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">💪</div>
+      <div>
+        <div class="sidebar-app-name">FitTrack</div>
+        <div class="sidebar-app-sub">Nutrition &amp; Workout</div>
       </div>
-
-      <!-- ═══════════════ DAILY LOG ═══════════════ -->
-      <div class="page" id="page-log">
-        <div class="top-bar">📓 Daily Log</div>
-        <div class="date-nav" style="background:#fff;border-bottom:1px solid #eee;padding:4px 0">
-          <button class="date-nav-btn">‹</button>
-          <span class="date-text">Today</span>
-          <button class="date-nav-btn" style="opacity:0.3">›</button>
-        </div>
-        <div style="display:flex;align-items:center;justify-content:space-around;padding:8px 12px;background:#fff;border-bottom:1px solid #eee">
-          <div style="text-align:center"><div style="font-size:22px;font-weight:800;color:#FF6B6B">1,840</div><div style="font-size:10px;opacity:0.5">/ 2000 kcal</div></div>
-          <div style="text-align:center"><div style="font-size:15px;font-weight:700">112g</div><div style="font-size:10px;opacity:0.5">Protein</div></div>
-          <div style="text-align:center"><div style="font-size:15px;font-weight:700">196g</div><div style="font-size:10px;opacity:0.5">Carbs</div></div>
-          <div style="text-align:center"><div style="font-size:15px;font-weight:700">39g</div><div style="font-size:10px;opacity:0.5">Fat</div></div>
-          <button onclick="showPage('goals')" style="background:none;border:none;color:#4ECDC4;font-size:12px;cursor:pointer;font-weight:600">🎯 Goals</button>
-        </div>
-        <div class="scroll">
-          <!-- Water Widget -->
-          <div class="card">
-            <div class="water-header">
-              <span style="font-size:14px;font-weight:700">💧 Water</span>
-              <span style="font-size:12px;opacity:0.55" id="water-display">1500 / 2000 ml</span>
-            </div>
-            <div class="water-track"><div class="water-fill" id="water-bar" style="width:75%"></div></div>
-            <div class="water-btns">
-              <button class="water-btn" onclick="addWater(250)">+250ml</button>
-              <button class="water-btn" onclick="addWater(500)">+500ml</button>
-              <button class="water-btn" onclick="addWater(750)">+750ml</button>
-              <button class="water-btn" onclick="addWater(1000)">+1000ml</button>
-            </div>
-          </div>
-
-          <!-- Meal Sections -->
-          <div class="meal-section">
-            <div class="meal-header">
-              <span class="meal-title">🌅 Breakfast</span>
-              <span class="meal-kcal">480 kcal</span>
-              <div class="meal-icons">
-                <button class="icon-btn" title="Copy from yesterday">⧉</button>
-                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
-              </div>
-            </div>
-            <div class="entry-item">
-              <div class="entry-info">
-                <div class="entry-name">Eggs — 150g</div>
-                <div class="entry-desc">240 kcal · P: 18g · C: 2g · F: 16g</div>
-              </div>
-              <button class="icon-btn">🗑</button>
-            </div>
-            <div class="entry-item">
-              <div class="entry-info">
-                <div class="entry-name">Brown Bread — 60g</div>
-                <div class="entry-desc">160 kcal · P: 6g · C: 30g · F: 2g</div>
-              </div>
-              <button class="icon-btn">🗑</button>
-            </div>
-          </div>
-
-          <div class="meal-section">
-            <div class="meal-header">
-              <span class="meal-title">☀️ Lunch</span>
-              <span class="meal-kcal">620 kcal</span>
-              <div class="meal-icons">
-                <button class="icon-btn">⧉</button>
-                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
-              </div>
-            </div>
-            <div class="entry-item">
-              <div class="entry-info">
-                <div class="entry-name">Chicken Rice Bowl — 350g</div>
-                <div class="entry-desc">620 kcal · P: 45g · C: 68g · F: 8g</div>
-              </div>
-              <button class="icon-btn">🗑</button>
-            </div>
-          </div>
-
-          <div class="meal-section">
-            <div class="meal-header">
-              <span class="meal-title">🌙 Dinner</span>
-              <span class="meal-kcal">740 kcal</span>
-              <div class="meal-icons">
-                <button class="icon-btn">⧉</button>
-                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
-              </div>
-            </div>
-            <div class="entry-item">
-              <div class="entry-info">
-                <div class="entry-name">Grilled Salmon — 200g</div>
-                <div class="entry-desc">370 kcal · P: 40g · C: 0g · F: 22g</div>
-              </div>
-              <button class="icon-btn">🗑</button>
-            </div>
-            <div class="entry-item">
-              <div class="entry-info">
-                <div class="entry-name">Basmati Rice — 180g</div>
-                <div class="entry-desc">240 kcal · P: 5g · C: 52g · F: 0.5g</div>
-              </div>
-              <button class="icon-btn">🗑</button>
-            </div>
-          </div>
-
-          <div class="meal-section">
-            <div class="meal-header">
-              <span class="meal-title">☕ Snack</span>
-              <span class="meal-kcal"></span>
-              <div class="meal-icons">
-                <button class="icon-btn">⧉</button>
-                <button class="icon-btn" onclick="showPage('add-entry')">＋</button>
-              </div>
-            </div>
-            <div class="empty-meal">Nothing logged yet</div>
-          </div>
-        </div>
-        <button class="fab" onclick="showPage('add-entry')">＋</button>
-        <div class="tab-bar" id="tab-bar-log"></div>
-      </div>
-
-      <!-- ═══════════════ ADD ENTRY ═══════════════ -->
-      <div class="page" id="page-add-entry">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('log')">‹</span> Add Food</div>
-        <div class="scroll">
-          <div class="card">
-            <div class="card-title">Meal Type</div>
-            <div class="chip-row">
-              <div class="chip selected">Breakfast</div>
-              <div class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">Lunch</div>
-              <div class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">Dinner</div>
-              <div class="chip" onclick="this.parentNode.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected'));this.classList.add('selected')">Snack</div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Food</div>
-            <button onclick="document.getElementById('food-modal').classList.add('show')" style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-size:14px;color:#666">🔍 Pick Ingredient or Recipe</button>
-          </div>
-
-          <div class="card" id="grams-card" style="display:none">
-            <div class="card-title">Selected: <strong id="selected-food-name"></strong></div>
-            <div class="input-group">
-              <div class="input-label">Grams consumed</div>
-              <input class="input-field" type="number" placeholder="e.g. 150" id="grams-input">
-            </div>
-          </div>
-
-          <button class="btn-primary" style="margin-top:4px" onclick="showPage('log')">＋ Add to Log</button>
-        </div>
-
-        <!-- Food Picker Modal -->
-        <div class="modal-overlay" id="food-modal" onclick="if(event.target===this)this.classList.remove('show')">
-          <div class="modal-bg">
-            <div class="modal-header">Select Food</div>
-            <div style="padding:8px 12px"><input class="input-field" placeholder="🔍 Search..." oninput="filterFoods(this.value)"></div>
-            <div class="modal-tabs">
-              <div class="modal-tab active" onclick="switchTab('recent',this)">Recent</div>
-              <div class="modal-tab" onclick="switchTab('all',this)">All Foods</div>
-            </div>
-            <div class="modal-list" id="food-list">
-              <div class="subheader">Recently Used</div>
-              <div class="list-item" onclick="selectFood('Eggs','ingredient')"><div class="list-icon" style="background:#fff9c4">🥚</div><div class="list-content"><div class="list-title">Eggs</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
-              <div class="list-item" onclick="selectFood('Chicken Breast','ingredient')"><div class="list-icon" style="background:#fff3e0">🍗</div><div class="list-content"><div class="list-title">Chicken Breast</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
-              <div class="list-item" onclick="selectFood('Chicken Rice Bowl','recipe')"><div class="list-icon" style="background:#e8f5e9">🍽️</div><div class="list-content"><div class="list-title">Chicken Rice Bowl</div><div class="list-desc">Recipe</div></div><span class="badge badge-blue">Recipe</span></div>
-              <div class="list-item" onclick="selectFood('Brown Bread','ingredient')"><div class="list-icon" style="background:#fce4ec">🍞</div><div class="list-content"><div class="list-title">Brown Bread</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
-              <div class="list-item" onclick="selectFood('Basmati Rice','ingredient')"><div class="list-icon" style="background:#f3e5f5">🍚</div><div class="list-content"><div class="list-title">Basmati Rice</div><div class="list-desc">Ingredient</div></div><span class="badge badge-green">Recent</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════════ INGREDIENTS ═══════════════ -->
-      <div class="page" id="page-ingredients">
-        <div class="top-bar">🥦 Ingredients</div>
-        <div class="scroll" style="padding:0;gap:0">
-          <div style="padding:10px 12px"><input class="input-field" placeholder="🔍 Search ingredients..."></div>
-          <div class="list-section">
-            <div class="list-item"><div class="list-icon" style="background:#fff9c4">🥚</div><div class="list-content"><div class="list-title">Eggs</div><div class="list-desc">12.5 kcal/g · P: 1.2g · C: 0.1g · F: 1.0g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#fff3e0">🍗</div><div class="list-content"><div class="list-title">Chicken Breast</div><div class="list-desc">1.65 kcal/g · P: 0.31g · C: 0g · F: 0.04g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#fce4ec">🍞</div><div class="list-content"><div class="list-title">Brown Bread</div><div class="list-desc">2.47 kcal/g · P: 0.09g · C: 0.44g · F: 0.03g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#f3e5f5">🍚</div><div class="list-content"><div class="list-title">Basmati Rice (cooked)</div><div class="list-desc">1.29 kcal/g · P: 0.03g · C: 0.28g · F: 0g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#e8f5e9">🥛</div><div class="list-content"><div class="list-title">Milk (full fat)</div><div class="list-desc">0.61 kcal/g · P: 0.03g · C: 0.05g · F: 0.03g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#e3f2fd">🐟</div><div class="list-content"><div class="list-title">Salmon</div><div class="list-desc">2.08 kcal/g · P: 0.20g · C: 0g · F: 0.13g</div></div><button class="icon-btn" onclick="showPage('ingredient-form')">✏️</button></div>
-          </div>
-        </div>
-        <button class="fab" onclick="showPage('ingredient-form')">＋</button>
-        <div class="tab-bar" id="tab-bar-ingredients"></div>
-      </div>
-
-      <!-- ═══════════════ INGREDIENT FORM ═══════════════ -->
-      <div class="page" id="page-ingredient-form">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('ingredients')">‹</span> Add Ingredient</div>
-        <div class="scroll">
-          <div style="display:flex;gap:8px;align-items:flex-start">
-            <div style="flex:1"><div class="input-label">Ingredient Name</div><input class="input-field" placeholder="e.g. Chicken Breast" value="Oats"></div>
-            <div style="margin-top:16px"><button style="padding:10px 14px;border:1.5px solid #4ECDC4;border-radius:10px;background:#fff;color:#4ECDC4;font-weight:600;cursor:pointer;font-size:13px" onclick="showPage('barcode')">📷 Scan</button></div>
-          </div>
-          <div style="background:#e8f5e9;border-radius:10px;padding:10px 12px;font-size:13px">Preview: <strong>3.89 kcal</strong> per gram</div>
-          <div class="card">
-            <div class="card-title">Macros (per gram)</div>
-            <div class="input-group"><div class="input-label">Carbs Total</div><input class="input-field" value="0.0668"></div>
-            <div style="padding-left:16px">
-              <div class="input-group"><div class="input-label">↳ Sugar</div><input class="input-field" value="0.0010"></div>
-              <div class="input-group"><div class="input-label">↳ Complex</div><input class="input-field" value="0.0530"></div>
-              <div class="input-group"><div class="input-label">↳ Fiber</div><input class="input-field" value="0.0107"></div>
-            </div>
-            <div class="input-group"><div class="input-label">Protein</div><input class="input-field" value="0.0170"></div>
-            <div class="input-group"><div class="input-label">Fat Total</div><input class="input-field" value="0.0069"></div>
-            <div style="padding-left:16px">
-              <div class="input-group"><div class="input-label">↳ Saturated Fat</div><input class="input-field" value="0.0012"></div>
-              <div class="input-group"><div class="input-label">↳ Mono/Poly Unsaturated</div><input class="input-field" value="0.0045"></div>
-              <div class="input-group"><div class="input-label">↳ Trans Fat</div><input class="input-field" value="0.0000"></div>
-            </div>
-          </div>
-          <button class="btn-primary" onclick="showPage('ingredients')">💾 Save Ingredient</button>
-        </div>
-      </div>
-
-      <!-- ═══════════════ BARCODE SCANNER ═══════════════ -->
-      <div class="page" id="page-barcode">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('ingredient-form')">‹</span> Barcode Scanner</div>
-        <div class="scroll">
-          <div class="scanner-preview">
-            <div class="scanner-frame">
-              <div class="scanner-line"></div>
-            </div>
-          </div>
-          <div class="scanner-hint">Point camera at product barcode</div>
-          <div style="height:16px"></div>
-          <div class="card" id="scan-result" style="display:none">
-            <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:#4ECDC4">✅ Product Found!</div>
-            <div class="list-title">Quaker Oats</div>
-            <div class="list-desc" style="margin-top:4px">P: 0.017/g · C: 0.067/g · F: 0.007/g</div>
-          </div>
-          <button class="btn-primary" onclick="document.getElementById('scan-result').style.display='block';this.textContent='✅ Macros Loaded — Go Back';this.onclick=function(){showPage(\'ingredient-form\')}">Simulate Scan (Quaker Oats)</button>
-          <button class="btn-outline" onclick="showPage('ingredient-form')">Cancel</button>
-        </div>
-      </div>
-
-      <!-- ═══════════════ RECIPES ═══════════════ -->
-      <div class="page" id="page-recipes">
-        <div class="top-bar">🍽️ Recipes</div>
-        <div class="scroll" style="padding:0;gap:0">
-          <div style="padding:10px 12px"><input class="input-field" placeholder="🔍 Search recipes..."></div>
-          <div class="list-section">
-            <div class="list-item"><div class="list-icon" style="background:#e8f5e9">🍚</div><div class="list-content"><div class="list-title">Chicken Rice Bowl</div><div class="list-desc">Protein-rich lunch bowl · 350g total</div></div><button class="icon-btn">›</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#fff9c4">🍳</div><div class="list-content"><div class="list-title">Omelette</div><div class="list-desc">3-egg omelette · 210g total</div></div><button class="icon-btn">›</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#e3f2fd">🥗</div><div class="list-content"><div class="list-title">Protein Salad</div><div class="list-desc">Chicken + veggies · 400g total</div></div><button class="icon-btn">›</button></div>
-            <div class="list-item"><div class="list-icon" style="background:#fce4ec">🥣</div><div class="list-content"><div class="list-title">Oats Bowl</div><div class="list-desc">Overnight oats · 280g total</div></div><button class="icon-btn">›</button></div>
-          </div>
-        </div>
-        <button class="fab" onclick="showPage('recipe-form')">＋</button>
-        <div class="tab-bar" id="tab-bar-recipes"></div>
-      </div>
-
-      <!-- ═══════════════ RECIPE FORM ═══════════════ -->
-      <div class="page" id="page-recipe-form">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('recipes')">‹</span> New Recipe</div>
-        <div class="scroll">
-          <div class="input-group"><div class="input-label">Recipe Name</div><input class="input-field" placeholder="e.g. Chicken Rice Bowl"></div>
-          <div class="input-group"><div class="input-label">Description (optional)</div><input class="input-field" placeholder="e.g. High-protein lunch"></div>
-          <div class="card">
-            <div class="card-title">Ingredients</div>
-            <div id="recipe-ings">
-              <div class="list-item" style="border-radius:10px;margin-bottom:6px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
-                <div class="list-content"><div class="list-title">Chicken Breast</div><div class="list-desc">200g · P: 62g · C: 0g · F: 8g</div></div>
-                <button class="icon-btn">🗑</button>
-              </div>
-              <div class="list-item" style="border-radius:10px;margin-bottom:6px;box-shadow:0 1px 4px rgba(0,0,0,0.07)">
-                <div class="list-content"><div class="list-title">Basmati Rice</div><div class="list-desc">150g · P: 4g · C: 42g · F: 0g</div></div>
-                <button class="icon-btn">🗑</button>
-              </div>
-            </div>
-            <button class="btn-outline" style="margin-top:8px" onclick="">＋ Add Ingredient</button>
-          </div>
-          <div class="card" style="background:#f9fffe">
-            <div class="card-title">Recipe Totals (350g)</div>
-            <div class="sub-row">
-              <div class="sub-item"><div class="sub-val" style="color:#FF6B6B">66g</div><div class="sub-lbl">Protein</div></div>
-              <div class="sub-item"><div class="sub-val" style="color:#FFE66D">42g</div><div class="sub-lbl">Carbs</div></div>
-              <div class="sub-item"><div class="sub-val" style="color:#A8E6CF">8g</div><div class="sub-lbl">Fat</div></div>
-              <div class="sub-item"><div class="sub-val" style="color:#FF6B6B">500</div><div class="sub-lbl">kcal</div></div>
-            </div>
-          </div>
-          <button class="btn-primary" onclick="showPage('recipes')">💾 Save Recipe</button>
-        </div>
-      </div>
-
-      <!-- ═══════════════ HISTORY ═══════════════ -->
-      <div class="page" id="page-history">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> History & Charts</div>
-        <div class="scroll">
-          <div class="card">
-            <div class="card-title">Calories — Last 7 Days</div>
-            <canvas id="kcalChart" height="140"></canvas>
-          </div>
-          <div class="card">
-            <div class="card-title">Macros — Last 7 Days (g)</div>
-            <canvas id="macroChart" height="140"></canvas>
-          </div>
-          <div class="card">
-            <div class="card-title">💧 Water — Last 7 Days (L)</div>
-            <canvas id="waterChart" height="120"></canvas>
-          </div>
-          <div class="card">
-            <div class="card-title">⚖️ Weight — Last 30 Days (kg)</div>
-            <canvas id="weightChart" height="120"></canvas>
-          </div>
-          <div class="card">
-            <div class="card-title">7-Day Summary</div>
-            <div class="stats-grid">
-              <div class="stat-box"><div class="stat-val" style="color:#FF6B6B">1,842</div><div class="stat-unit">kcal</div><div class="stat-lbl">Avg Kcal</div></div>
-              <div class="stat-box"><div class="stat-val" style="color:#FF6B6B">108</div><div class="stat-unit">g</div><div class="stat-lbl">Avg Protein</div></div>
-              <div class="stat-box"><div class="stat-val" style="color:#FFE66D">198</div><div class="stat-unit">g</div><div class="stat-lbl">Avg Carbs</div></div>
-              <div class="stat-box"><div class="stat-val" style="color:#A8E6CF">42</div><div class="stat-unit">g</div><div class="stat-lbl">Avg Fat</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════════ WEIGHT LOG ═══════════════ -->
-      <div class="page" id="page-weight">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Weight Log</div>
-        <div class="scroll">
-          <!-- Current vs Target summary -->
-          <div class="card">
-            <div style="display:flex;justify-content:space-around;align-items:center">
-              <div style="text-align:center">
-                <div style="font-size:28px;font-weight:800">72.3 <span style="font-size:14px;opacity:0.5">kg</span></div>
-                <div style="font-size:10px;opacity:0.5;margin-top:2px">Current</div>
-              </div>
-              <div style="text-align:center">
-                <div style="font-size:18px;font-weight:700;color:#4CAF50">-0.2 kg</div>
-                <div style="font-size:10px;opacity:0.5;margin-top:2px">vs yesterday</div>
-              </div>
-              <div style="text-align:center">
-                <div style="font-size:18px;font-weight:700;color:#FF5722">+2.3 kg</div>
-                <div style="font-size:10px;opacity:0.5;margin-top:2px">vs target</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Target weight -->
-          <div class="card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-              <span style="font-size:13px;font-weight:700">🎯 Target Weight</span>
-              <button style="background:none;border:none;font-size:16px;cursor:pointer" onclick="document.getElementById('target-row').style.display=document.getElementById('target-row').style.display==='none'?'flex':'none'">✏️</button>
-            </div>
-            <div id="target-row" style="display:none;flex-direction:column;gap:8px">
-              <input class="input-field" type="number" placeholder="e.g. 70" value="70" id="t-weight-in">
-              <input class="input-field" type="text" placeholder="Achieve by (YYYY-MM-DD)" value="2026-12-31" id="t-date-in">
-              <button style="padding:8px 16px;background:#4ECDC4;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer" onclick="document.getElementById('target-row').style.display='none'">Set Target</button>
-            </div>
-            <div>
-              <div id="target-display" style="font-size:14px;opacity:0.7">70.0 kg</div>
-              <div style="font-size:11px;opacity:0.45;margin-top:2px">By Dec 31, 2026</div>
-            </div>
-          </div>
-
-          <!-- Tri-line projection chart -->
-          <div class="card">
-            <div class="card-title">Progress Chart</div>
-            <canvas id="weightDualChart" height="160"></canvas>
-            <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;flex-wrap:wrap">
-              <span style="display:inline-block;width:14px;height:2px;background:#FF6B6B;border-radius:2px;border-top:2px dashed #FF6B6B;height:0"></span>
-              <span style="opacity:0.65">Required pace</span>
-              <span style="display:inline-block;width:14px;height:2px;background:#45B7D1;border-radius:2px;margin-left:6px"></span>
-              <span style="opacity:0.65">Actual</span>
-              <span style="display:inline-block;width:14px;height:0;border-top:2px dashed #FF9800;margin-left:6px"></span>
-              <span style="opacity:0.65">Trend</span>
-            </div>
-            <div style="margin-top:8px;background:rgba(255,152,0,0.1);border-radius:8px;padding:8px;font-size:12px;font-weight:700;color:#FF9800">
-              🏁 At current pace: reach 70 kg by <strong>Jun 19, 2026</strong>
-            </div>
-          </div>
-
-          <!-- Statistics -->
-          <div class="card">
-            <div class="card-title">Statistics (30 days)</div>
-            <div class="stats-grid">
-              <div class="stat-box"><div class="stat-val" style="color:#4CAF50">71.8</div><div class="stat-unit">kg</div><div class="stat-lbl">Lowest</div></div>
-              <div class="stat-box"><div class="stat-val" style="color:#FF5722">73.5</div><div class="stat-unit">kg</div><div class="stat-lbl">Highest</div></div>
-              <div class="stat-box"><div class="stat-val">72.5</div><div class="stat-unit">kg</div><div class="stat-lbl">Average</div></div>
-              <div class="stat-box"><div class="stat-val" style="color:#4CAF50">1.2</div><div class="stat-unit">kg lost</div><div class="stat-lbl">Total</div></div>
-            </div>
-          </div>
-
-          <!-- Log today -->
-          <div class="card">
-            <div class="card-title">Today's Weight</div>
-            <div class="input-group"><input class="input-field" type="number" placeholder="72.3" value="72.3"></div>
-            <div class="input-group"><div class="input-label">Note (optional)</div><input class="input-field" placeholder="After workout, post-meal..."></div>
-            <button class="btn-primary" style="margin-top:4px">⚖️ Update Weight</button>
-          </div>
-
-          <!-- History -->
-          <div class="list-section">
-            <div class="subheader">History</div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.3 kg ✅</div><div class="list-desc">After workout</div></div><span style="opacity:0.5;font-size:11px">Today</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.5 kg <span style="color:#FF5722;font-size:11px">(+2.5 kg to target)</span></div></div><span style="opacity:0.5;font-size:11px">Yesterday</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.4 kg <span style="color:#FF5722;font-size:11px">(+2.4 kg to target)</span></div></div><span style="opacity:0.5;font-size:11px">2 days ago</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">72.8 kg <span style="color:#FF5722;font-size:11px">(+2.8 kg to target)</span></div><div class="list-desc">Cheat day 😅</div></div><span style="opacity:0.5;font-size:11px">3 days ago</span></div>
-            <div class="list-item"><div class="list-content"><div class="list-title">73.5 kg <span style="color:#FF5722;font-size:11px">(+3.5 kg to target)</span></div></div><span style="opacity:0.5;font-size:11px">4 days ago</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════════ GOALS ═══════════════ -->
-      <div class="page" id="page-goals">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('log')">‹</span> Daily Goals</div>
-        <div class="scroll">
-          <div style="font-size:12px;opacity:0.6;padding:4px 2px">Goals apply from today onwards until you change them.</div>
-          <div class="card">
-            <div class="card-title">Quick Load Template</div>
-            <div class="chip-row">
-              <div class="chip" onclick="loadTemplate(2200,160,220,70)">Training Day</div>
-              <div class="chip" onclick="loadTemplate(1800,130,180,55)">Rest Day</div>
-              <div class="chip" onclick="loadTemplate(1500,120,150,50)">Cut</div>
-              <div class="chip" onclick="loadTemplate(2800,200,300,90)">Bulk</div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="input-group"><div class="input-label">Calorie Goal (kcal) *</div><input class="input-field" id="goal-kcal" value="2000"></div>
-            <div class="input-group"><div class="input-label">Protein Goal (g)</div><input class="input-field" id="goal-protein" value="150"></div>
-            <div class="input-group"><div class="input-label">Carbs Goal (g)</div><input class="input-field" id="goal-carbs" value="240"></div>
-            <div class="input-group"><div class="input-label">Fat Goal (g)</div><input class="input-field" id="goal-fat" value="65"></div>
-            <div class="input-group"><div class="input-label">Water Goal (ml)</div><input class="input-field" id="goal-water" value="2000"></div>
-          </div>
-          <button class="btn-primary" onclick="showPage('log')">🏁 Save Goals</button>
-          <button class="btn-outline">🔖 Save as Template</button>
-        </div>
-      </div>
-
-      <!-- ═══════════════ BACKUP ═══════════════ -->
-      <div class="page" id="page-backup">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Backup & Restore</div>
-        <div class="scroll">
-          <div style="background:rgba(78,205,196,0.12);border-radius:12px;padding:14px;font-size:13px;line-height:1.6;opacity:0.85">
-            Export your data as a JSON file and save it to <strong>Google Drive</strong> (or any cloud storage). To restore, download the file and use Import below.
-          </div>
-          <button class="btn-primary" style="padding:16px;font-size:15px">📤 Export / Backup Data</button>
-          <button class="btn-outline" style="padding:15px">📥 Import / Restore Data</button>
-          <div class="list-section" style="margin-top:8px">
-            <div class="subheader">How it works</div>
-            <div class="list-item"><div class="list-icon" style="background:#e8f5e9">📤</div><div class="list-content"><div class="list-title">Export</div><div class="list-desc">Creates a .json file → share to Google Drive, email, etc.</div></div></div>
-            <div class="list-item"><div class="list-icon" style="background:#e3f2fd">📥</div><div class="list-content"><div class="list-title">Import</div><div class="list-desc">Pick a previously exported backup file to restore data.</div></div></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════════ MANAGE MEALS ═══════════════ -->
-      <div class="page" id="page-manage-meals">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Manage Meal Types</div>
-        <div class="scroll">
-          <div style="font-size:12px;opacity:0.6;padding:2px 2px 4px">Add custom meal types (e.g. Sehri, Iftar, Pre-workout). Rename or reorder as you like.</div>
-          <div class="list-section">
-            <div class="list-item">
-              <div style="font-size:22px;margin-right:10px">🌅</div>
-              <div class="list-content"><div class="list-title">Breakfast</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
-              <button class="icon-btn">✏️</button>
-              <button class="icon-btn" style="color:#ccc">🗑</button>
-            </div>
-            <div class="list-item">
-              <div style="font-size:22px;margin-right:10px">☀️</div>
-              <div class="list-content"><div class="list-title">Lunch</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
-              <button class="icon-btn">✏️</button>
-              <button class="icon-btn" style="color:#ccc">🗑</button>
-            </div>
-            <div class="list-item">
-              <div style="font-size:22px;margin-right:10px">🌙</div>
-              <div class="list-content"><div class="list-title">Dinner</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
-              <button class="icon-btn">✏️</button>
-              <button class="icon-btn" style="color:#ccc">🗑</button>
-            </div>
-            <div class="list-item">
-              <div style="font-size:22px;margin-right:10px">☕</div>
-              <div class="list-content"><div class="list-title">Snack</div><div class="list-desc" style="color:#4ECDC4;font-size:10px">Default</div></div>
-              <button class="icon-btn">✏️</button>
-              <button class="icon-btn" style="color:#ccc">🗑</button>
-            </div>
-            <div class="list-item">
-              <div style="font-size:22px;margin-right:10px">🕌</div>
-              <div class="list-content"><div class="list-title">Sehri</div></div>
-              <button class="icon-btn">✏️</button>
-              <button class="icon-btn" style="color:#E63946">🗑</button>
-            </div>
-            <div class="list-item">
-              <div style="font-size:22px;margin-right:10px">🌅</div>
-              <div class="list-content"><div class="list-title">Iftar</div></div>
-              <button class="icon-btn">✏️</button>
-              <button class="icon-btn" style="color:#E63946">🗑</button>
-            </div>
-            <div class="list-item">
-              <div style="font-size:22px;margin-right:10px">💪</div>
-              <div class="list-content"><div class="list-title">Pre-workout</div></div>
-              <button class="icon-btn">✏️</button>
-              <button class="icon-btn" style="color:#E63946">🗑</button>
-            </div>
-          </div>
-          <button class="btn-outline" onclick="document.getElementById('add-meal-modal').classList.add('show')">＋ Add Custom Meal Type</button>
-        </div>
-
-        <!-- Add Meal Modal -->
-        <div class="modal-overlay" id="add-meal-modal" onclick="if(event.target===this)this.classList.remove('show')">
-          <div class="modal-bg">
-            <div class="modal-header">New Meal Type</div>
-            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px">
-              <div><div class="input-label">Name (e.g. Sehri, Pre-workout)</div><input class="input-field" placeholder="Meal name"></div>
-              <div>
-                <div class="input-label" style="margin-bottom:6px">Choose Emoji</div>
-                <div style="display:flex;flex-wrap:wrap;gap:8px">
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px;background:rgba(78,205,196,0.2)">🌅</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">☀️</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🌙</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">☕</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🥗</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🍎</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">💪</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🏋️</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">⚡</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🌿</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🍽️</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🥤</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🌮</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🍱</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🕌</span>
-                  <span style="font-size:24px;cursor:pointer;padding:4px;border-radius:8px">🥞</span>
-                </div>
-              </div>
-              <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:4px">
-                <button style="padding:8px 18px;background:none;border:none;color:#4ECDC4;font-weight:600;cursor:pointer" onclick="document.getElementById('add-meal-modal').classList.remove('show')">Cancel</button>
-                <button style="padding:8px 18px;background:#4ECDC4;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer" onclick="document.getElementById('add-meal-modal').classList.remove('show')">Add</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════════ MORE ═══════════════ -->
-      <div class="page" id="page-more">
-        <div class="top-bar">⋯ More</div>
-        <div class="scroll" style="padding:0;gap:0">
-          <div class="list-section" style="margin:12px">
-            <div class="subheader">Tools</div>
-            <div class="list-item" onclick="showPage('micronutrients')"><div class="list-icon" style="background:#e8f5e9">🧬</div><div class="list-content"><div class="list-title">Micronutrients</div><div class="list-desc">Vitamins &amp; minerals reference guide</div></div><span class="list-right">›</span></div>
-            <div class="list-item" onclick="showPage('supplements')"><div class="list-icon" style="background:#f3e5f5">💊</div><div class="list-content"><div class="list-title">My Supplements</div><div class="list-desc">Track your supplement stack</div></div><span class="list-right">›</span></div>
-            <div class="list-item" onclick="showPage('manage-meals')"><div class="list-icon" style="background:#fff3e0">🍴</div><div class="list-content"><div class="list-title">Manage Meal Types</div><div class="list-desc">Add Sehri, Iftar, Pre-workout & more</div></div><span class="list-right">›</span></div>
-            <div class="list-item" onclick="showPage('history')"><div class="list-icon" style="background:#e8f5e9">📊</div><div class="list-content"><div class="list-title">History & Charts</div><div class="list-desc">Weekly kcal, macros, water, weight</div></div><span class="list-right">›</span></div>
-            <div class="list-item" onclick="showPage('weight')"><div class="list-icon" style="background:#e3f2fd">⚖️</div><div class="list-content"><div class="list-title">Weight Log</div><div class="list-desc">Track your daily body weight</div></div><span class="list-right">›</span></div>
-            <div class="list-item" onclick="showPage('backup')"><div class="list-icon" style="background:#f3e5f5">☁️</div><div class="list-content"><div class="list-title">Backup & Restore</div><div class="list-desc">Export to Google Drive or import</div></div><span class="list-right">›</span></div>
-          </div>
-          <div class="list-section" style="margin:0 12px">
-            <div class="subheader">App Info</div>
-            <div class="list-item"><div class="list-icon" style="background:#fff9c4">ℹ️</div><div class="list-content"><div class="list-title">Version</div><div class="list-desc">1.2.0</div></div></div>
-            <div class="list-item"><div class="list-icon" style="background:#fce4ec">🗄️</div><div class="list-content"><div class="list-title">Storage</div><div class="list-desc">Local SQLite database</div></div></div>
-          </div>
-          <div style="padding:16px 12px">
-            <button class="btn-danger">🗑️ Reset All Data</button>
-          </div>
-        </div>
-        <div class="tab-bar" id="tab-bar-more"></div>
-      </div>
-
-      <!-- ═══════════════ MICRONUTRIENTS LIST ═══════════════ -->
-      <div class="page" id="page-micronutrients">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> Micronutrients</div>
-        <div class="scroll" style="padding:8px 12px;gap:0">
-          <input class="input-field" placeholder="🔍 Search vitamins & minerals..." style="margin-bottom:10px" oninput="filterNutrients(this.value)">
-          <div id="nutrient-list">
-            <div class="subheader" style="padding-left:0">Fat-Soluble Vitamins</div>
-            <div class="list-section" style="margin-bottom:10px">
-              <div class="list-item" onclick="showNutrient('vit_a','Vitamin A','Retinol','🥕','fat_vitamin')"><span style="font-size:22px;margin-right:10px">🥕</span><div class="list-content"><div class="list-title">Vitamin A</div><div class="list-desc">Retinol</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_d','Vitamin D','Calciferol','☀️','fat_vitamin')"><span style="font-size:22px;margin-right:10px">☀️</span><div class="list-content"><div class="list-title">Vitamin D</div><div class="list-desc">Calciferol</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_e','Vitamin E','Tocopherol','🥑','fat_vitamin')"><span style="font-size:22px;margin-right:10px">🥑</span><div class="list-content"><div class="list-title">Vitamin E</div><div class="list-desc">Tocopherol</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_k','Vitamin K','','🥬','fat_vitamin')"><span style="font-size:22px;margin-right:10px">🥬</span><div class="list-content"><div class="list-title">Vitamin K</div><div class="list-desc">Phylloquinone / Menaquinone</div></div><span class="list-right">›</span></div>
-            </div>
-            <div class="subheader" style="padding-left:0">Water-Soluble Vitamins</div>
-            <div class="list-section" style="margin-bottom:10px">
-              <div class="list-item" onclick="showNutrient('vit_c','Vitamin C','Ascorbic Acid','🍊','water_vitamin')"><span style="font-size:22px;margin-right:10px">🍊</span><div class="list-content"><div class="list-title">Vitamin C</div><div class="list-desc">Ascorbic Acid</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_b1','Vitamin B1','Thiamine','🌾','water_vitamin')"><span style="font-size:22px;margin-right:10px">🌾</span><div class="list-content"><div class="list-title">Vitamin B1</div><div class="list-desc">Thiamine</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_b2','Vitamin B2','Riboflavin','🥛','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥛</span><div class="list-content"><div class="list-title">Vitamin B2</div><div class="list-desc">Riboflavin</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_b3','Vitamin B3','Niacin','🍗','water_vitamin')"><span style="font-size:22px;margin-right:10px">🍗</span><div class="list-content"><div class="list-title">Vitamin B3</div><div class="list-desc">Niacin</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_b6','Vitamin B6','Pyridoxine','🐟','water_vitamin')"><span style="font-size:22px;margin-right:10px">🐟</span><div class="list-content"><div class="list-title">Vitamin B6</div><div class="list-desc">Pyridoxine</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_b7','Vitamin B7','Biotin','🥚','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥚</span><div class="list-content"><div class="list-title">Vitamin B7</div><div class="list-desc">Biotin</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_b9','Vitamin B9','Folate / Folic Acid','🥦','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥦</span><div class="list-content"><div class="list-title">Vitamin B9</div><div class="list-desc">Folate / Folic Acid</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('vit_b12','Vitamin B12','Cobalamin','🥩','water_vitamin')"><span style="font-size:22px;margin-right:10px">🥩</span><div class="list-content"><div class="list-title">Vitamin B12</div><div class="list-desc">Cobalamin</div></div><span class="list-right">›</span></div>
-            </div>
-            <div class="subheader" style="padding-left:0">Macrominerals</div>
-            <div class="list-section" style="margin-bottom:10px">
-              <div class="list-item" onclick="showNutrient('calcium','Calcium','','🦷','macromineral')"><span style="font-size:22px;margin-right:10px">🦷</span><div class="list-content"><div class="list-title">Calcium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('magnesium','Magnesium','','🌿','macromineral')"><span style="font-size:22px;margin-right:10px">🌿</span><div class="list-content"><div class="list-title">Magnesium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('potassium','Potassium','','🍌','macromineral')"><span style="font-size:22px;margin-right:10px">🍌</span><div class="list-content"><div class="list-title">Potassium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('sodium','Sodium','','🧂','macromineral')"><span style="font-size:22px;margin-right:10px">🧂</span><div class="list-content"><div class="list-title">Sodium</div><div class="list-desc">Macromineral</div></div><span class="list-right">›</span></div>
-            </div>
-            <div class="subheader" style="padding-left:0">Trace Minerals</div>
-            <div class="list-section">
-              <div class="list-item" onclick="showNutrient('iron','Iron','','🥩','trace_mineral')"><span style="font-size:22px;margin-right:10px">🫀</span><div class="list-content"><div class="list-title">Iron</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('zinc','Zinc','','💊','trace_mineral')"><span style="font-size:22px;margin-right:10px">⚡</span><div class="list-content"><div class="list-title">Zinc</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('selenium','Selenium','','🥜','trace_mineral')"><span style="font-size:22px;margin-right:10px">🌰</span><div class="list-content"><div class="list-title">Selenium</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
-              <div class="list-item" onclick="showNutrient('iodine','Iodine','','🧂','trace_mineral')"><span style="font-size:22px;margin-right:10px">🫙</span><div class="list-content"><div class="list-title">Iodine</div><div class="list-desc">Trace mineral</div></div><span class="list-right">›</span></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════════ MICRONUTRIENT DETAIL ═══════════════ -->
-      <div class="page" id="page-micronutrient-detail">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('micronutrients')">‹</span> <span id="nd-title">Vitamin D</span></div>
-        <div class="scroll" id="nd-content">
-          <!-- dynamically filled -->
-        </div>
-      </div>
-
-      <!-- ═══════════════ SUPPLEMENTS LIST ═══════════════ -->
-      <div class="page" id="page-supplements">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('more')">‹</span> My Supplements</div>
-        <div class="scroll">
-          <!-- Supplement cards -->
-          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
-            <div style="display:flex;align-items:flex-start;gap:10px">
-              <div style="flex:1">
-                <div style="font-size:15px;font-weight:700">Creatine Monohydrate</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 5g · Morning with food</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:1px">Increases ATP production, improves strength & muscle</div>
-              </div>
-              <span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Daily</span>
-            </div>
-          </div>
-          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
-            <div style="display:flex;align-items:flex-start;gap:10px">
-              <div style="flex:1">
-                <div style="font-size:15px;font-weight:700">Vitamin D3 + K2</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 2000 IU D3 + 100mcg K2 · With breakfast</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:1px">Bone health, immune function, calcium regulation</div>
-              </div>
-              <span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Daily</span>
-            </div>
-          </div>
-          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
-            <div style="display:flex;align-items:flex-start;gap:10px">
-              <div style="flex:1">
-                <div style="font-size:15px;font-weight:700">Omega-3 Fish Oil</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 2 capsules (1g EPA+DHA) · With meal</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:1px">Heart health, anti-inflammatory, brain function</div>
-              </div>
-              <span style="background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Daily</span>
-            </div>
-          </div>
-          <div class="card" onclick="showPage('supplement-detail')" style="cursor:pointer">
-            <div style="display:flex;align-items:flex-start;gap:10px">
-              <div style="flex:1">
-                <div style="font-size:15px;font-weight:700">Ashwagandha (KSM-66)</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:2px">Dose: 300mg · Bedtime</div>
-                <div style="font-size:12px;opacity:0.55;margin-top:1px">Reduces cortisol, stress, improves sleep & recovery</div>
-              </div>
-              <span style="background:#fff3e0;color:#e65100;font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px">Cycling: 8w on / 4w off</span>
-            </div>
-          </div>
-        </div>
-        <button class="fab" onclick="showPage('supplement-form')">＋</button>
-      </div>
-
-      <!-- ═══════════════ SUPPLEMENT FORM ═══════════════ -->
-      <div class="page" id="page-supplement-form">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('supplements')">‹</span> Add Supplement</div>
-        <div class="scroll">
-          <div class="card">
-            <div class="card-title">Basic Info</div>
-            <div class="input-group"><div class="input-label">Supplement Name *</div><input class="input-field" placeholder="e.g. Creatine Monohydrate" value="Magnesium Glycinate"></div>
-            <div class="input-group"><div class="input-label">Dose</div><input class="input-field" placeholder="e.g. 5g, 2000 IU, 1 capsule" value="400mg"></div>
-            <div class="input-group"><div class="input-label">When to Take</div><input class="input-field" placeholder="e.g. Morning with food, Pre-workout, Bedtime" value="Bedtime"></div>
-            <div class="input-group"><div class="input-label">Role / Purpose</div><input class="input-field" placeholder="What does this supplement do?" value="Improves sleep quality, reduces muscle cramps, lowers cortisol"></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Schedule</div>
-            <div style="display:flex;gap:8px">
-              <div class="chip selected" onclick="this.classList.add('selected');this.nextSibling.classList.remove('selected');document.getElementById('cycling-row').style.display='none'">Daily</div>
-              <div class="chip" onclick="this.classList.add('selected');this.previousSibling.classList.remove('selected');document.getElementById('cycling-row').style.display='block'">Cycling</div>
-            </div>
-            <div id="cycling-row" style="display:none;margin-top:10px">
-              <div class="input-label">Cycling Schedule</div>
-              <input class="input-field" placeholder="e.g. 5 days on, 2 days off / 8 weeks on, 4 weeks off">
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">Product Info</div>
-            <div class="input-group"><div class="input-label">Best Brands</div><input class="input-field" placeholder="e.g. NOW Foods, Optimum Nutrition, Jarrow" value="Doctor's Best, NOW Foods, Thorne"></div>
-            <div class="input-group"><div class="input-label">Price Range</div><input class="input-field" placeholder="e.g. Rs. 1500-2500 / $15-25" value="Rs. 1800-2500 / month"></div>
-            <div class="input-group"><div class="input-label">Purchase Link</div><input class="input-field" placeholder="https://..." value="https://www.amazon.com/..."></div>
-          </div>
-          <div class="card">
-            <div class="card-title">Personal Notes</div>
-            <textarea class="input-field" rows="3" placeholder="Any personal observations, side effects, or reminders...">Feel less anxious, sleep deeper after ~2 weeks</textarea>
-          </div>
-          <button class="btn-primary" onclick="showPage('supplements')">💾 Save Supplement</button>
-        </div>
-      </div>
-
-      <!-- ═══════════════ SUPPLEMENT DETAIL ═══════════════ -->
-      <div class="page" id="page-supplement-detail">
-        <div class="top-bar"><span class="back-btn" onclick="showPage('supplements')">‹</span> Creatine Monohydrate <span style="margin-left:auto;font-size:13px;color:#4ECDC4;cursor:pointer" onclick="showPage('supplement-form')">Edit</span></div>
-        <div class="scroll">
-          <div class="card" style="text-align:center;padding:20px">
-            <div style="font-size:28px;font-weight:800">Creatine Monohydrate</div>
-            <span style="background:#e8f5e9;color:#2e7d32;font-size:11px;font-weight:700;padding:4px 12px;border-radius:12px;margin-top:8px;display:inline-block">Daily</span>
-          </div>
-          <div class="card">
-            <div class="card-title">Role & Purpose</div>
-            <div style="font-size:13px;line-height:1.65;opacity:0.8">Increases phosphocreatine stores in muscles, boosting ATP production during high-intensity exercise. Improves strength, power output, and lean muscle mass. Also has cognitive benefits.</div>
-          </div>
-          <div class="card">
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;opacity:0.5;font-weight:600">DOSE</span><span style="font-size:14px;font-weight:700">5g per day</span></div>
-              <div style="height:1px;background:#f0f0f0"></div>
-              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;opacity:0.5;font-weight:600">TIMING</span><span style="font-size:14px;font-weight:700">Morning with food</span></div>
-              <div style="height:1px;background:#f0f0f0"></div>
-              <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;opacity:0.5;font-weight:600">SCHEDULE</span><span style="font-size:14px;font-weight:700">Daily (no cycling needed)</span></div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-title">Product Info</div>
-            <div style="font-size:13px;margin-bottom:6px"><span style="opacity:0.5;font-weight:600">Best Brands: </span>Optimum Nutrition, MyProtein, Thorne, NOW Foods</div>
-            <div style="font-size:13px;margin-bottom:10px"><span style="opacity:0.5;font-weight:600">Price: </span>Rs. 1500–2200 / month (500g)</div>
-            <button class="btn-outline" style="padding:10px;font-size:13px">🔗 Open Purchase Link</button>
-          </div>
-          <div class="card">
-            <div class="card-title">Personal Notes</div>
-            <div style="font-size:13px;opacity:0.7;font-style:italic;line-height:1.6">Noticeable strength increase after ~2 weeks of loading. No side effects. Take with juice for better taste. Loading phase: 20g/day for 5 days, then 5g maintenance.</div>
-          </div>
-          <button class="btn-danger" onclick="showPage('supplements')">🗑️ Delete Supplement</button>
-        </div>
-      </div>
-
-    </div><!-- end screen -->
-  </div><!-- end phone -->
-
-  <div class="controls">
-    <button class="ctrl-btn active" id="ctrl-dashboard" onclick="showPage('dashboard')">🏠 Dashboard</button>
-    <button class="ctrl-btn" id="ctrl-log" onclick="showPage('log')">📓 Daily Log</button>
-    <button class="ctrl-btn" id="ctrl-add-entry" onclick="showPage('add-entry')">➕ Add Food</button>
-    <button class="ctrl-btn" id="ctrl-ingredients" onclick="showPage('ingredients')">🥦 Ingredients</button>
-    <button class="ctrl-btn" id="ctrl-ingredient-form" onclick="showPage('ingredient-form')">📝 Add Ingredient</button>
-    <button class="ctrl-btn" id="ctrl-barcode" onclick="showPage('barcode')">📷 Barcode Scan</button>
-    <button class="ctrl-btn" id="ctrl-recipes" onclick="showPage('recipes')">🍽️ Recipes</button>
-    <button class="ctrl-btn" id="ctrl-recipe-form" onclick="showPage('recipe-form')">📝 New Recipe</button>
-    <button class="ctrl-btn" id="ctrl-history" onclick="showPage('history')">📊 History Charts</button>
-    <button class="ctrl-btn" id="ctrl-weight" onclick="showPage('weight')">⚖️ Weight Log</button>
-    <button class="ctrl-btn" id="ctrl-goals" onclick="showPage('goals')">🎯 Goals</button>
-    <button class="ctrl-btn" id="ctrl-backup" onclick="showPage('backup')">☁️ Backup</button>
-    <button class="ctrl-btn" id="ctrl-manage-meals" onclick="showPage('manage-meals')">🍴 Manage Meals</button>
-    <button class="ctrl-btn" id="ctrl-micronutrients" onclick="showPage('micronutrients')">🧬 Micronutrients</button>
-    <button class="ctrl-btn" id="ctrl-micronutrient-detail" onclick="showNutrient('vit_d','Vitamin D','Calciferol','☀️','fat_vitamin')">🧬 Vitamin D Detail</button>
-    <button class="ctrl-btn" id="ctrl-supplements" onclick="showPage('supplements')">💊 Supplements</button>
-    <button class="ctrl-btn" id="ctrl-supplement-form" onclick="showPage('supplement-form')">💊 Add Supplement</button>
-    <button class="ctrl-btn" id="ctrl-supplement-detail" onclick="showPage('supplement-detail')">💊 Supplement Detail</button>
-    <button class="ctrl-btn" id="ctrl-more" onclick="showPage('more')">⋯ More</button>
-    <hr style="border-color:rgba(255,255,255,0.15);margin:4px 0">
-    <button class="ctrl-btn" id="ctrl-dark" onclick="toggleDark()">🌙 Dark Mode</button>
+    </div>
+    <div class="sidebar-section-label">🥗 &nbsp;NUTRITION</div>
+    <div class="sidebar-item" onclick="nav('dashboard')"><span class="s-icon">🏠</span> Dashboard</div>
+    <div class="sidebar-item" onclick="nav('log')"><span class="s-icon">📓</span> Daily Log</div>
+    <div class="sidebar-item" onclick="nav('ingredients')"><span class="s-icon">🥑</span> Ingredients</div>
+    <div class="sidebar-item" onclick="nav('recipes')"><span class="s-icon">🍽️</span> Recipes</div>
+    <div class="sidebar-item" onclick="nav('history')"><span class="s-icon">📊</span> History &amp; Charts</div>
+    <div class="sidebar-item" onclick="nav('micronutrients')"><span class="s-icon">🧬</span> Micronutrients</div>
+    <div class="sidebar-item" onclick="nav('supplements')"><span class="s-icon">💊</span> My Supplements</div>
+    <div class="sidebar-item" onclick="nav('more')"><span class="s-icon">⚙️</span> Settings</div>
+    <div class="sidebar-divider"></div>
+    <div class="sidebar-section-label">🏋️ &nbsp;WORKOUT</div>
+    <div class="sidebar-item" onclick="nav('exercise-library')"><span class="s-icon">📚</span> Exercise Library</div>
+    <div class="sidebar-item" onclick="nav('workout-plans')"><span class="s-icon">📋</span> Workout Plans</div>
+    <div class="sidebar-item" onclick="nav('weight')"><span class="s-icon">⚖️</span> Weight Log</div>
   </div>
+
+  <!-- DASHBOARD -->
+  <div class="screen active" id="screen-dashboard">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Dashboard</h2></div>
+    </div>
+    <div class="content">
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;">
+        <button style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--primary)">&#8249;</button>
+        <span style="font-size:16px;font-weight:700">Today — Mon, May 18</span>
+        <button style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--on-surface-var)" disabled>&#8250;</button>
+      </div>
+      <div class="ring-container">
+        <div class="ring">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="58" fill="none" stroke="#e0e0e0" stroke-width="14"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="var(--primary)" stroke-width="14" stroke-dasharray="290 364" stroke-linecap="round"/>
+          </svg>
+          <div class="ring-center"><div class="ring-kcal">1,284</div><div class="ring-label">/ 2,200 kcal</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Macros</div>
+        <div class="macro-bar"><div class="macro-bar-label"><span style="color:#4ECDC4;font-weight:600">Protein</span><span>98 / 160 g</span></div><div class="macro-bar-track"><div class="macro-bar-fill" style="width:61%;background:#4ECDC4"></div></div></div>
+        <div class="macro-bar"><div class="macro-bar-label"><span style="color:#45B7D1;font-weight:600">Carbs</span><span>142 / 250 g</span></div><div class="macro-bar-track"><div class="macro-bar-fill" style="width:57%;background:#45B7D1"></div></div></div>
+        <div class="macro-bar"><div class="macro-bar-label"><span style="color:#FFA07A;font-weight:600">Fat</span><span>44 / 70 g</span></div><div class="macro-bar-track"><div class="macro-bar-fill" style="width:63%;background:#FFA07A"></div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">💧 Water</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;"><div style="font-size:28px;font-weight:800">1,500</div><div style="color:var(--on-surface-var);font-size:13px">/ 2,000 ml</div></div>
+        <div class="progress-track"><div class="progress-fill" style="width:75%"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🍽️ Meals Today</div>
+        <div class="list-row"><div class="list-icon">🌅</div><div class="list-info"><div class="list-title">Breakfast</div><div class="list-sub">Eggs · Oats · Banana</div></div><div style="font-size:13px;font-weight:600">480 kcal</div></div>
+        <div class="list-row"><div class="list-icon">☀️</div><div class="list-info"><div class="list-title">Lunch</div><div class="list-sub">Chicken Rice Bowl</div></div><div style="font-size:13px;font-weight:600">620 kcal</div></div>
+        <div class="list-row"><div class="list-icon">☕</div><div class="list-info"><div class="list-title">Snack</div><div class="list-sub">Greek Yogurt · Almonds</div></div><div style="font-size:13px;font-weight:600">184 kcal</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAILY LOG -->
+  <div class="screen" id="screen-log">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Daily Log</h2><p>Monday, May 18</p></div>
+    </div>
+    <div class="content">
+      <div class="card" style="padding:10px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800;color:var(--primary)">1,284</div><div style="font-size:11px;color:var(--on-surface-var)">kcal</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">98g</div><div style="font-size:11px;color:var(--on-surface-var)">Protein</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">142g</div><div style="font-size:11px;color:var(--on-surface-var)">Carbs</div></div>
+          <div style="text-align:center"><div style="font-size:18px;font-weight:800">44g</div><div style="font-size:11px;color:var(--on-surface-var)">Fat</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🌅 Breakfast</div>
+        <div class="list-row"><div class="list-info"><div class="list-title">Scrambled Eggs (3)</div><div class="list-sub">180g · 262 kcal · P:18g C:2g F:20g</div></div><div class="list-right">&#8250;</div></div>
+        <div class="list-row"><div class="list-info"><div class="list-title">Rolled Oats</div><div class="list-sub">80g · 144 kcal · P:5g C:25g F:3g</div></div><div class="list-right">&#8250;</div></div>
+        <button class="btn btn-outlined" style="width:100%;margin-top:8px" onclick="nav('add-entry')">+ Add Food</button>
+      </div>
+      <div class="card">
+        <div class="card-title">☀️ Lunch</div>
+        <div class="list-row"><div class="list-info"><div class="list-title">Chicken Rice Bowl</div><div class="list-sub">350g · 620 kcal · P:48g C:72g F:12g</div></div><div class="list-right">&#8250;</div></div>
+        <button class="btn btn-outlined" style="width:100%;margin-top:8px" onclick="nav('add-entry')">+ Add Food</button>
+      </div>
+      <div class="card">
+        <div class="card-title">🌙 Dinner</div>
+        <div class="empty-state" style="padding:20px 0"><div class="empty-icon">🍽️</div><div class="empty-sub">No food logged yet</div></div>
+        <button class="btn btn-outlined" style="width:100%" onclick="nav('add-entry')">+ Add Food</button>
+      </div>
+      <div class="card">
+        <div class="card-title">💧 Water</div>
+        <div style="text-align:center;font-size:24px;font-weight:800;margin-bottom:8px">1,500 <span style="font-size:14px;font-weight:400;color:var(--on-surface-var)">/ 2,000 ml</span></div>
+        <div class="progress-track" style="margin-bottom:12px"><div class="progress-fill" style="width:75%"></div></div>
+        <div class="water-btns"><button class="water-btn">+250</button><button class="water-btn">+500</button><button class="water-btn">+750</button><button class="water-btn">+1000</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD ENTRY -->
+  <div class="screen" id="screen-add-entry">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Add Food</h2><p>Dinner · May 18</p></div>
+      <button class="action-btn">Barcode</button>
+    </div>
+    <div class="search-bar"><input class="search-input" placeholder="Search ingredients or recipes…" /></div>
+    <div class="filter-row"><div class="filter-pill active">All</div><div class="filter-pill">Ingredients</div><div class="filter-pill">Recipes</div></div>
+    <div class="content">
+      <div class="list-row"><div class="list-icon">🥚</div><div class="list-info"><div class="list-title">Eggs (whole)</div><div class="list-sub">155 kcal / 100g · P:13g F:11g C:1g</div></div><div class="list-right">+</div></div>
+      <div class="list-row"><div class="list-icon">🍗</div><div class="list-info"><div class="list-title">Chicken Breast</div><div class="list-sub">165 kcal / 100g · P:31g F:4g C:0g</div></div><div class="list-right">+</div></div>
+      <div class="list-row"><div class="list-icon">🍚</div><div class="list-info"><div class="list-title">White Rice (cooked)</div><div class="list-sub">130 kcal / 100g · P:3g F:0g C:28g</div></div><div class="list-right">+</div></div>
+      <div class="list-row"><div class="list-icon">🍽️</div><div class="list-info"><div class="list-title">Chicken Rice Bowl</div><div class="list-sub">Recipe · 4 ingredients</div></div><div class="list-right">+</div></div>
+    </div>
+  </div>
+
+  <!-- INGREDIENTS -->
+  <div class="screen" id="screen-ingredients">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Ingredients</h2><p>24 total</p></div>
+    </div>
+    <div class="search-bar"><input class="search-input" placeholder="Search ingredients…" /></div>
+    <div class="content">
+      <div class="list-row"><div class="list-icon">🍗</div><div class="list-info"><div class="list-title">Chicken Breast</div><div class="list-sub">165 kcal · P:31g F:4g C:0g</div></div><div class="list-right">&#8250;</div></div>
+      <div class="list-row"><div class="list-icon">🥚</div><div class="list-info"><div class="list-title">Eggs (whole)</div><div class="list-sub">155 kcal · P:13g F:11g C:1g</div></div><div class="list-right">&#8250;</div></div>
+      <div class="list-row"><div class="list-icon">🍚</div><div class="list-info"><div class="list-title">White Rice (cooked)</div><div class="list-sub">130 kcal · P:3g F:0g C:28g</div></div><div class="list-right">&#8250;</div></div>
+      <div class="list-row"><div class="list-icon">🥦</div><div class="list-info"><div class="list-title">Broccoli</div><div class="list-sub">34 kcal · P:3g F:0g C:7g</div></div><div class="list-right">&#8250;</div></div>
+      <div class="list-row"><div class="list-icon">🍌</div><div class="list-info"><div class="list-title">Banana</div><div class="list-sub">89 kcal · P:1g F:0g C:23g</div></div><div class="list-right">&#8250;</div></div>
+    </div>
+    <div class="fab" onclick="nav('ingredient-form')">+</div>
+  </div>
+
+  <!-- INGREDIENT FORM -->
+  <div class="screen" id="screen-ingredient-form">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>New Ingredient</h2></div>
+      <button class="action-btn">Save</button>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">Basic Info</div>
+        <div class="form-label">Name</div><input class="form-input" placeholder="e.g. Chicken Breast" />
+      </div>
+      <div class="card">
+        <div class="card-title">Macros per 100g</div>
+        <div class="form-row"><div style="flex:1"><div class="form-label">Calories</div><input class="form-input" placeholder="0" type="number"/></div><div style="flex:1"><div class="form-label">Protein (g)</div><input class="form-input" placeholder="0" type="number"/></div></div>
+        <div class="form-row"><div style="flex:1"><div class="form-label">Carbs (g)</div><input class="form-input" placeholder="0" type="number"/></div><div style="flex:1"><div class="form-label">Fat (g)</div><input class="form-input" placeholder="0" type="number"/></div></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%">Save Ingredient</button>
+    </div>
+  </div>
+
+  <!-- RECIPES -->
+  <div class="screen" id="screen-recipes">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Recipes</h2><p>8 saved</p></div>
+    </div>
+    <div class="search-bar"><input class="search-input" placeholder="Search recipes…" /></div>
+    <div class="content">
+      <div class="card-sm" style="cursor:pointer"><div style="font-size:15px;font-weight:700">Chicken Rice Bowl</div><div style="font-size:12px;color:var(--primary);margin:2px 0">580 kcal · P:48g C:68g F:10g</div><div style="font-size:12px;color:var(--on-surface-var)">4 ingredients</div></div>
+      <div class="card-sm" style="cursor:pointer"><div style="font-size:15px;font-weight:700">Protein Pancakes</div><div style="font-size:12px;color:var(--primary);margin:2px 0">340 kcal · P:28g C:38g F:8g</div><div style="font-size:12px;color:var(--on-surface-var)">5 ingredients</div></div>
+      <div class="card-sm" style="cursor:pointer"><div style="font-size:15px;font-weight:700">Veggie Omelette</div><div style="font-size:12px;color:var(--primary);margin:2px 0">280 kcal · P:20g C:8g F:18g</div><div style="font-size:12px;color:var(--on-surface-var)">6 ingredients</div></div>
+    </div>
+    <div class="fab">+</div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="screen" id="screen-history">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>History &amp; Charts</h2></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">📊 Weekly Calories</div>
+        <svg width="100%" height="100" viewBox="0 0 300 100">
+          <rect x="10" y="40" width="28" height="55" rx="6" fill="var(--primary)" opacity="0.7"/><rect x="50" y="20" width="28" height="75" rx="6" fill="var(--primary)" opacity="0.7"/><rect x="90" y="30" width="28" height="65" rx="6" fill="var(--primary)" opacity="0.7"/><rect x="130" y="10" width="28" height="85" rx="6" fill="var(--primary)"/><rect x="170" y="25" width="28" height="70" rx="6" fill="var(--primary)" opacity="0.7"/><rect x="210" y="45" width="28" height="50" rx="6" fill="var(--primary)" opacity="0.7"/><rect x="250" y="35" width="28" height="60" rx="6" fill="var(--primary)" opacity="0.5"/>
+          <text x="24" y="108" text-anchor="middle" font-size="9" fill="var(--on-surface-var)">M</text><text x="64" y="108" text-anchor="middle" font-size="9" fill="var(--on-surface-var)">T</text><text x="104" y="108" text-anchor="middle" font-size="9" fill="var(--on-surface-var)">W</text><text x="144" y="108" text-anchor="middle" font-size="9" fill="var(--on-surface-var)">T</text><text x="184" y="108" text-anchor="middle" font-size="9" fill="var(--on-surface-var)">F</text><text x="224" y="108" text-anchor="middle" font-size="9" fill="var(--on-surface-var)">S</text><text x="264" y="108" text-anchor="middle" font-size="9" fill="var(--on-surface-var)">S</text>
+        </svg>
+      </div>
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val">1,820</div><div class="stat-unit">kcal</div><div class="stat-label">Avg/Day</div></div>
+        <div class="stat-box"><div class="stat-val" style="color:var(--primary)">142g</div><div class="stat-unit">protein</div><div class="stat-label">Avg/Day</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEIGHT LOG -->
+  <div class="screen" id="screen-weight">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Weight Log</h2></div>
+    </div>
+    <div class="content">
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val">83.2</div><div class="stat-unit">kg</div><div class="stat-label">Current</div></div>
+        <div class="stat-box"><div class="stat-val" style="color:var(--green)">-2.8</div><div class="stat-unit">kg</div><div class="stat-label">Total Loss</div></div>
+        <div class="stat-box"><div class="stat-val">78</div><div class="stat-unit">kg</div><div class="stat-label">Target</div></div>
+      </div>
+      <div class="chart-wrap">
+        <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:10px">PROGRESS CHART</div>
+        <svg width="100%" height="160" viewBox="0 0 320 160">
+          <line x1="40" y1="10" x2="305" y2="10" stroke="var(--outline)" stroke-width="1" stroke-dasharray="4"/>
+          <line x1="40" y1="50" x2="305" y2="50" stroke="var(--outline)" stroke-width="1" stroke-dasharray="4"/>
+          <line x1="40" y1="90" x2="305" y2="90" stroke="var(--outline)" stroke-width="1" stroke-dasharray="4"/>
+          <line x1="40" y1="130" x2="305" y2="130" stroke="var(--outline)" stroke-width="1" stroke-dasharray="4"/>
+          <text x="35" y="13" text-anchor="end" font-size="9" fill="var(--on-surface-var)">87</text>
+          <text x="35" y="53" text-anchor="end" font-size="9" fill="var(--on-surface-var)">85</text>
+          <text x="35" y="93" text-anchor="end" font-size="9" fill="var(--on-surface-var)">83</text>
+          <text x="35" y="133" text-anchor="end" font-size="9" fill="var(--on-surface-var)">81</text>
+          <line x1="60" y1="130" x2="290" y2="30" stroke="#E63946" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <polyline points="60,130 90,124 120,126 150,116 180,108 210,98 240,94 270,90" fill="none" stroke="#45B7D1" stroke-width="2.5" stroke-linejoin="round"/>
+          <circle cx="60" cy="130" r="4" fill="#45B7D1"/><circle cx="90" cy="124" r="4" fill="#45B7D1"/><circle cx="120" cy="126" r="4" fill="#45B7D1"/><circle cx="150" cy="116" r="4" fill="#45B7D1"/><circle cx="180" cy="108" r="4" fill="#45B7D1"/><circle cx="210" cy="98" r="4" fill="#45B7D1"/><circle cx="240" cy="94" r="4" fill="#45B7D1"/><circle cx="270" cy="90" r="5" fill="#45B7D1"/>
+          <line x1="270" y1="90" x2="305" y2="65" stroke="#FF9800" stroke-width="2" stroke-dasharray="5 4"/>
+          <line x1="42" y1="150" x2="56" y2="150" stroke="#E63946" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="60" y="154" font-size="9" fill="var(--on-surface-var)">Target Pace</text>
+          <line x1="115" y1="150" x2="129" y2="150" stroke="#45B7D1" stroke-width="2"/>
+          <text x="133" y="154" font-size="9" fill="var(--on-surface-var)">Actual</text>
+          <line x1="175" y1="150" x2="189" y2="150" stroke="#FF9800" stroke-width="2" stroke-dasharray="4 3"/>
+          <text x="193" y="154" font-size="9" fill="var(--on-surface-var)">Trend</text>
+        </svg>
+      </div>
+      <div class="card" style="background:var(--primary-container);border-color:var(--primary)">
+        <div style="font-size:13px;color:var(--primary);font-weight:600">🏁 At current pace: reach 78 kg by Jan 15, 2027</div>
+      </div>
+      <div class="card">
+        <div class="card-title">🎯 Target Settings</div>
+        <div class="form-label">Target Weight (kg)</div><input class="form-input" value="78" type="number"/>
+        <div class="form-label">Target Date</div><input class="form-input" value="2026-12-31" type="date"/>
+        <button class="btn btn-primary" style="width:100%">Save Target</button>
+      </div>
+      <div class="card">
+        <div class="card-title">Log Today</div>
+        <div class="form-row"><input class="form-input" placeholder="83.2" type="number" style="flex:1;margin-bottom:0"/><button class="btn btn-primary">Log</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXERCISE LIBRARY -->
+  <div class="screen" id="screen-exercise-library">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Exercise Library</h2><p>46 exercises</p></div>
+    </div>
+    <div class="search-bar"><input class="search-input" placeholder="Search exercises or muscles…"/></div>
+    <div class="filter-row">
+      <div class="filter-pill active">All</div><div class="filter-pill">Chest</div><div class="filter-pill">Back</div><div class="filter-pill">Shoulders</div><div class="filter-pill">Biceps</div><div class="filter-pill">Triceps</div><div class="filter-pill">Legs</div><div class="filter-pill">Glutes</div><div class="filter-pill">Core</div><div class="filter-pill">Cardio</div>
+    </div>
+    <div class="content">
+      <div class="cat-header"><span>💪</span><span class="cat-header-title">Chest</span></div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Barbell Bench Press</div><div class="badge badge-orange">intermediate</div></div>
+        <div class="ex-muscles">Pectoralis Major · Anterior Deltoid</div>
+        <div class="ex-sec-muscles">Secondary: Triceps · Serratus Anterior</div>
+        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
+      </div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Incline Dumbbell Press</div><div class="badge badge-orange">intermediate</div></div>
+        <div class="ex-muscles">Upper Pectoralis Major</div>
+        <div class="ex-footer"><div class="ex-equip">🏋️ Dumbbells</div><span>&#8250;</span></div>
+      </div>
+
+      <div class="cat-header"><span>🦅</span><span class="cat-header-title">Back</span></div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Deadlift</div><div class="badge badge-red">advanced</div></div>
+        <div class="ex-muscles">Erector Spinae · Glutes · Hamstrings</div>
+        <div class="ex-sec-muscles">Secondary: Trapezius · Latissimus Dorsi</div>
+        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
+      </div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Pull-Up</div><div class="badge badge-orange">intermediate</div></div>
+        <div class="ex-muscles">Latissimus Dorsi · Biceps Brachii</div>
+        <div class="ex-footer"><div class="ex-equip">🔒 Bodyweight</div><span>&#8250;</span></div>
+      </div>
+
+      <div class="cat-header"><span>🏔️</span><span class="cat-header-title">Shoulders</span></div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Overhead Press</div><div class="badge badge-orange">intermediate</div></div>
+        <div class="ex-muscles">Anterior &amp; Medial Deltoid · Triceps</div>
+        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
+      </div>
+
+      <div class="cat-header"><span>🦵</span><span class="cat-header-title">Legs</span></div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Barbell Back Squat</div><div class="badge badge-orange">intermediate</div></div>
+        <div class="ex-muscles">Quadriceps · Glutes · Hamstrings</div>
+        <div class="ex-sec-muscles">Secondary: Adductors · Erector Spinae</div>
+        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell</div><span>&#8250;</span></div>
+      </div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Romanian Deadlift</div><div class="badge badge-orange">intermediate</div></div>
+        <div class="ex-muscles">Hamstrings · Glutes · Erector Spinae</div>
+        <div class="ex-footer"><div class="ex-equip">🏋️ Barbell / Dumbbells</div><span>&#8250;</span></div>
+      </div>
+
+      <div class="cat-header"><span>🧘</span><span class="cat-header-title">Core</span></div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Plank</div><div class="badge badge-green">beginner</div></div>
+        <div class="ex-muscles">Transverse Abdominis · Rectus Abdominis</div>
+        <div class="ex-footer"><div class="ex-equip">🔒 Bodyweight</div><span>&#8250;</span></div>
+      </div>
+      <div class="ex-card" onclick="nav('exercise-detail')">
+        <div class="ex-card-top"><div class="ex-name">Hanging Leg Raise</div><div class="badge badge-orange">intermediate</div></div>
+        <div class="ex-muscles">Rectus Abdominis · Hip Flexors</div>
+        <div class="ex-footer"><div class="ex-equip">🔒 Pull-up Bar</div><span>&#8250;</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXERCISE DETAIL -->
+  <div class="screen" id="screen-exercise-detail">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Barbell Bench Press</h2></div>
+    </div>
+    <div class="content" style="padding:0">
+      <div class="hero">
+        <h3>Barbell Bench Press</h3>
+        <div class="hero-badges">
+          <div class="badge" style="background:rgba(255,152,0,0.7);color:#fff">INTERMEDIATE</div>
+          <div class="badge badge-white">Chest</div>
+          <div class="badge badge-white">🏋️ Barbell</div>
+        </div>
+      </div>
+      <div style="padding:16px">
+        <div class="card">
+          <div class="card-title">🎯 Target Muscles</div>
+          <div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:#E53935;margin-bottom:6px;letter-spacing:1px">PRIMARY</div><div class="chip-group"><span class="chip chip-primary">Pectoralis Major</span><span class="chip chip-primary">Anterior Deltoid</span></div></div>
+          <div style="margin-bottom:10px"><div style="font-size:11px;font-weight:700;color:#FB8C00;margin-bottom:6px;letter-spacing:1px">SECONDARY</div><div class="chip-group"><span class="chip chip-secondary">Triceps Brachii</span><span class="chip chip-secondary">Serratus Anterior</span></div></div>
+          <div><div style="font-size:11px;font-weight:700;color:#43A047;margin-bottom:6px;letter-spacing:1px">STABILIZERS</div><div class="chip-group"><span class="chip chip-stabilizer">Rotator Cuff</span><span class="chip chip-stabilizer">Core</span></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 Technique</div>
+          <div class="step-row"><div class="step-num">1</div><div class="step-text">Set up with eyes directly under the bar; grip slightly wider than shoulder-width with a full thumb wrap.</div></div>
+          <div class="step-row"><div class="step-num">2</div><div class="step-text">Create a stable arch: retract and depress scapulae, press feet firmly into the floor.</div></div>
+          <div class="step-row"><div class="step-num">3</div><div class="step-text">Unrack and bring the bar over mid-chest. Take a deep breath and brace your core tight.</div></div>
+          <div class="step-row"><div class="step-num">4</div><div class="step-text">Lower the bar under control to touch the lower chest, keeping elbows at ~45–75°.</div></div>
+          <div class="step-row"><div class="step-num">5</div><div class="step-text">Drive the bar back up in a slight arc, exhaling at the top. Lock out without hyperextending.</div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">💡 Coaching Tips</div>
+          <div class="tip-row"><span class="tip-icon" style="color:var(--primary)">✓</span><span>Keep wrists stacked directly above elbows throughout the movement.</span></div>
+          <div class="tip-row"><span class="tip-icon" style="color:var(--primary)">✓</span><span>Drive through the legs to create full-body tension and improve bar speed.</span></div>
+          <div class="tip-row"><span class="tip-icon" style="color:var(--primary)">✓</span><span>Think "chest up to the bar" rather than pushing the bar down for better activation.</span></div>
+        </div>
+        <div class="card">
+          <div class="card-title">⚠️ Common Mistakes</div>
+          <div class="tip-row"><span class="tip-icon" style="color:#E63946">✗</span><span>Flaring elbows 90° — puts excessive stress on the shoulder joint.</span></div>
+          <div class="tip-row"><span class="tip-icon" style="color:#E63946">✗</span><span>Bouncing the bar off the chest — reduces tension and risks injury.</span></div>
+          <div class="tip-row"><span class="tip-icon" style="color:#E63946">✗</span><span>Lifting hips off the bench to grind a heavy rep.</span></div>
+        </div>
+        <button class="btn btn-yt">▶ Watch on YouTube</button>
+        <div class="card">
+          <div class="card-title">🔄 Alternative Exercises</div>
+          <div class="alt-row" onclick="nav('exercise-detail')"><div style="flex:1"><div style="font-size:14px;font-weight:600">Incline Dumbbell Press</div><div style="font-size:12px;color:var(--primary)">Upper Pectoralis Major</div></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+          <div class="alt-row" onclick="nav('exercise-detail')"><div style="flex:1"><div style="font-size:14px;font-weight:600">Cable Fly</div><div style="font-size:12px;color:var(--primary)">Pectoralis Major</div></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+          <div class="alt-row" onclick="nav('exercise-detail')"><div style="flex:1"><div style="font-size:14px;font-weight:600">Dips</div><div style="font-size:12px;color:var(--primary)">Pectoralis Major · Triceps</div></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKOUT PLANS -->
+  <div class="screen" id="screen-workout-plans">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Workout Plans</h2><p>3 plans</p></div>
+    </div>
+    <div class="content">
+      <div class="plan-card" onclick="nav('workout-plan-detail')">
+        <div class="plan-card-icon">💪</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">Push Day (Chest/Shoulders)</div><div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">6 exercises</div><div style="font-size:11px;color:var(--on-surface-var)">Created May 10</div></div>
+        <span style="font-size:18px;cursor:pointer;margin-right:6px">✏️</span><span style="font-size:18px;cursor:pointer;color:var(--red);margin-right:4px">🗑️</span><span style="color:var(--on-surface-var)">&#8250;</span>
+      </div>
+      <div class="plan-card" onclick="nav('workout-plan-detail')">
+        <div class="plan-card-icon">🦵</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">Leg Day</div><div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">5 exercises</div><div style="font-size:11px;color:var(--on-surface-var)">Created May 8</div></div>
+        <span style="font-size:18px;cursor:pointer;margin-right:6px">✏️</span><span style="font-size:18px;cursor:pointer;color:var(--red);margin-right:4px">🗑️</span><span style="color:var(--on-surface-var)">&#8250;</span>
+      </div>
+      <div class="plan-card" onclick="nav('workout-plan-detail')">
+        <div class="plan-card-icon">🦅</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:700">Pull Day (Back/Biceps)</div><div style="font-size:12px;color:var(--on-surface-var);margin-top:2px">6 exercises</div><div style="font-size:11px;color:var(--on-surface-var)">Created May 5</div></div>
+        <span style="font-size:18px;cursor:pointer;margin-right:6px">✏️</span><span style="font-size:18px;cursor:pointer;color:var(--red);margin-right:4px">🗑️</span><span style="color:var(--on-surface-var)">&#8250;</span>
+      </div>
+    </div>
+    <div class="fab" onclick="nav('workout-plan-form')">+</div>
+  </div>
+
+  <!-- WORKOUT PLAN DETAIL -->
+  <div class="screen" id="screen-workout-plan-detail">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Push Day</h2></div>
+      <button class="action-btn">Edit</button>
+    </div>
+    <div class="content" style="padding:0">
+      <div class="hero">
+        <h3>Push Day (Chest/Shoulders)</h3>
+        <p>Heavy compound + isolation for chest, shoulders, and triceps.</p>
+        <p style="opacity:0.6;font-size:12px;margin-top:8px">6 exercises</p>
+      </div>
+      <div style="padding:16px">
+        <div class="ex-list-row" onclick="nav('exercise-detail')"><div class="ex-list-num">1</div><div style="flex:1"><div style="font-size:14px;font-weight:700">Barbell Bench Press</div><div style="font-size:12px;color:var(--primary)">Pectoralis Major</div><div class="ex-sets-badge">🔁 4 sets × 6-8 reps</div></div><div style="width:10px;height:10px;border-radius:50%;background:#FF9800;margin-right:6px"></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+        <div class="ex-list-row" onclick="nav('exercise-detail')"><div class="ex-list-num">2</div><div style="flex:1"><div style="font-size:14px;font-weight:700">Incline Dumbbell Press</div><div style="font-size:12px;color:var(--primary)">Upper Pectoralis Major</div><div class="ex-sets-badge">🔁 3 sets × 8-12 reps</div></div><div style="width:10px;height:10px;border-radius:50%;background:#FF9800;margin-right:6px"></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+        <div class="ex-list-row" onclick="nav('exercise-detail')"><div class="ex-list-num">3</div><div style="flex:1"><div style="font-size:14px;font-weight:700">Cable Fly</div><div style="font-size:12px;color:var(--primary)">Pectoralis Major</div><div class="ex-sets-badge">🔁 3 sets × 12-15 reps</div></div><div style="width:10px;height:10px;border-radius:50%;background:#FF9800;margin-right:6px"></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+        <div class="ex-list-row" onclick="nav('exercise-detail')"><div class="ex-list-num">4</div><div style="flex:1"><div style="font-size:14px;font-weight:700">Overhead Press</div><div style="font-size:12px;color:var(--primary)">Deltoids · Triceps</div><div class="ex-sets-badge">🔁 4 sets × 6-8 reps</div></div><div style="width:10px;height:10px;border-radius:50%;background:#FF9800;margin-right:6px"></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+        <div class="ex-list-row" onclick="nav('exercise-detail')"><div class="ex-list-num">5</div><div style="flex:1"><div style="font-size:14px;font-weight:700">Lateral Raise</div><div style="font-size:12px;color:var(--primary)">Medial Deltoid</div><div class="ex-sets-badge">🔁 3 sets × 15-20 reps</div></div><div style="width:10px;height:10px;border-radius:50%;background:#FF9800;margin-right:6px"></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+        <div class="ex-list-row" onclick="nav('exercise-detail')"><div class="ex-list-num">6</div><div style="flex:1"><div style="font-size:14px;font-weight:700">Tricep Pushdown</div><div style="font-size:12px;color:var(--primary)">Triceps Brachii</div><div class="ex-sets-badge">🔁 3 sets × 12-15 reps</div></div><div style="width:10px;height:10px;border-radius:50%;background:#FF9800;margin-right:6px"></div><span style="color:var(--on-surface-var)">&#8250;</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WORKOUT PLAN FORM -->
+  <div class="screen" id="screen-workout-plan-form">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>New Plan</h2></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">Plan Info</div>
+        <div class="form-label">Plan Name</div><input class="form-input" placeholder="e.g. Push Day, Leg Day…"/>
+        <div class="form-label">Description (optional)</div><input class="form-input" placeholder="What is the focus of this plan?"/>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Exercises (2)</div>
+          <button class="btn btn-outlined" style="padding:6px 14px;font-size:12px">+ Add Exercise</button>
+        </div>
+        <div class="plan-ex-row">
+          <div class="plan-ex-top"><div class="plan-ex-num">1</div><div style="flex:1"><div style="font-size:14px;font-weight:600">Barbell Bench Press</div><div style="font-size:12px;color:var(--primary)">Pectoralis Major</div></div><span style="color:var(--red);cursor:pointer;font-size:20px">&#10005;</span></div>
+          <div class="form-row"><div style="flex:0.4"><div class="form-label" style="font-size:10px">Sets</div><input class="form-input" value="4" type="number" style="margin-bottom:0"/></div><div style="flex:0.4"><div class="form-label" style="font-size:10px">Reps</div><input class="form-input" value="6-8" style="margin-bottom:0"/></div><div style="flex:1"><div class="form-label" style="font-size:10px">Notes</div><input class="form-input" placeholder="optional" style="margin-bottom:0"/></div></div>
+        </div>
+        <div class="plan-ex-row">
+          <div class="plan-ex-top"><div class="plan-ex-num">2</div><div style="flex:1"><div style="font-size:14px;font-weight:600">Overhead Press</div><div style="font-size:12px;color:var(--primary)">Deltoids · Triceps</div></div><span style="color:var(--red);cursor:pointer;font-size:20px">&#10005;</span></div>
+          <div class="form-row"><div style="flex:0.4"><div class="form-label" style="font-size:10px">Sets</div><input class="form-input" value="3" type="number" style="margin-bottom:0"/></div><div style="flex:0.4"><div class="form-label" style="font-size:10px">Reps</div><input class="form-input" value="8-10" style="margin-bottom:0"/></div><div style="flex:1"><div class="form-label" style="font-size:10px">Notes</div><input class="form-input" placeholder="optional" style="margin-bottom:0"/></div></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%">Create Plan</button>
+    </div>
+  </div>
+
+  <!-- MICRONUTRIENTS -->
+  <div class="screen" id="screen-micronutrients">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Micronutrients</h2></div>
+    </div>
+    <div class="search-bar"><input class="search-input" placeholder="Search vitamins &amp; minerals…"/></div>
+    <div class="content">
+      <div style="font-size:11px;font-weight:700;color:var(--primary);padding:6px 0 4px;letter-spacing:1px">FAT-SOLUBLE VITAMINS</div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">🌟</div><div class="micro-info"><div class="micro-name">Vitamin A</div><div class="micro-cat">Fat-Soluble · Retinol</div></div><span>&#8250;</span></div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">☀️</div><div class="micro-info"><div class="micro-name">Vitamin D</div><div class="micro-cat">Fat-Soluble · Cholecalciferol</div></div><span>&#8250;</span></div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">🛡️</div><div class="micro-info"><div class="micro-name">Vitamin E</div><div class="micro-cat">Fat-Soluble · Tocopherol</div></div><span>&#8250;</span></div>
+      <div style="font-size:11px;font-weight:700;color:var(--primary);padding:10px 0 4px;letter-spacing:1px">WATER-SOLUBLE VITAMINS</div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">🍊</div><div class="micro-info"><div class="micro-name">Vitamin C</div><div class="micro-cat">Water-Soluble · Ascorbic Acid</div></div><span>&#8250;</span></div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">⚡</div><div class="micro-info"><div class="micro-name">Vitamin B12</div><div class="micro-cat">Water-Soluble · Cobalamin</div></div><span>&#8250;</span></div>
+      <div style="font-size:11px;font-weight:700;color:var(--primary);padding:10px 0 4px;letter-spacing:1px">MACROMINERALS</div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">🦴</div><div class="micro-info"><div class="micro-name">Calcium</div><div class="micro-cat">Macromineral</div></div><span>&#8250;</span></div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">⚡</div><div class="micro-info"><div class="micro-name">Magnesium</div><div class="micro-cat">Macromineral</div></div><span>&#8250;</span></div>
+      <div style="font-size:11px;font-weight:700;color:var(--primary);padding:10px 0 4px;letter-spacing:1px">TRACE MINERALS</div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">🩸</div><div class="micro-info"><div class="micro-name">Iron</div><div class="micro-cat">Trace Mineral</div></div><span>&#8250;</span></div>
+      <div class="micro-item" onclick="nav('micronutrient-detail')"><div class="micro-emoji">🔵</div><div class="micro-info"><div class="micro-name">Zinc</div><div class="micro-cat">Trace Mineral</div></div><span>&#8250;</span></div>
+    </div>
+  </div>
+
+  <!-- MICRONUTRIENT DETAIL -->
+  <div class="screen" id="screen-micronutrient-detail">
+    <div class="app-bar">
+      <div class="back-btn" onclick="back()">&#8249;</div>
+      <div class="app-bar-title"><h2>Vitamin D</h2></div>
+    </div>
+    <div class="content">
+      <div class="card" style="background:var(--primary-container);border-color:var(--primary)">
+        <div style="font-size:36px;margin-bottom:8px">☀️</div>
+        <div style="font-size:20px;font-weight:800;color:var(--primary)">Vitamin D</div>
+        <div style="font-size:13px;color:var(--on-surface-var)">Cholecalciferol (D3) / Ergocalciferol (D2)</div>
+        <div class="chip-group" style="margin-top:10px"><span class="chip chip-cat">Fat-Soluble Vitamin</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🧬 Role &amp; Function</div>
+        <p style="font-size:14px;line-height:22px">Regulates calcium absorption and bone mineralisation. Critical for immune function, muscle contraction, and mood regulation. Acts as a steroid hormone throughout the body.</p>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠️ Deficiency Symptoms</div>
+        <div class="tip-row"><span style="color:#E63946;margin-right:6px">•</span><span>Bone pain and muscle weakness</span></div>
+        <div class="tip-row"><span style="color:#E63946;margin-right:6px">•</span><span>Fatigue and depression</span></div>
+        <div class="tip-row"><span style="color:#E63946;margin-right:6px">•</span><span>Frequent infections and impaired immunity</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🥗 Food Sources</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px"><span class="source-chip">Fatty Fish</span><span class="source-chip">Egg Yolks</span><span class="source-chip">Fortified Milk</span><span class="source-chip">Mushrooms</span><span class="source-chip">Cod Liver Oil</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📊 Daily Requirements</div>
+        <div class="detail-row"><div class="detail-key">RDA (Adults)</div><div class="detail-val">600–800 IU (15–20 µg)</div></div>
+        <div class="detail-row"><div class="detail-key">Upper Limit</div><div class="detail-val">4,000 IU (100 µg)</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPPLEMENTS -->
+  <div class="screen" id="screen-supplements">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>My Supplements</h2><p>5 tracked</p></div>
+    </div>
+    <div class="content">
+      <div class="supp-card">
+        <div class="supp-top"><div><div class="supp-name">Creatine Monohydrate</div><div class="supp-dose">5g daily · Post-workout</div></div><div class="badge badge-green">Daily</div></div>
+        <div style="font-size:12px;color:var(--on-surface-var)">Strength &amp; power output</div>
+        <div class="supp-row"><span class="chip chip-cat">Optimum Nutrition</span><span style="font-size:12px;color:var(--on-surface-var)">~$25/month</span></div>
+      </div>
+      <div class="supp-card">
+        <div class="supp-top"><div><div class="supp-name">Vitamin D3 + K2</div><div class="supp-dose">5,000 IU / 100 µg daily</div></div><div class="badge badge-green">Daily</div></div>
+        <div style="font-size:12px;color:var(--on-surface-var)">Bone health, immunity · With meals</div>
+        <div class="supp-row"><span class="chip chip-cat">Now Foods</span><span style="font-size:12px;color:var(--on-surface-var)">~$12/month</span></div>
+      </div>
+      <div class="supp-card">
+        <div class="supp-top"><div><div class="supp-name">Whey Protein Isolate</div><div class="supp-dose">30g per serving</div></div><div class="badge badge-orange">Cycling</div></div>
+        <div style="font-size:12px;color:var(--on-surface-var)">Muscle protein synthesis · Post-workout</div>
+        <div class="supp-row"><span class="chip chip-cat">Dymatize ISO100</span><span style="font-size:12px;color:var(--on-surface-var)">~$45/month</span></div>
+      </div>
+    </div>
+    <div class="fab">+</div>
+  </div>
+
+  <!-- SETTINGS / MORE -->
+  <div class="screen" id="screen-more">
+    <div class="app-bar">
+      <div class="menu-btn" onclick="openSidebar()">☰</div>
+      <div class="app-bar-title"><h2>Settings</h2></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="card-title">⚙️ Tools</div>
+        <div class="list-row"><div class="list-icon">📊</div><div class="list-info"><div class="list-title">History &amp; Charts</div><div class="list-sub">Weekly macros &amp; weight trends</div></div><div class="list-right">&#8250;</div></div>
+        <div class="list-row"><div class="list-icon">🍽️</div><div class="list-info"><div class="list-title">Manage Meal Types</div><div class="list-sub">Add Sehri, Iftar, Pre-workout…</div></div><div class="list-right">&#8250;</div></div>
+        <div class="list-row"><div class="list-icon">☁️</div><div class="list-info"><div class="list-title">Backup &amp; Restore</div><div class="list-sub">Export or import your data</div></div><div class="list-right">&#8250;</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">ℹ️ App Info</div>
+        <div class="list-row"><div class="list-icon">📱</div><div class="list-info"><div class="list-title">Version</div><div class="list-sub">1.2.0</div></div></div>
+        <div class="list-row"><div class="list-icon">🗄️</div><div class="list-info"><div class="list-title">Storage</div><div class="list-sub">Local SQLite database</div></div></div>
+      </div>
+      <div class="card danger-section">
+        <div class="card-title">🚨 Danger Zone</div>
+        <button class="btn btn-danger" style="width:100%">🗑️ Reset All Data</button>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
-// Tab bars
-const TABS = [
-  { id:'dashboard', icon:'🏠', label:'Dashboard' },
-  { id:'log',       icon:'📓', label:'Log' },
-  { id:'ingredients', icon:'🥦', label:'Ingredients' },
-  { id:'recipes',   icon:'🍽️', label:'Recipes' },
-  { id:'more',      icon:'⋯', label:'More' },
-];
+  const navHistory = [];
+  const ROUTES = {
+    dashboard: 'screen-dashboard', log: 'screen-log', 'add-entry': 'screen-add-entry',
+    ingredients: 'screen-ingredients', 'ingredient-form': 'screen-ingredient-form',
+    recipes: 'screen-recipes', history: 'screen-history', weight: 'screen-weight',
+    'exercise-library': 'screen-exercise-library', 'exercise-detail': 'screen-exercise-detail',
+    'workout-plans': 'screen-workout-plans', 'workout-plan-detail': 'screen-workout-plan-detail',
+    'workout-plan-form': 'screen-workout-plan-form',
+    micronutrients: 'screen-micronutrients', 'micronutrient-detail': 'screen-micronutrient-detail',
+    supplements: 'screen-supplements', more: 'screen-more',
+  };
+  let current = 'dashboard';
 
-function buildTabBars() {
-  ['dashboard','log','ingredients','recipes','more'].forEach(pid => {
-    const el = document.getElementById('tab-bar-' + pid);
-    if (!el) return;
-    el.innerHTML = TABS.map(t => `
-      <button class="tab-btn ${t.id === pid ? 'active' : ''}" onclick="showPage('${t.id}')">
-        <span class="tab-icon">${t.icon}</span>
-        <span>${t.label}</span>
-      </button>`).join('');
-  });
-}
-buildTabBars();
-
-let currentPage = 'dashboard';
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const page = document.getElementById('page-' + id);
-  if (page) page.classList.add('active');
-  currentPage = id;
-  // update ctrl btns
-  document.querySelectorAll('.ctrl-btn').forEach(b => b.classList.remove('active'));
-  const cb = document.getElementById('ctrl-' + id);
-  if (cb) cb.classList.add('active');
-  // draw charts when history opens
-  if (id === 'history') setTimeout(drawCharts, 100);
-  if (id === 'weight') setTimeout(drawWeightChart, 100);
-}
-
-let weightChartDrawn = false;
-function drawWeightChart() {
-  if (weightChartDrawn) return;
-  weightChartDrawn = true;
-
-  // X axis: May 1 (start) through Dec 31 (target), key points shown
-  // Slope of actual: (72.3-73.5)/17 = -0.071 kg/day → hits 70 at day 49 = Jun 19
-  const labels = ['May 1','May 4','May 7','May 10','May 13','May 16','May 18','Jun 1','Jun 19★','Dec 31'];
-
-  // Required pace: straight line start→target (null in between, spanGaps draws it)
-  const pace = [73.5, null, null, null, null, null, null, null, null, 70.0];
-
-  // Actual zigzag measurements (null for future dates)
-  const actual = [73.5, 73.3, 73.1, 72.9, 72.7, 72.5, 72.3, null, null, null];
-
-  // Trend (linear regression extended to projected date, null after projection)
-  const trend = [73.5, 73.29, 73.08, 72.86, 72.65, 72.43, 72.22, 71.29, 70.0, null];
-
-  new Chart(document.getElementById('weightDualChart'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Required pace',
-          data: pace,
-          borderColor: '#FF6B6B',
-          borderDash: [8, 5],
-          borderWidth: 2,
-          pointRadius: (ctx) => ctx.dataIndex === 0 || ctx.dataIndex === 9 ? 5 : 0,
-          pointBackgroundColor: '#FF6B6B',
-          fill: false,
-          tension: 0,
-          spanGaps: true,
-        },
-        {
-          label: 'Actual',
-          data: actual,
-          borderColor: '#45B7D1',
-          borderWidth: 2.5,
-          pointRadius: 5,
-          pointBackgroundColor: '#45B7D1',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          fill: false,
-          tension: 0,
-          spanGaps: false,
-        },
-        {
-          label: 'Trend',
-          data: trend,
-          borderColor: '#FF9800',
-          borderDash: [10, 5],
-          borderWidth: 2,
-          pointRadius: (ctx) => ctx.dataIndex === 8 ? 6 : 0,
-          pointBackgroundColor: '#FF9800',
-          pointBorderColor: '#fff',
-          pointBorderWidth: 2,
-          fill: false,
-          tension: 0,
-          spanGaps: false,
-        },
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 9 }, maxRotation: 0 } },
-        y: {
-          grid: { color: '#f5f5f5' },
-          ticks: { font: { size: 9 } },
-          min: 69,
-          max: 74,
-        }
-      }
-    }
-  });
-}
-
-// Water tracker
-let waterMl = 1500;
-function addWater(ml) {
-  waterMl = Math.min(waterMl + ml, 3000);
-  document.getElementById('water-display').textContent = waterMl + ' / 2000 ml';
-  document.getElementById('water-bar').style.width = Math.min(waterMl/2000*100,100) + '%';
-}
-
-// Food picker
-function selectFood(name, type) {
-  document.getElementById('food-modal').classList.remove('show');
-  document.getElementById('selected-food-name').textContent = name;
-  document.getElementById('grams-card').style.display = 'block';
-  document.getElementById('grams-input').focus();
-}
-function switchTab(tab, el) {
-  document.querySelectorAll('.modal-tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
-}
-function filterFoods(q) {
-  document.querySelectorAll('#food-list .list-item').forEach(item => {
-    const name = item.querySelector('.list-title').textContent.toLowerCase();
-    item.style.display = name.includes(q.toLowerCase()) ? '' : 'none';
-  });
-  if (q) {
-    document.querySelectorAll('.modal-tab').forEach((t,i) => { t.classList.toggle('active', i===1); });
+  function nav(page) {
+    navHistory.push(current);
+    show(page);
+    closeSidebar();
   }
-}
 
-// Goal templates
-function loadTemplate(kcal, protein, carbs, fat) {
-  document.getElementById('goal-kcal').value = kcal;
-  document.getElementById('goal-protein').value = protein;
-  document.getElementById('goal-carbs').value = carbs;
-  document.getElementById('goal-fat').value = fat;
-}
+  function show(page) {
+    const id = ROUTES[page];
+    if (!id) return;
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('active'); const c = el.querySelector('.content'); if (c) c.scrollTop = 0; }
+    current = page;
+  }
 
-// Dark mode
-let dark = false;
-// Nutrient detail data
-const NUTRIENT_DATA = {
-  vit_a: { role:'Essential for vision (especially night vision), immune function, cell growth, and skin health. Maintains corneal integrity and is needed for rhodopsin production in the eye.', deficiency:['Night blindness','Dry skin and hair','Weakened immunity','Poor wound healing','Bitot\'s spots on the eye'], sources:['Liver','Eggs','Dairy','Carrots','Sweet potatoes','Spinach','Mangoes'], rda:'700–900 mcg RAE/day', upper:'3,000 mcg/day', tip:'Beta-carotene in plants converts to Vitamin A. Fat in the meal helps absorption.' },
-  vit_d: { role:'Regulates calcium and phosphorus absorption for strong bones and teeth. Critical for immune function, muscle function, and mood. Often called the "sunshine vitamin" — skin synthesizes it from sunlight.', deficiency:['Rickets (children)','Osteomalacia (soft bones in adults)','Bone pain and fractures','Muscle weakness','Depression and fatigue','Frequent infections'], sources:['Sunlight (skin synthesis)','Fatty fish (salmon, tuna)','Egg yolks','Fortified milk','Fortified cereals','UV-exposed mushrooms'], rda:'600–800 IU/day (many experts: 1000–2000 IU)', upper:'4,000 IU/day', tip:'15–30 min of midday sun on arms/legs produces ~1000 IU. Deficiency is extremely common in South Asia and low-sunlight regions.' },
-  vit_e: { role:'Powerful antioxidant protecting cells from oxidative damage. Supports immune function, skin health, and prevents abnormal blood clotting. Works synergistically with Vitamin C.', deficiency:['Nerve damage (peripheral neuropathy)','Muscle weakness','Vision problems','Weakened immunity','Rare in healthy adults with normal fat absorption'], sources:['Almonds','Sunflower seeds','Wheat germ oil','Spinach','Avocados','Peanut butter','Olive oil'], rda:'15 mg/day', upper:'1,000 mg/day from supplements', tip:'Fat-soluble — stored in body fat and liver. Works best combined with Vitamin C.' },
-  vit_k: { role:'Essential for blood clotting (prevents excessive bleeding). Vital for bone metabolism and cardiovascular health. K1 (from greens) is primarily for clotting; K2 (from fermented foods) directs calcium into bones.', deficiency:['Excessive bleeding or bruising','Heavy menstrual periods','Blood in stool or urine','Osteoporosis long-term'], sources:['Kale, spinach, broccoli','Brussels sprouts','Natto (K2, highest source)','Cheese (K2)','Liver','Fermented foods'], rda:'90–120 mcg/day', tip:'Gut bacteria produce some K2. People on blood thinners (warfarin) must maintain consistent K intake.' },
-  vit_c: { role:'Powerful antioxidant essential for collagen synthesis (skin, tendons, blood vessels, bones). Dramatically boosts iron absorption. Supports immune function and wound healing. Cannot be stored — needs daily intake.', deficiency:['Scurvy: bleeding gums, joint pain, poor wound healing','Easy bruising','Fatigue and irritability','Frequent infections'], sources:['Citrus fruits (orange, lemon)','Kiwi','Bell peppers (highest per gram)','Strawberries','Broccoli','Amla (Indian gooseberry — richest source)'], rda:'75–90 mg/day; smokers +35 mg', upper:'2,000 mg/day', tip:'Destroyed by heat — raw vegetables have more. Vitamin C with iron-rich plant foods triples iron absorption.' },
-  vit_b1: { role:'Converts carbohydrates into usable energy (glucose metabolism). Essential for nerve and muscle function including the heart. Critical for brain function and neurotransmitter synthesis.', deficiency:['Beriberi: nerve and heart disease','Wernicke-Korsakoff syndrome (common in alcoholics)','Muscle weakness','Fatigue and confusion'], sources:['Pork (richest source)','Whole grains','Lentils and beans','Nuts and seeds','Fortified cereals'], rda:'1.1–1.2 mg/day', tip:'Destroyed by heat and prolonged cooking. Heavy alcohol use severely depletes B1 — a leading cause of deficiency.' },
-  vit_b2: { role:'Key role in energy production and cellular metabolism of fats, carbohydrates, and proteins. Maintains healthy skin, eyes, and nervous system. Acts as an antioxidant cofactor.', deficiency:['Cheilosis: cracked lips and mouth corners','Inflamed, magenta-colored tongue','Skin rash','Light sensitivity in eyes','Anaemia'], sources:['Dairy products (milk, yogurt)','Lean meat and liver','Eggs','Mushrooms','Almonds','Leafy greens'], rda:'1.1–1.3 mg/day', tip:'Destroyed by UV light — store milk in opaque containers. Urine turns bright yellow when taking supplements (harmless sign it\'s working).' },
-  vit_b3: { role:'Essential for energy metabolism, DNA repair, and cell signaling. Supports skin, nerve, and digestive system health. High doses prescribed medically to improve cholesterol levels.', deficiency:['Pellagra: dermatitis, diarrhea, dementia (3 Ds)','Fatigue','Depression','Headaches'], sources:['Chicken and turkey','Tuna and salmon','Beef','Peanuts','Brown rice','Mushrooms','Avocados'], rda:'14–16 mg/day', upper:'35 mg/day from supplements', tip:'Body can convert tryptophan (amino acid) to niacin. High doses cause "niacin flush" — temporary skin redness and tingling.' },
-  vit_b6: { role:'Crucial for protein and amino acid metabolism, and synthesis of neurotransmitters (serotonin, dopamine, GABA). Supports immune function, red blood cell formation, and mood regulation.', deficiency:['Depression and irritability','Brain fog and confusion','Anaemia','Cracked lips','Weakened immunity','Worsened PMS symptoms'], sources:['Chicken and tuna','Salmon','Potatoes','Bananas','Chickpeas','Fortified cereals'], rda:'1.3–1.7 mg/day', upper:'100 mg/day', tip:'Important for athletes and high protein intake. Doses >200mg/day long-term can cause nerve damage — stay within upper limit.' },
-  vit_b7: { role:'Essential for metabolism of carbohydrates, fats, and proteins. Critical for healthy hair, skin, and nail growth. Important during pregnancy for fetal brain development.', deficiency:['Hair thinning and loss','Brittle nails','Skin rash around eyes/nose/mouth','Neurological symptoms in severe cases'], sources:['Egg yolks (cooked)','Organ meats (liver)','Nuts (almonds, peanuts)','Seeds','Sweet potatoes','Spinach'], rda:'30 mcg/day', tip:'Raw egg whites contain avidin which blocks biotin absorption — always cook eggs. Gut bacteria also produce some biotin.' },
-  vit_b9: { role:'Vital for DNA synthesis and cell division. Absolutely critical during early pregnancy to prevent neural tube defects. Supports red blood cell formation and lowers homocysteine (heart disease marker).', deficiency:['Megaloblastic anaemia: large, dysfunctional red cells','Neural tube defects in newborns','Elevated homocysteine','Fatigue and mouth sores'], sources:['Dark leafy greens (spinach, kale)','Lentils and beans','Asparagus','Avocados','Beets','Fortified bread and cereals'], rda:'400 mcg/day; 600 mcg pregnant', upper:'1,000 mcg/day from supplements', tip:'Folic acid (synthetic supplement form) is better absorbed than food folate. All women of childbearing age should supplement folic acid daily.' },
-  vit_b12: { role:'Essential for nerve function, red blood cell formation, and DNA synthesis. Works with folate for cell division. Critical for brain health, energy, and preventing cognitive decline.', deficiency:['Megaloblastic anaemia','Nerve damage: tingling hands/feet, walking difficulty','Memory problems and dementia risk','Depression','Fatigue and weakness'], sources:['All meat and poultry','Fish and shellfish','Dairy products','Eggs','Fortified plant milks','Nutritional yeast'], rda:'2.4 mcg/day', tip:'Vegans MUST supplement B12 — found almost exclusively in animal products. "Intrinsic factor" (stomach protein) needed for absorption; deficiency common in elderly too.' },
-  calcium: { role:'Most abundant mineral — 99% in bones and teeth, providing structural strength. The remaining 1% in blood regulates muscle contraction, nerve signal transmission, and blood clotting. Essential throughout life.', deficiency:['Osteoporosis and frequent fractures','Muscle cramps and spasms','Dental problems','Numbness and tingling in extremities','Severe: hypocalcemia (seizures)'], sources:['Dairy: milk, yogurt, cheese','Sardines and salmon with bones','Tofu (calcium-set)','Bok choy and kale','Almonds','Fortified plant milks'], rda:'1,000–1,200 mg/day', upper:'2,500 mg/day', tip:'Split doses — max 500mg absorbed at once. Vitamin D is essential for calcium absorption. Calcium competes with iron — don\'t take both at the same time.' },
-  magnesium: { role:'Cofactor in 300+ enzyme reactions including energy production, protein synthesis, DNA repair, and blood glucose control. Regulates blood pressure, muscle and nerve function. Critical for sleep and stress response.', deficiency:['Muscle cramps and twitching','Anxiety and poor sleep quality','High blood pressure','Migraines and headaches','Fatigue','Constipation','Irregular heartbeat'], sources:['Dark chocolate','Avocados','Almonds and cashews','Pumpkin seeds','Legumes (black beans, lentils)','Tofu','Whole grains','Leafy greens'], rda:'310–420 mg/day', upper:'350 mg/day from supplements (excess causes diarrhea)', tip:'Up to 80% of people may be low. Magnesium glycinate or malate are best forms — gentler on stomach. Take at night — promotes deeper sleep and relaxation.' },
-  potassium: { role:'Controls fluid balance, muscle contractions, and nerve signals throughout the body. Critical for maintaining healthy heart rhythm, blood pressure regulation, and kidney function.', deficiency:['Muscle weakness and painful cramps','Fatigue and weakness','Heart palpitations and arrhythmia','High blood pressure','Constipation','Mood changes'], sources:['Bananas','Avocados','Potatoes (with skin)','Spinach','Lentils','Salmon','Tomatoes','Coconut water'], rda:'2,600–3,400 mg/day', tip:'High potassium diet counteracts sodium\'s blood-pressure-raising effects. Most people eat far too little. High-dose supplements can be dangerous — get from food.' },
-  sodium: { role:'Regulates fluid balance, blood pressure, and blood volume. Essential for nerve impulse transmission, muscle contraction, and acid-base balance. Electrolyte lost heavily through sweat.', deficiency:['Hyponatremia: nausea, headache, confusion, seizures (rare, mainly from overhydration)','Muscle cramps','Fatigue — deficiency rare; excess is the real concern'], sources:['Iodized table salt','Processed and packaged foods','Canned foods','Cheese','Bread','Sauces and condiments'], rda:'<2,300 mg/day recommended (≈1 tsp salt)', tip:'Average person consumes 3,400mg+ daily — 50% above recommended. Athletes need more due to sweat losses. Use iodized salt to meet iodine needs simultaneously.' },
-  iron: { role:'Core component of hemoglobin (carries oxygen in red blood cells) and myoglobin (stores oxygen in muscles). Required for energy metabolism, immune defense, and DNA synthesis. Most common nutritional deficiency worldwide.', deficiency:['Iron-deficiency anaemia: fatigue, pale skin, weakness, shortness of breath','Cold hands and feet','Brittle nails and hair loss','Difficulty concentrating (brain fog)','Pica: craving non-food items'], sources:['Red meat and liver (heme iron — best absorbed)','Shellfish (clams, oysters)','Lentils and beans','Spinach','Tofu','Pumpkin seeds','Dark chocolate'], rda:'8mg/day (men); 18mg/day (women 19-50); 27mg/day (pregnant)', upper:'45 mg/day', tip:'Heme iron (animal) absorbs 2-3x better than plant iron. Take with Vitamin C to double absorption. Tea, coffee, and calcium block iron absorption — separate by 1-2 hours.' },
-  zinc: { role:'Required for 300+ enzymes. Critical for immune function, wound healing, protein and DNA synthesis, taste/smell perception, and testosterone production. Second most abundant trace mineral after iron.', deficiency:['Loss of taste and smell','Poor wound healing','Hair loss','Frequent infections and weakened immunity','Growth retardation in children','Acne and skin problems','Low testosterone in men'], sources:['Oysters (richest source by far)','Beef and lamb','Crab and shellfish','Legumes','Nuts and seeds','Dairy','Whole grains'], rda:'8–11 mg/day', upper:'40 mg/day', tip:'Phytates in grains reduce zinc absorption — sprouting or fermenting helps. Long-term high zinc depletes copper — maintain 8:1 zinc:copper ratio if supplementing.' },
-  selenium: { role:'Antioxidant mineral protecting cells from oxidative damage. Essential for thyroid hormone metabolism (T4→T3 conversion) and immune function. May play a role in cancer prevention.', deficiency:['Keshan disease: potentially fatal heart condition','Thyroid dysfunction (hypothyroidism)','Weakened immune response','Muscle pain and weakness','Cognitive decline'], sources:['Brazil nuts: 1-2 nuts = full day\'s RDA','Tuna and sardines','Eggs','Chicken','Brown rice','Sunflower seeds'], rda:'55 mcg/day', upper:'400 mcg/day (toxicity risk — hair loss, nail brittleness)', tip:'2-3 Brazil nuts daily is the easiest way to meet selenium needs. Pakistani soil tends to be selenium-poor, making supplementation worth considering.' },
-  iodine: { role:'Sole purpose is producing thyroid hormones (T3 and T4) which regulate metabolism, growth, development, and body temperature. Critical for fetal brain development — even mild deficiency during pregnancy lowers child\'s IQ.', deficiency:['Goiter: enlarged, swollen thyroid gland','Hypothyroidism: fatigue, weight gain, cold intolerance, depression','Intellectual disability in children born to deficient mothers','Cretinism in severe infant cases'], sources:['Iodized salt (most reliable)','Seaweed and kelp','Seafood','Dairy products','Eggs'], rda:'150 mcg/day; 220 mcg pregnant; 290 mcg breastfeeding', tip:'Iodized salt was introduced specifically to combat iodine deficiency. Common in mountainous, inland areas. Use iodized table salt — sea salt is NOT iodized.' },
-};
+  function back() {
+    if (navHistory.length > 0) show(navHistory.pop());
+  }
 
-const CATEGORY_COLORS = { fat_vitamin:'#fff3e0', water_vitamin:'#e3f2fd', macromineral:'#e8f5e9', trace_mineral:'#f3e5f5' };
-const CATEGORY_NAMES = { fat_vitamin:'Fat-Soluble Vitamin', water_vitamin:'Water-Soluble Vitamin', macromineral:'Macromineral', trace_mineral:'Trace Mineral' };
+  function openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('open');
+  }
 
-function showNutrient(id, name, alt, emoji, cat) {
-  document.getElementById('nd-title').textContent = name;
-  const d = NUTRIENT_DATA[id] || {};
-  const catColor = CATEGORY_COLORS[cat] || '#f5f5f5';
-  const catName = CATEGORY_NAMES[cat] || '';
-  const defHtml = (d.deficiency || []).map(s => `<div style="display:flex;gap:6px;margin-bottom:4px"><span style="color:#FF5722">•</span><span style="font-size:13px;opacity:0.8">${s}</span></div>`).join('');
-  const srcHtml = (d.sources || []).map(s => `<span style="background:#f5f5f5;border-radius:20px;padding:4px 10px;font-size:12px;font-weight:500">${s}</span>`).join('');
-  document.getElementById('nd-content').innerHTML = `
-    <div class="card" style="text-align:center;padding:20px">
-      <div style="font-size:48px;margin-bottom:8px">${emoji}</div>
-      <div style="font-size:20px;font-weight:800">${name}</div>
-      ${alt ? `<div style="font-size:13px;opacity:0.55;margin-top:2px">${alt}</div>` : ''}
-      <span style="background:${catColor};border-radius:12px;padding:4px 12px;font-size:11px;font-weight:700;margin-top:8px;display:inline-block">${catName}</span>
-    </div>
-    <div class="card">
-      <div class="card-title">🔬 Role &amp; Function</div>
-      <div style="font-size:13px;line-height:1.7;opacity:0.82">${d.role || 'No data'}</div>
-    </div>
-    <div class="card">
-      <div class="card-title">⚠️ Deficiency Symptoms</div>
-      ${defHtml}
-    </div>
-    <div class="card">
-      <div class="card-title">🍽️ Food Sources</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px">${srcHtml}</div>
-    </div>
-    <div class="card">
-      <div class="card-title">📊 Daily Requirements</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f5f5f5">
-        <span style="font-size:12px;opacity:0.5;font-weight:600">RDA</span>
-        <span style="font-size:13px;font-weight:700">${d.rda || 'Not established'}</span>
-      </div>
-      ${d.upper ? `<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0"><span style="font-size:12px;opacity:0.5;font-weight:600">UPPER LIMIT</span><span style="font-size:13px;font-weight:700;color:#FF5722">${d.upper}</span></div>` : ''}
-    </div>
-    ${d.tip ? `<div class="card" style="background:#fffde7"><div class="card-title">💡 Pro Tip</div><div style="font-size:13px;line-height:1.65;font-style:italic;opacity:0.82">${d.tip}</div></div>` : ''}
-  `;
-  showPage('micronutrient-detail');
-}
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  }
 
-function filterNutrients(q) {
-  document.querySelectorAll('#nutrient-list .list-item').forEach(item => {
-    const text = item.querySelector('.list-title').textContent.toLowerCase() + ' ' + (item.querySelector('.list-desc')?.textContent || '').toLowerCase();
-    item.style.display = text.includes(q.toLowerCase()) ? '' : 'none';
-  });
-}
-
-function toggleDark() {
-  dark = !dark;
-  document.getElementById('phone').classList.toggle('dark', dark);
-  document.getElementById('ctrl-dark').textContent = dark ? '☀️ Light Mode' : '🌙 Dark Mode';
-}
-
-// Charts
-let chartsDrawn = false;
-function drawCharts() {
-  if (chartsDrawn) return;
-  chartsDrawn = true;
-  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const cfg = { responsive: true, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: '#f0f0f0' } } } };
-
-  new Chart(document.getElementById('kcalChart'), {
-    type: 'bar',
-    data: { labels, datasets: [{ data: [1920, 1780, 2050, 1650, 1840, 2200, 1840], backgroundColor: 'rgba(255,107,107,0.7)', borderRadius: 6 }] },
-    options: { ...cfg, plugins: { legend: { display: false } } }
-  });
-
-  new Chart(document.getElementById('macroChart'), {
-    type: 'line',
-    data: { labels, datasets: [
-      { label:'Protein', data:[108,95,120,88,112,130,112], borderColor:'#FF6B6B', tension:0.4, pointRadius:3 },
-      { label:'Carbs',   data:[198,180,210,160,196,230,196], borderColor:'#FFE66D', tension:0.4, pointRadius:3 },
-      { label:'Fat',     data:[42,38,48,35,39,55,39], borderColor:'#A8E6CF', tension:0.4, pointRadius:3 },
-    ]},
-    options: { ...cfg, plugins: { legend: { display: true, position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } } }
-  });
-
-  new Chart(document.getElementById('waterChart'), {
-    type: 'bar',
-    data: { labels, datasets: [{ data: [1.8, 2.1, 1.5, 2.0, 1.5, 2.3, 1.9], backgroundColor: 'rgba(100,181,246,0.7)', borderRadius: 6 }] },
-    options: { ...cfg }
-  });
-
-  new Chart(document.getElementById('weightChart'), {
-    type: 'line',
-    data: { labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets: [{ data: [72.8,72.6,72.6,72.4,72.5,72.3,72.3], borderColor:'#81C784', backgroundColor:'rgba(129,199,132,0.1)', tension:0.4, fill:true, pointRadius:4 }] },
-    options: { ...cfg, plugins: { legend: { display: false } } }
-  });
-}
+  // Swipe to open sidebar
+  const shell = document.querySelector('.phone-shell');
+  let tx = 0;
+  shell.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  shell.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tx;
+    if (tx < 40 && dx > 60) openSidebar();
+    if (dx < -60 && document.getElementById('sidebar').classList.contains('open')) closeSidebar();
+  }, { passive: true });
 </script>
 </body>
 </html>
