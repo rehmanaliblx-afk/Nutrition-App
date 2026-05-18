@@ -28,6 +28,13 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "plugins": [
+      [
+        "expo-camera",
+        { "cameraPermission": "Allow Nutrition App to access your camera to scan food barcodes." }
+      ],
+      "expo-document-picker"
+    ],
     "extra": {
       "eas": {
         "projectId": "5c013c5c-28d1-44d7-84ac-d564ab6f6787"

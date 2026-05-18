@@ -55,6 +55,7 @@ export interface DailyGoal {
   protein_goal: number | null;
   carbs_goal: number | null;
   fat_goal: number | null;
+  water_goal_ml: number;
   created_at: string;
 }
 
@@ -71,3 +72,28 @@ export interface MealEntry {
 }
 
 export type MealEntryInput = Omit<MealEntry, 'id' | 'created_at'>;
+
+export interface WaterEntry {
+  id: number;
+  date: string;
+  amount_ml: number;
+  created_at: string;
+}
+
+export interface WeightEntry {
+  id: number;
+  date: string;
+  weight_kg: number;
+  note: string | null;
+  created_at: string;
+}
+
+export interface GoalTemplate {
+  id: number;
+  name: string;
+  kcal_goal: number | null;
+  protein_goal: number | null;
+  carbs_goal: number | null;
+  fat_goal: number | null;
+  water_goal_ml: number;
+}

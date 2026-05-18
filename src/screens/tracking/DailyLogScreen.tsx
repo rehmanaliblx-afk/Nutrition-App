@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ScrollView, View, StyleSheet, Alert } from 'react-native';
-import { FAB, Text, Divider, List, IconButton, Button, Chip } from 'react-native-paper';
+import { FAB, Text, Divider, List, IconButton, Button, Chip, ProgressBar, Surface } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TrackingStackParamList } from '@/navigation/types';
 import { useDailyLog } from '@/hooks/useDailyLog';
 import { useGoals } from '@/hooks/useGoals';
+import { useWater } from '@/hooks/useWater';
+import { copyMealEntries } from '@/db/trackingDao';
 import { MEAL_TYPES, MEAL_LABELS, MealType } from '@/constants/macros';
 import { todayString, formatDateDisplay, addDays, isToday } from '@/utils/dateUtils';
 import { roundMacro } from '@/utils/macroCalculations';
@@ -14,18 +16,22 @@ import GoalsScreen from './GoalsScreen';
 
 type Props = NativeStackScreenProps<TrackingStackParamList, 'DailyLog'>;
 
+const WATER_QUICK = [250, 500, 750, 1000];
+
 export default function DailyLogScreen({ route, navigation }: Props) {
   const { isReady } = useDatabase();
   const [date, setDate] = useState(route.params?.date ?? todayString());
   const { data, loading, load, removeEntry } = useDailyLog();
   const { goal, load: loadGoal } = useGoals();
+  const { total: waterTotal, load: loadWater, add: addWater } = useWater();
   const [showGoals, setShowGoals] = useState(false);
 
   const refresh = useCallback(() => {
     if (!isReady) return;
     load(date);
     loadGoal(date);
-  }, [isReady, date, load, loadGoal]);
+    loadWater(date);
+  }, [isReady, date, load, loadGoal, loadWater]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -41,15 +47,38 @@ export default function DailyLogScreen({ route, navigation }: Props) {
     ]);
   };
 
+  const handleCopyMeal = (meal: MealType) => {
+    const prevDay = addDays(date, -1);
+    Alert.alert(
+      'Copy Meal',
+      `Copy ${MEAL_LABELS[meal]} from ${isToday(prevDay) ? 'yesterday' : formatDateDisplay(prevDay)} to today?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Copy',
+          onPress: async () => {
+            try {
+              await copyMealEntries(prevDay, date, meal);
+              load(date);
+            } catch (e) {
+              Alert.alert('Error', String(e));
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (showGoals) {
     return <GoalsScreen onSaved={() => { setShowGoals(false); refresh(); }} />;
   }
 
   const kcalGoal = goal?.kcal_goal ?? null;
+  const waterGoal = goal?.water_goal_ml ?? 2000;
+  const waterPct = Math.min(waterTotal / waterGoal, 1);
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      {/* Date navigation */}
       <View style={styles.dateRow}>
         <IconButton icon="chevron-left" onPress={() => setDate(addDays(date, -1))} />
         <Text variant="titleMedium" style={styles.dateText}>
@@ -58,7 +87,6 @@ export default function DailyLogScreen({ route, navigation }: Props) {
         <IconButton icon="chevron-right" onPress={() => setDate(addDays(date, 1))} disabled={isToday(date)} />
       </View>
 
-      {/* Daily summary */}
       <View style={styles.summaryRow}>
         <View style={styles.summaryItem}>
           <Text variant="headlineSmall" style={styles.kcalNum}>{roundMacro(data.totalKcal, 0)}</Text>
@@ -83,6 +111,31 @@ export default function DailyLogScreen({ route, navigation }: Props) {
       <Divider />
 
       <ScrollView contentContainerStyle={styles.content}>
+        {/* Water Tracker */}
+        <Surface style={styles.waterCard} elevation={1}>
+          <View style={styles.waterHeader}>
+            <Text variant="titleSmall" style={styles.waterTitle}>💧 Water</Text>
+            <Text variant="bodySmall" style={styles.waterTotal}>
+              {Math.round(waterTotal)} / {waterGoal} ml
+            </Text>
+          </View>
+          <ProgressBar progress={waterPct} color="#64B5F6" style={styles.waterBar} />
+          <View style={styles.waterBtns}>
+            {WATER_QUICK.map((ml) => (
+              <Chip
+                key={ml}
+                compact
+                onPress={() => addWater(date, ml)}
+                style={styles.waterChip}
+                icon="plus"
+              >
+                {ml}ml
+              </Chip>
+            ))}
+          </View>
+        </Surface>
+
+        {/* Meal Sections */}
         {MEAL_TYPES.map((meal) => {
           const entries = data.entries[meal];
           const mealKcal = roundMacro(entries.reduce((s, e) => s + e.kcal, 0), 0);
@@ -91,6 +144,12 @@ export default function DailyLogScreen({ route, navigation }: Props) {
               <View style={styles.mealHeader}>
                 <Text variant="titleSmall" style={styles.mealTitle}>{MEAL_LABELS[meal]}</Text>
                 <Text variant="labelSmall" style={styles.mealKcal}>{mealKcal > 0 ? `${mealKcal} kcal` : ''}</Text>
+                <IconButton
+                  icon="content-copy"
+                  size={16}
+                  onPress={() => handleCopyMeal(meal as MealType)}
+                  accessibilityLabel="Copy from yesterday"
+                />
                 <IconButton
                   icon="plus"
                   size={18}
@@ -135,6 +194,13 @@ const styles = StyleSheet.create({
   kcalNum: { fontWeight: 'bold', color: '#FF6B6B' },
   summaryLabel: { opacity: 0.6 },
   content: { paddingBottom: 80 },
+  waterCard: { margin: 12, borderRadius: 12, padding: 12 },
+  waterHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  waterTitle: { fontWeight: '700' },
+  waterTotal: { opacity: 0.6 },
+  waterBar: { height: 6, borderRadius: 3, marginBottom: 8 },
+  waterBtns: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  waterChip: {},
   mealSection: { marginBottom: 4 },
   mealHeader: { flexDirection: 'row', alignItems: 'center', paddingLeft: 12 },
   mealTitle: { flex: 1, fontWeight: '700', textTransform: 'uppercase', opacity: 0.7 },

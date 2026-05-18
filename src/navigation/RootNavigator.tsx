@@ -11,8 +11,8 @@ import { RootTabParamList } from './types';
 import IngredientsStack from './IngredientsStack';
 import RecipesStack from './RecipesStack';
 import TrackingStack from './TrackingStack';
+import MoreStack from './MoreStack';
 import DashboardScreen from '@/screens/dashboard/DashboardScreen';
-import SettingsScreen from '@/screens/settings/SettingsScreen';
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 
@@ -23,7 +23,7 @@ const TAB_ICONS: Record<keyof RootTabParamList, { focused: IoniconsName; unfocus
   Log: { focused: 'journal', unfocused: 'journal-outline' },
   Ingredients: { focused: 'nutrition', unfocused: 'nutrition-outline' },
   Recipes: { focused: 'restaurant', unfocused: 'restaurant-outline' },
-  Settings: { focused: 'settings', unfocused: 'settings-outline' },
+  More: { focused: 'ellipsis-horizontal-circle', unfocused: 'ellipsis-horizontal-circle-outline' },
 };
 
 export default function RootNavigator() {
@@ -48,7 +48,7 @@ export default function RootNavigator() {
           <Tab.Screen name="Log" component={TrackingStack} options={{ title: 'Log' }} />
           <Tab.Screen name="Ingredients" component={IngredientsStack} options={{ title: 'Ingredients' }} />
           <Tab.Screen name="Recipes" component={RecipesStack} options={{ title: 'Recipes' }} />
-          <Tab.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
+          <Tab.Screen name="More" component={MoreStack} options={{ title: 'More' }} />
         </Tab.Navigator>
       </NavigationContainer>
     </PaperProvider>

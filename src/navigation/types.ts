@@ -5,7 +5,7 @@ export type RootTabParamList = {
   Log: undefined;
   Ingredients: undefined;
   Recipes: undefined;
-  Settings: undefined;
+  More: undefined;
 };
 
 export type IngredientsStackParamList = {
@@ -22,4 +22,12 @@ export type RecipesStackParamList = {
 export type TrackingStackParamList = {
   DailyLog: { date?: string };
   AddMealEntry: { date: string; mealType: MealType };
+  WeightLog: undefined;
+};
+
+export type MoreStackParamList = {
+  SettingsHome: undefined;
+  History: undefined;
+  WeightLog: undefined;
+  Backup: undefined;
 };

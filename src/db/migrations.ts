@@ -70,4 +70,37 @@ export const migrations: Migration[] = [
       `CREATE INDEX IF NOT EXISTS idx_entries_date_meal ON meal_entries(date, meal_type)`,
     ],
   },
+  {
+    version: 2,
+    up: [
+      `ALTER TABLE daily_goals ADD COLUMN water_goal_ml REAL NOT NULL DEFAULT 2000`,
+
+      `CREATE TABLE IF NOT EXISTS water_entries (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        date       TEXT    NOT NULL,
+        amount_ml  REAL    NOT NULL,
+        created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_water_date ON water_entries(date)`,
+
+      `CREATE TABLE IF NOT EXISTS weight_entries (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        date       TEXT    NOT NULL UNIQUE,
+        weight_kg  REAL    NOT NULL,
+        note       TEXT,
+        created_at TEXT    NOT NULL DEFAULT (datetime('now'))
+      )`,
+      `CREATE INDEX IF NOT EXISTS idx_weight_date ON weight_entries(date)`,
+
+      `CREATE TABLE IF NOT EXISTS goal_templates (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        name         TEXT    NOT NULL UNIQUE,
+        kcal_goal    REAL,
+        protein_goal REAL,
+        carbs_goal   REAL,
+        fat_goal     REAL,
+        water_goal_ml REAL DEFAULT 2000
+      )`,
+    ],
+  },
 ];

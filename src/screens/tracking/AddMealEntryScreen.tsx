@@ -5,8 +5,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TrackingStackParamList } from '@/navigation/types';
 import { useDailyLog } from '@/hooks/useDailyLog';
-import { getAllIngredients } from '@/db/ingredientsDao';
-import { getAllRecipes } from '@/db/recipesDao';
+import { getAllIngredients, getIngredientById } from '@/db/ingredientsDao';
+import { getAllRecipes, getRecipeById } from '@/db/recipesDao';
+import { getRecentFoods } from '@/db/trackingDao';
 import { Ingredient, Recipe } from '@/db/schema';
 import { MealType, MEAL_TYPES, MEAL_LABELS, FoodType } from '@/constants/macros';
 import { roundMacro } from '@/utils/macroCalculations';
@@ -15,6 +16,7 @@ import { useDatabase } from '@/context/DatabaseContext';
 type Props = NativeStackScreenProps<TrackingStackParamList, 'AddMealEntry'>;
 
 type FoodItem = { type: FoodType; item: Ingredient | Recipe };
+type PickerTab = 'recent' | 'all';
 
 export default function AddMealEntryScreen({ route, navigation }: Props) {
   const { date, mealType: initialMealType } = route.params;
@@ -28,13 +30,14 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerQuery, setPickerQuery] = useState('');
+  const [pickerTab, setPickerTab] = useState<PickerTab>('recent');
 
   const [allIngredients, setAllIngredients] = useState<Ingredient[]>([]);
   const [allRecipes, setAllRecipes] = useState<Recipe[]>([]);
   const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
+  const [recentFoods, setRecentFoods] = useState<FoodItem[]>([]);
 
-  // Load all food items on mount
   useEffect(() => {
     if (!isReady) return;
     Promise.all([getAllIngredients(), getAllRecipes()])
@@ -45,17 +48,34 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
         setFilteredRecipes(recs);
       })
       .catch((e) => console.warn('Failed to load food items:', e));
+
+    getRecentFoods(12).then(async (recent) => {
+      const resolved = await Promise.all(
+        recent.map(async ({ food_type, food_id }) => {
+          if (food_type === 'ingredient') {
+            const item = await getIngredientById(food_id);
+            return item ? ({ type: 'ingredient' as FoodType, item } as FoodItem) : null;
+          } else {
+            const item = await getRecipeById(food_id);
+            return item ? ({ type: 'recipe' as FoodType, item } as FoodItem) : null;
+          }
+        })
+      );
+      setRecentFoods(resolved.filter((x): x is FoodItem => x !== null));
+    }).catch(() => {});
   }, [isReady]);
 
   const openPicker = useCallback(() => {
     setPickerQuery('');
     setFilteredIngredients(allIngredients);
     setFilteredRecipes(allRecipes);
+    setPickerTab(recentFoods.length > 0 ? 'recent' : 'all');
     setPickerVisible(true);
-  }, [allIngredients, allRecipes]);
+  }, [allIngredients, allRecipes, recentFoods.length]);
 
   const handleSearch = useCallback((q: string) => {
     setPickerQuery(q);
+    setPickerTab('all');
     if (!q.trim()) {
       setFilteredIngredients(allIngredients);
       setFilteredRecipes(allRecipes);
@@ -65,6 +85,11 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
       setFilteredRecipes(allRecipes.filter((r) => r.name.toLowerCase().includes(lower)));
     }
   }, [allIngredients, allRecipes]);
+
+  const selectFood = (food: FoodItem) => {
+    setSelectedFood(food);
+    setPickerVisible(false);
+  };
 
   const handleSave = async () => {
     if (!selectedFood) {
@@ -96,13 +121,7 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
         <Text variant="titleMedium" style={styles.label}>Meal</Text>
         <View style={styles.chipRow}>
           {MEAL_TYPES.map((mt) => (
-            <Chip
-              key={mt}
-              selected={mealType === mt}
-              onPress={() => setMealType(mt)}
-              mode="outlined"
-              style={styles.chip}
-            >
+            <Chip key={mt} selected={mealType === mt} onPress={() => setMealType(mt)} mode="outlined" style={styles.chip}>
               {MEAL_LABELS[mt]}
             </Chip>
           ))}
@@ -129,14 +148,7 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
           </>
         )}
 
-        <Button
-          mode="contained"
-          onPress={handleSave}
-          loading={saving}
-          style={styles.saveBtn}
-          icon="plus-circle"
-          disabled={!selectedFood}
-        >
+        <Button mode="contained" onPress={handleSave} loading={saving} style={styles.saveBtn} icon="plus-circle" disabled={!selectedFood}>
           Add to Log
         </Button>
       </ScrollView>
@@ -150,41 +162,64 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
             onChangeText={handleSearch}
             style={styles.modalSearch}
           />
+          <View style={styles.tabRow}>
+            {recentFoods.length > 0 && (
+              <Chip selected={pickerTab === 'recent'} onPress={() => setPickerTab('recent')} compact style={styles.tabChip}>
+                Recent
+              </Chip>
+            )}
+            <Chip selected={pickerTab === 'all'} onPress={() => setPickerTab('all')} compact style={styles.tabChip}>
+              All Foods
+            </Chip>
+          </View>
+
           <ScrollView style={styles.modalList} keyboardShouldPersistTaps="handled">
-            {filteredIngredients.length > 0 && (
+            {pickerTab === 'recent' && recentFoods.map((f) => (
+              <List.Item
+                key={`recent-${f.type}-${f.item.id}`}
+                title={f.item.name}
+                description={f.type === 'ingredient' ? 'Ingredient' : 'Recipe'}
+                left={(p) => <List.Icon {...p} icon={f.type === 'ingredient' ? 'nutrition' : 'restaurant'} />}
+                onPress={() => selectFood(f)}
+              />
+            ))}
+
+            {pickerTab === 'all' && (
               <>
-                <List.Subheader>Ingredients</List.Subheader>
-                {filteredIngredients.map((ing) => (
-                  <List.Item
-                    key={`ing-${ing.id}`}
-                    title={ing.name}
-                    description={`P: ${roundMacro(ing.protein * 100)}g · C: ${roundMacro(ing.carbs_total * 100)}g · F: ${roundMacro(ing.fat_total * 100)}g (per 100g)`}
-                    left={(p) => <List.Icon {...p} icon="nutrition" />}
-                    onPress={() => { setSelectedFood({ type: 'ingredient', item: ing }); setPickerVisible(false); }}
-                  />
-                ))}
+                {filteredIngredients.length > 0 && (
+                  <>
+                    <List.Subheader>Ingredients</List.Subheader>
+                    {filteredIngredients.map((ing) => (
+                      <List.Item
+                        key={`ing-${ing.id}`}
+                        title={ing.name}
+                        description={`P: ${roundMacro(ing.protein * 100)}g · C: ${roundMacro(ing.carbs_total * 100)}g · F: ${roundMacro(ing.fat_total * 100)}g (per 100g)`}
+                        left={(p) => <List.Icon {...p} icon="nutrition" />}
+                        onPress={() => selectFood({ type: 'ingredient', item: ing })}
+                      />
+                    ))}
+                  </>
+                )}
+                {filteredRecipes.length > 0 && (
+                  <>
+                    <List.Subheader>Recipes</List.Subheader>
+                    {filteredRecipes.map((rec) => (
+                      <List.Item
+                        key={`rec-${rec.id}`}
+                        title={rec.name}
+                        description={rec.description ?? undefined}
+                        left={(p) => <List.Icon {...p} icon="restaurant" />}
+                        onPress={() => selectFood({ type: 'recipe', item: rec })}
+                      />
+                    ))}
+                  </>
+                )}
+                {filteredIngredients.length === 0 && filteredRecipes.length === 0 && (
+                  <Text style={styles.noResults}>
+                    {allIngredients.length === 0 && allRecipes.length === 0 ? 'No ingredients or recipes saved yet' : 'No results found'}
+                  </Text>
+                )}
               </>
-            )}
-            {filteredRecipes.length > 0 && (
-              <>
-                <List.Subheader>Recipes</List.Subheader>
-                {filteredRecipes.map((rec) => (
-                  <List.Item
-                    key={`rec-${rec.id}`}
-                    title={rec.name}
-                    description={rec.description ?? undefined}
-                    left={(p) => <List.Icon {...p} icon="restaurant" />}
-                    onPress={() => { setSelectedFood({ type: 'recipe', item: rec }); setPickerVisible(false); }}
-                  />
-                ))}
-              </>
-            )}
-            {filteredIngredients.length === 0 && filteredRecipes.length === 0 && (
-              <Text style={styles.noResults}>
-                {allIngredients.length === 0 && allRecipes.length === 0
-                  ? 'No ingredients or recipes saved yet'
-                  : 'No results found'}
-              </Text>
             )}
           </ScrollView>
         </Modal>
@@ -202,9 +237,11 @@ const styles = StyleSheet.create({
   divider: { marginVertical: 8 },
   pickBtn: { marginBottom: 4 },
   saveBtn: { marginTop: 16 },
-  modal: { backgroundColor: 'white', margin: 20, borderRadius: 12, maxHeight: '80%', overflow: 'hidden' },
+  modal: { backgroundColor: 'white', margin: 20, borderRadius: 12, maxHeight: '85%', overflow: 'hidden' },
   modalTitle: { padding: 16, fontWeight: 'bold' },
   modalSearch: { marginHorizontal: 12, marginBottom: 4 },
+  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 12, paddingBottom: 8 },
+  tabChip: {},
   modalList: { flex: 1 },
   noResults: { textAlign: 'center', padding: 24, opacity: 0.5 },
 });

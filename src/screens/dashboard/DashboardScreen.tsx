@@ -1,9 +1,11 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import { ScrollView, View, StyleSheet, RefreshControl } from 'react-native';
-import { Text, Divider, Button, Surface } from 'react-native-paper';
+import { Text, Divider, Button, Surface, ProgressBar } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDailyLog } from '@/hooks/useDailyLog';
 import { useGoals } from '@/hooks/useGoals';
+import { useWater } from '@/hooks/useWater';
+import { useWeight } from '@/hooks/useWeight';
 import { todayString, formatDateDisplay, addDays, isToday } from '@/utils/dateUtils';
 import { MACRO_COLORS, MEAL_TYPES, MEAL_LABELS } from '@/constants/macros';
 import { roundMacro } from '@/utils/macroCalculations';
@@ -15,11 +17,15 @@ export default function DashboardScreen() {
   const [date, setDate] = useState(todayString());
   const { data, loading, load } = useDailyLog();
   const { goal, load: loadGoal } = useGoals();
+  const { total: waterTotal, load: loadWater } = useWater();
+  const { history: weightHistory, loadHistory: loadWeight } = useWeight();
 
   const refresh = useCallback(() => {
     load(date);
     loadGoal(date);
-  }, [date, load, loadGoal]);
+    loadWater(date);
+    loadWeight(5);
+  }, [date, load, loadGoal, loadWater, loadWeight]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -89,6 +95,35 @@ export default function DashboardScreen() {
           </View>
         </Surface>
 
+        {/* Water & Weight row */}
+        <View style={styles.quickRow}>
+          <Surface style={[styles.quickCard, { flex: 1 }]} elevation={1}>
+            <Text variant="labelMedium" style={styles.subTitle}>💧 Water</Text>
+            <Text variant="titleSmall" style={{ fontWeight: 'bold' }}>
+              {Math.round(waterTotal)} <Text variant="labelSmall" style={{ fontWeight: 'normal', opacity: 0.6 }}>/ {goal?.water_goal_ml ?? 2000} ml</Text>
+            </Text>
+            <ProgressBar
+              progress={Math.min(waterTotal / (goal?.water_goal_ml ?? 2000), 1)}
+              color="#64B5F6"
+              style={{ height: 5, borderRadius: 3, marginTop: 6 }}
+            />
+          </Surface>
+          {weightHistory.length > 0 && (
+            <Surface style={[styles.quickCard, { flex: 1 }]} elevation={1}>
+              <Text variant="labelMedium" style={styles.subTitle}>⚖️ Weight</Text>
+              <Text variant="titleSmall" style={{ fontWeight: 'bold' }}>
+                {weightHistory[0].weight_kg} kg
+              </Text>
+              {weightHistory.length >= 2 && (
+                <Text variant="labelSmall" style={{ opacity: 0.5 }}>
+                  {(weightHistory[0].weight_kg - weightHistory[1].weight_kg) >= 0 ? '+' : ''}
+                  {(weightHistory[0].weight_kg - weightHistory[1].weight_kg).toFixed(1)} kg
+                </Text>
+              )}
+            </Surface>
+          )}
+        </View>
+
         {/* Meal summaries */}
         <Surface style={styles.macroCard} elevation={1}>
           <Text variant="titleSmall" style={styles.mealSummaryTitle}>Meals</Text>
@@ -134,4 +169,6 @@ const styles = StyleSheet.create({
   mealIcon: { width: 24, alignItems: 'center' },
   mealName: { flex: 1 },
   mealKcal: { opacity: 0.6 },
+  quickRow: { flexDirection: 'row', gap: 12 },
+  quickCard: { borderRadius: 12, padding: 12 },
 });
