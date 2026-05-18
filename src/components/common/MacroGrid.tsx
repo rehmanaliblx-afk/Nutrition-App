@@ -35,7 +35,7 @@ export default function MacroGrid({ macros, label }: Props) {
         <MacroChip label="Sugar" value={macros.carbs_sugar} color={MACRO_COLORS.sugar} />
         <MacroChip label="Complex C" value={macros.carbs_complex} color={MACRO_COLORS.complex_carb} />
         <MacroChip label="Fiber" value={macros.carbs_fiber} color={MACRO_COLORS.fiber} />
-        <MacroChip label="Unsat. Fat" value={macros.fat_unsaturated} color={MACRO_COLORS.unsaturated} />
+        <MacroChip label="Saturated" value={macros.fat_unsaturated} color={MACRO_COLORS.saturated} />
         <MacroChip label="Mono/Poly" value={macros.fat_mono_poly} color={MACRO_COLORS.mono_poly} />
         <MacroChip label="Trans Fat" value={macros.fat_trans} color={MACRO_COLORS.trans} />
       </View>

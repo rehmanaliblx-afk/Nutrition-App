@@ -2,10 +2,12 @@ export const KCAL_PER_GRAM_CARBS = 4;
 export const KCAL_PER_GRAM_PROTEIN = 4;
 export const KCAL_PER_GRAM_FAT = 9;
 
-export const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
-export type MealType = (typeof MEAL_TYPES)[number];
+export const DEFAULT_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'] as const;
+export type MealType = string;
 
-export const MEAL_LABELS: Record<MealType, string> = {
+export const MEAL_TYPES = [...DEFAULT_MEAL_TYPES] as string[];
+
+export const MEAL_LABELS: Record<string, string> = {
   breakfast: 'Breakfast',
   lunch: 'Lunch',
   dinner: 'Dinner',
@@ -20,7 +22,7 @@ export const MACRO_COLORS = {
   sugar: '#FFD93D',
   complex_carb: '#6BCB77',
   fiber: '#4D96FF',
-  unsaturated: '#C77DFF',
+  saturated: '#C77DFF',
   mono_poly: '#9D4EDD',
   trans: '#E63946',
 } as const;

@@ -88,6 +88,14 @@ export interface WeightEntry {
   created_at: string;
 }
 
+export interface MealSlot {
+  id: number;
+  name: string;
+  display_name: string;
+  emoji: string;
+  sort_order: number;
+}
+
 export interface GoalTemplate {
   id: number;
   name: string;

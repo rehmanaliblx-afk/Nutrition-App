@@ -3,7 +3,6 @@ import { getMealEntriesForDate, addMealEntry, deleteMealEntry } from '@/db/track
 import { getIngredientById } from '@/db/ingredientsDao';
 import { getRecipeIngredients, getRecipeById } from '@/db/recipesDao';
 import { MealEntry, MealEntryInput } from '@/db/schema';
-import { MealType, MEAL_TYPES } from '@/constants/macros';
 import {
   MacroSet,
   EMPTY_MACROS,
@@ -22,7 +21,7 @@ export interface ResolvedEntry {
 }
 
 export interface DailyLogData {
-  entries: Record<MealType, ResolvedEntry[]>;
+  entries: Record<string, ResolvedEntry[]>;
   totals: MacroSet;
   totalKcal: number;
 }
@@ -30,9 +29,7 @@ export interface DailyLogData {
 async function resolveEntry(entry: MealEntry): Promise<ResolvedEntry> {
   if (entry.food_type === 'ingredient') {
     const ingredient = await getIngredientById(entry.food_id);
-    if (!ingredient) {
-      return { entry, name: 'Unknown', macros: EMPTY_MACROS, kcal: 0 };
-    }
+    if (!ingredient) return { entry, name: 'Unknown', macros: EMPTY_MACROS, kcal: 0 };
     const macros = scaleIngredientMacros(ingredient, entry.grams);
     return { entry, name: ingredient.name, macros, kcal: calcKcal(macros) };
   } else {
@@ -40,15 +37,10 @@ async function resolveEntry(entry: MealEntry): Promise<ResolvedEntry> {
     const ingredient_macros_list = riRows.map((ri) => ({
       grams: ri.grams,
       ingredient_macros: {
-        carbs_total: ri.carbs_total,
-        carbs_sugar: ri.carbs_sugar,
-        carbs_complex: ri.carbs_complex,
-        carbs_fiber: ri.carbs_fiber,
-        protein: ri.protein,
-        fat_total: ri.fat_total,
-        fat_unsaturated: ri.fat_unsaturated,
-        fat_mono_poly: ri.fat_mono_poly,
-        fat_trans: ri.fat_trans,
+        carbs_total: ri.carbs_total, carbs_sugar: ri.carbs_sugar,
+        carbs_complex: ri.carbs_complex, carbs_fiber: ri.carbs_fiber,
+        protein: ri.protein, fat_total: ri.fat_total,
+        fat_unsaturated: ri.fat_unsaturated, fat_mono_poly: ri.fat_mono_poly, fat_trans: ri.fat_trans,
       },
     }));
     const recipeTotalMacros = calcRecipeMacros(ingredient_macros_list);
@@ -61,7 +53,7 @@ async function resolveEntry(entry: MealEntry): Promise<ResolvedEntry> {
 
 export function useDailyLog() {
   const [data, setData] = useState<DailyLogData>({
-    entries: { breakfast: [], lunch: [], dinner: [], snack: [] },
+    entries: {},
     totals: EMPTY_MACROS,
     totalKcal: 0,
   });
@@ -73,14 +65,11 @@ export function useDailyLog() {
       const rawEntries = await getMealEntriesForDate(date);
       const resolved = await Promise.all(rawEntries.map(resolveEntry));
 
-      const grouped: Record<MealType, ResolvedEntry[]> = {
-        breakfast: [],
-        lunch: [],
-        dinner: [],
-        snack: [],
-      };
+      const grouped: Record<string, ResolvedEntry[]> = {};
       for (const re of resolved) {
-        grouped[re.entry.meal_type].push(re);
+        const mt = re.entry.meal_type;
+        if (!grouped[mt]) grouped[mt] = [];
+        grouped[mt].push(re);
       }
 
       const allMacros = resolved.map((re) => re.macros);
@@ -93,21 +82,15 @@ export function useDailyLog() {
     }
   }, []);
 
-  const addEntry = useCallback(
-    async (input: MealEntryInput, date: string) => {
-      await addMealEntry(input);
-      await load(date);
-    },
-    [load]
-  );
+  const addEntry = useCallback(async (input: MealEntryInput, date: string) => {
+    await addMealEntry(input);
+    await load(date);
+  }, [load]);
 
-  const removeEntry = useCallback(
-    async (id: number, date: string) => {
-      await deleteMealEntry(id);
-      await load(date);
-    },
-    [load]
-  );
+  const removeEntry = useCallback(async (id: number, date: string) => {
+    await deleteMealEntry(id);
+    await load(date);
+  }, [load]);
 
   return { data, loading, load, addEntry, removeEntry };
 }

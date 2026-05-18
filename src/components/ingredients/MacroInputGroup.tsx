@@ -50,8 +50,8 @@ export default function MacroInputGroup({ values, onChange, errors }: Props) {
       <Text variant="titleSmall" style={styles.sectionHeader}>Fat</Text>
       <MacroField label="Total Fat" field="fat_total" values={values} onChange={onChange} errors={errors} />
       <View style={styles.subGroup}>
-        <MacroField label="Unsaturated Fat" field="fat_unsaturated" values={values} onChange={onChange} errors={errors} />
-        <MacroField label="Mono/Poly Saturated" field="fat_mono_poly" values={values} onChange={onChange} errors={errors} />
+        <MacroField label="Saturated Fat" field="fat_unsaturated" values={values} onChange={onChange} errors={errors} />
+        <MacroField label="Mono/Poly Unsaturated" field="fat_mono_poly" values={values} onChange={onChange} errors={errors} />
         <MacroField label="Trans Fat" field="fat_trans" values={values} onChange={onChange} errors={errors} />
       </View>
     </View>

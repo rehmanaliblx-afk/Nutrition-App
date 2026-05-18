@@ -7,8 +7,8 @@ import { TrackingStackParamList } from '@/navigation/types';
 import { useDailyLog } from '@/hooks/useDailyLog';
 import { useGoals } from '@/hooks/useGoals';
 import { useWater } from '@/hooks/useWater';
+import { useMealSlots } from '@/hooks/useMealSlots';
 import { copyMealEntries } from '@/db/trackingDao';
-import { MEAL_TYPES, MEAL_LABELS, MealType } from '@/constants/macros';
 import { todayString, formatDateDisplay, addDays, isToday } from '@/utils/dateUtils';
 import { roundMacro } from '@/utils/macroCalculations';
 import { useDatabase } from '@/context/DatabaseContext';
@@ -24,6 +24,7 @@ export default function DailyLogScreen({ route, navigation }: Props) {
   const { data, loading, load, removeEntry } = useDailyLog();
   const { goal, load: loadGoal } = useGoals();
   const { total: waterTotal, load: loadWater, add: addWater } = useWater();
+  const { slots, load: loadSlots } = useMealSlots();
   const [showGoals, setShowGoals] = useState(false);
 
   const refresh = useCallback(() => {
@@ -31,7 +32,8 @@ export default function DailyLogScreen({ route, navigation }: Props) {
     load(date);
     loadGoal(date);
     loadWater(date);
-  }, [isReady, date, load, loadGoal, loadWater]);
+    loadSlots();
+  }, [isReady, date, load, loadGoal, loadWater, loadSlots]);
 
   useEffect(() => { refresh(); }, [refresh]);
 
@@ -47,18 +49,18 @@ export default function DailyLogScreen({ route, navigation }: Props) {
     ]);
   };
 
-  const handleCopyMeal = (meal: MealType) => {
+  const handleCopyMeal = (mealName: string, displayName: string) => {
     const prevDay = addDays(date, -1);
     Alert.alert(
       'Copy Meal',
-      `Copy ${MEAL_LABELS[meal]} from ${isToday(prevDay) ? 'yesterday' : formatDateDisplay(prevDay)} to today?`,
+      `Copy ${displayName} from ${isToday(prevDay) ? 'yesterday' : formatDateDisplay(prevDay)} to today?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Copy',
           onPress: async () => {
             try {
-              await copyMealEntries(prevDay, date, meal);
+              await copyMealEntries(prevDay, date, mealName);
               load(date);
             } catch (e) {
               Alert.alert('Error', String(e));
@@ -122,38 +124,33 @@ export default function DailyLogScreen({ route, navigation }: Props) {
           <ProgressBar progress={waterPct} color="#64B5F6" style={styles.waterBar} />
           <View style={styles.waterBtns}>
             {WATER_QUICK.map((ml) => (
-              <Chip
-                key={ml}
-                compact
-                onPress={() => addWater(date, ml)}
-                style={styles.waterChip}
-                icon="plus"
-              >
+              <Chip key={ml} compact onPress={() => addWater(date, ml)} style={styles.waterChip} icon="plus">
                 {ml}ml
               </Chip>
             ))}
           </View>
         </Surface>
 
-        {/* Meal Sections */}
-        {MEAL_TYPES.map((meal) => {
-          const entries = data.entries[meal];
+        {/* Dynamic Meal Sections */}
+        {slots.map((slot) => {
+          const entries = data.entries[slot.name] ?? [];
           const mealKcal = roundMacro(entries.reduce((s, e) => s + e.kcal, 0), 0);
           return (
-            <View key={meal} style={styles.mealSection}>
+            <View key={slot.name} style={styles.mealSection}>
               <View style={styles.mealHeader}>
-                <Text variant="titleSmall" style={styles.mealTitle}>{MEAL_LABELS[meal]}</Text>
+                <Text variant="titleSmall" style={styles.mealTitle}>
+                  {slot.emoji} {slot.display_name.toUpperCase()}
+                </Text>
                 <Text variant="labelSmall" style={styles.mealKcal}>{mealKcal > 0 ? `${mealKcal} kcal` : ''}</Text>
                 <IconButton
                   icon="content-copy"
                   size={16}
-                  onPress={() => handleCopyMeal(meal as MealType)}
-                  accessibilityLabel="Copy from yesterday"
+                  onPress={() => handleCopyMeal(slot.name, slot.display_name)}
                 />
                 <IconButton
                   icon="plus"
                   size={18}
-                  onPress={() => navigation.navigate('AddMealEntry', { date, mealType: meal as MealType })}
+                  onPress={() => navigation.navigate('AddMealEntry', { date, mealType: slot.name })}
                 />
               </View>
               {entries.map((re) => (
@@ -179,7 +176,7 @@ export default function DailyLogScreen({ route, navigation }: Props) {
       <FAB
         icon="plus"
         style={styles.fab}
-        onPress={() => navigation.navigate('AddMealEntry', { date, mealType: 'breakfast' })}
+        onPress={() => navigation.navigate('AddMealEntry', { date, mealType: slots[0]?.name ?? 'breakfast' })}
       />
     </SafeAreaView>
   );
@@ -203,7 +200,7 @@ const styles = StyleSheet.create({
   waterChip: {},
   mealSection: { marginBottom: 4 },
   mealHeader: { flexDirection: 'row', alignItems: 'center', paddingLeft: 12 },
-  mealTitle: { flex: 1, fontWeight: '700', textTransform: 'uppercase', opacity: 0.7 },
+  mealTitle: { flex: 1, fontWeight: '700', opacity: 0.7 },
   mealKcal: { opacity: 0.5 },
   entryItem: { paddingLeft: 16 },
   emptyMeal: { paddingLeft: 16, paddingBottom: 8, opacity: 0.4, fontStyle: 'italic', fontSize: 13 },

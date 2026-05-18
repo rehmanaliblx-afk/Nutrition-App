@@ -103,4 +103,40 @@ export const migrations: Migration[] = [
       )`,
     ],
   },
+  {
+    version: 3,
+    up: [
+      `CREATE TABLE IF NOT EXISTS app_settings (
+        key   TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      )`,
+      `CREATE TABLE IF NOT EXISTS meal_slots (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        name         TEXT NOT NULL UNIQUE,
+        display_name TEXT NOT NULL,
+        emoji        TEXT NOT NULL DEFAULT '🍽️',
+        sort_order   INTEGER NOT NULL DEFAULT 0
+      )`,
+      `INSERT OR IGNORE INTO meal_slots (name, display_name, emoji, sort_order) VALUES
+        ('breakfast', 'Breakfast', '🌅', 0),
+        ('lunch',     'Lunch',     '☀️', 1),
+        ('dinner',    'Dinner',    '🌙', 2),
+        ('snack',     'Snack',     '☕', 3)`,
+      `CREATE TABLE IF NOT EXISTS meal_entries_v3 (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        date       TEXT NOT NULL,
+        meal_type  TEXT NOT NULL,
+        food_type  TEXT NOT NULL CHECK (food_type IN ('ingredient','recipe')),
+        food_id    INTEGER NOT NULL,
+        grams      REAL NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        CHECK (grams > 0)
+      )`,
+      `INSERT INTO meal_entries_v3 SELECT * FROM meal_entries`,
+      `DROP TABLE meal_entries`,
+      `ALTER TABLE meal_entries_v3 RENAME TO meal_entries`,
+      `CREATE INDEX IF NOT EXISTS idx_entries_date2     ON meal_entries(date)`,
+      `CREATE INDEX IF NOT EXISTS idx_entries_date_meal2 ON meal_entries(date, meal_type)`,
+    ],
+  },
 ];

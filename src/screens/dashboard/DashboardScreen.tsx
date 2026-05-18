@@ -82,11 +82,11 @@ export default function DashboardScreen() {
           <View style={styles.subRow}>
             <View style={styles.subItem}>
               <Text variant="titleSmall">{roundMacro(data.totals.fat_unsaturated)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Unsat.</Text>
+              <Text variant="labelSmall" style={styles.subLabel}>Saturated</Text>
             </View>
             <View style={styles.subItem}>
               <Text variant="titleSmall">{roundMacro(data.totals.fat_mono_poly)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Mono/Poly</Text>
+              <Text variant="labelSmall" style={styles.subLabel}>Mono/Poly Unsat.</Text>
             </View>
             <View style={styles.subItem}>
               <Text variant="titleSmall">{roundMacro(data.totals.fat_trans)}g</Text>

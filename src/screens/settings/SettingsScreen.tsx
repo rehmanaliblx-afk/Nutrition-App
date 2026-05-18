@@ -44,6 +44,13 @@ export default function SettingsScreen({ navigation }: Props) {
       <List.Section>
         <List.Subheader>Tools</List.Subheader>
         <List.Item
+          title="Manage Meal Types"
+          description="Add custom meal types like Sehri, Iftar, Pre-workout"
+          left={(p) => <List.Icon {...p} icon="silverware-fork-knife" />}
+          right={(p) => <List.Icon {...p} icon="chevron-right" />}
+          onPress={() => navigation.navigate('ManageMeals')}
+        />
+        <List.Item
           title="History & Charts"
           description="Weekly kcal, macros, water, and weight trends"
           left={(p) => <List.Icon {...p} icon="chart-bar" />}

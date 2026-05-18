@@ -9,9 +9,10 @@ import { getAllIngredients, getIngredientById } from '@/db/ingredientsDao';
 import { getAllRecipes, getRecipeById } from '@/db/recipesDao';
 import { getRecentFoods } from '@/db/trackingDao';
 import { Ingredient, Recipe } from '@/db/schema';
-import { MealType, MEAL_TYPES, MEAL_LABELS, FoodType } from '@/constants/macros';
+import { MealType, FoodType } from '@/constants/macros';
 import { roundMacro } from '@/utils/macroCalculations';
 import { useDatabase } from '@/context/DatabaseContext';
+import { useMealSlots } from '@/hooks/useMealSlots';
 
 type Props = NativeStackScreenProps<TrackingStackParamList, 'AddMealEntry'>;
 
@@ -22,6 +23,7 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
   const { date, mealType: initialMealType } = route.params;
   const { addEntry } = useDailyLog();
   const { isReady } = useDatabase();
+  const { slots, load: loadSlots } = useMealSlots();
 
   const [mealType, setMealType] = useState<MealType>(initialMealType);
   const [selectedFood, setSelectedFood] = useState<FoodItem | null>(null);
@@ -40,6 +42,7 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
 
   useEffect(() => {
     if (!isReady) return;
+    loadSlots();
     Promise.all([getAllIngredients(), getAllRecipes()])
       .then(([ings, recs]) => {
         setAllIngredients(ings);
@@ -120,9 +123,9 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text variant="titleMedium" style={styles.label}>Meal</Text>
         <View style={styles.chipRow}>
-          {MEAL_TYPES.map((mt) => (
-            <Chip key={mt} selected={mealType === mt} onPress={() => setMealType(mt)} mode="outlined" style={styles.chip}>
-              {MEAL_LABELS[mt]}
+          {slots.map((slot) => (
+            <Chip key={slot.name} selected={mealType === slot.name} onPress={() => setMealType(slot.name)} mode="outlined" style={styles.chip}>
+              {slot.emoji} {slot.display_name}
             </Chip>
           ))}
         </View>

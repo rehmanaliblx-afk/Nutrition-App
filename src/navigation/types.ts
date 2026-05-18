@@ -30,4 +30,5 @@ export type MoreStackParamList = {
   History: undefined;
   WeightLog: undefined;
   Backup: undefined;
+  ManageMeals: undefined;
 };
