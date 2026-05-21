@@ -2,9 +2,6 @@ name: Build Android APK (No EAS Required)
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - claude/android-app-build-eBVtu
 
 jobs:
   build:
@@ -46,14 +43,17 @@ jobs:
           $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
             "platforms;android-35" \
             "build-tools;35.0.0" \
-            "platform-tools"
+            "platform-tools" \
+            "ndk;26.1.10909125"
 
       - name: Build Debug APK
         run: |
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/26.1.10909125
           cd android
-          ./gradlew assembleDebug --no-daemon
-        env:
-          ANDROID_HOME: ${{ env.ANDROID_SDK_ROOT }}
+          ./gradlew assembleDebug --no-daemon \
+            -Dorg.gradle.jvmargs="-Xmx4g -XX:MaxMetaspaceSize=512m" \
+            -Pkotlin.incremental=false
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
