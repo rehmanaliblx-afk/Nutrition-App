@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState, useMemo } from 'react';
 import { ScrollView, View, StyleSheet, RefreshControl, TouchableOpacity, StatusBar } from 'react-native';
-import { Text, Divider, Button, Surface, ProgressBar, useTheme } from 'react-native-paper';
+import { Text, Button, Surface, ProgressBar, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, DrawerActions, CommonActions } from '@react-navigation/native';
 import { useDailyLog } from '@/hooks/useDailyLog';
@@ -133,6 +133,7 @@ export default function DashboardScreen() {
           style={{ backgroundColor: theme.colors.primary }}
         >
           {([
+            { label: 'Daily Log', icon: 'restaurant-outline', onPress: () => navigateToNutrition('DailyLog') },
             { label: 'Log Workout', icon: 'barbell-outline', onPress: () => navigateToWorkout('WorkoutSession') },
             { label: 'Measurements', icon: 'body-outline', onPress: () => navigateToNutrition('BodyMeasurements') },
             { label: '1RM Calc', icon: 'calculator-outline', onPress: () => navigateToWorkout('OneRMCalculator') },
@@ -172,12 +173,22 @@ export default function DashboardScreen() {
           <CalorieRing current={data.totalKcal} goal={goal?.kcal_goal ?? null} />
         </View>
 
-        {/* Macro Bars */}
-        <Surface style={styles.macroCard} elevation={1}>
-          <MacroBar label="Protein" current={data.totals.protein} goal={goal?.protein_goal ?? null} color={MACRO_COLORS.protein} />
-          <MacroBar label="Carbs" current={data.totals.carbs_total} goal={goal?.carbs_goal ?? null} color={MACRO_COLORS.carbs} />
-          <MacroBar label="Fat" current={data.totals.fat_total} goal={goal?.fat_goal ?? null} color={MACRO_COLORS.fat} />
-        </Surface>
+        {/* Macro Bars — tap to see full detail */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => (drawerNav as any).navigate('MacroDetail', { date })}
+        >
+          <Surface style={styles.macroCard} elevation={1}>
+            <View style={styles.macroCardHeader}>
+              <Text variant="labelSmall" style={{ opacity: 0.5 }}>MACROS — tap for full detail</Text>
+              <Ionicons name="chevron-forward" size={14} style={{ opacity: 0.4 }} />
+            </View>
+            <MacroBar label="Protein" current={data.totals.protein} goal={goal?.protein_goal ?? null} color={MACRO_COLORS.protein} />
+            <MacroBar label="Carbs" current={data.totals.carbs_total} goal={goal?.carbs_goal ?? null} color={MACRO_COLORS.carbs} />
+            <MacroBar label="Fiber" current={data.totals.carbs_fiber} goal={goal?.fiber_goal ?? null} color="#4CAF50" />
+            <MacroBar label="Fat" current={data.totals.fat_total} goal={goal?.fat_goal ?? null} color={MACRO_COLORS.fat} />
+          </Surface>
+        </TouchableOpacity>
 
         {/* Streak Widget */}
         <Surface style={styles.macroCard} elevation={1}>
@@ -223,41 +234,6 @@ export default function DashboardScreen() {
             </ScrollView>
           </Surface>
         )}
-
-        {/* Sub-macro breakdown */}
-        <Surface style={styles.macroCard} elevation={1}>
-          <Text variant="labelMedium" style={styles.subTitle}>Carb Breakdown</Text>
-          <View style={styles.subRow}>
-            <View style={styles.subItem}>
-              <Text variant="titleSmall">{roundMacro(data.totals.carbs_sugar)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Sugar</Text>
-            </View>
-            <View style={styles.subItem}>
-              <Text variant="titleSmall">{roundMacro(data.totals.carbs_complex)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Complex</Text>
-            </View>
-            <View style={styles.subItem}>
-              <Text variant="titleSmall">{roundMacro(data.totals.carbs_fiber)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Fiber</Text>
-            </View>
-          </View>
-          <Divider style={styles.innerDivider} />
-          <Text variant="labelMedium" style={styles.subTitle}>Fat Breakdown</Text>
-          <View style={styles.subRow}>
-            <View style={styles.subItem}>
-              <Text variant="titleSmall">{roundMacro(data.totals.fat_unsaturated)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Saturated</Text>
-            </View>
-            <View style={styles.subItem}>
-              <Text variant="titleSmall">{roundMacro(data.totals.fat_mono_poly)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Mono/Poly Unsat.</Text>
-            </View>
-            <View style={styles.subItem}>
-              <Text variant="titleSmall">{roundMacro(data.totals.fat_trans)}g</Text>
-              <Text variant="labelSmall" style={styles.subLabel}>Trans</Text>
-            </View>
-          </View>
-        </Surface>
 
         {/* Smart Insights card */}
         <Surface style={styles.macroCard} elevation={1}>
@@ -355,11 +331,8 @@ const styles = StyleSheet.create({
   dateText: { fontWeight: 'bold', flex: 1, textAlign: 'center' },
   ringRow: { alignItems: 'center', paddingVertical: 8 },
   macroCard: { borderRadius: 12, padding: 16 },
+  macroCardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 },
   subTitle: { fontWeight: '600', marginBottom: 8, opacity: 0.7 },
-  subRow: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 4 },
-  subItem: { alignItems: 'center', gap: 2 },
-  subLabel: { opacity: 0.5 },
-  innerDivider: { marginVertical: 10 },
 
   // Streak
   streakRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

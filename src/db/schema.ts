@@ -55,6 +55,7 @@ export interface DailyGoal {
   protein_goal: number | null;
   carbs_goal: number | null;
   fat_goal: number | null;
+  fiber_goal: number | null;
   water_goal_ml: number;
   created_at: string;
 }
@@ -103,6 +104,7 @@ export interface GoalTemplate {
   protein_goal: number | null;
   carbs_goal: number | null;
   fat_goal: number | null;
+  fiber_goal: number | null;
   water_goal_ml: number;
 }
 

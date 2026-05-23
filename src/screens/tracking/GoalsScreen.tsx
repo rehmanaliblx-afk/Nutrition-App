@@ -26,6 +26,7 @@ export default function GoalsScreen({ onSaved }: Props) {
   const [protein, setProtein] = useState('');
   const [carbs, setCarbs] = useState('');
   const [fat, setFat] = useState('');
+  const [fiber, setFiber] = useState('');
   const [water, setWater] = useState('2000');
   const [saving, setSaving] = useState(false);
 
@@ -41,6 +42,7 @@ export default function GoalsScreen({ onSaved }: Props) {
       setProtein(goal.protein_goal != null ? String(goal.protein_goal) : '');
       setCarbs(goal.carbs_goal != null ? String(goal.carbs_goal) : '');
       setFat(goal.fat_goal != null ? String(goal.fat_goal) : '');
+      setFiber(goal.fiber_goal != null ? String(goal.fiber_goal) : '');
       setWater(goal.water_goal_ml != null ? String(goal.water_goal_ml) : '2000');
     }
   }, [goal]);
@@ -58,6 +60,7 @@ export default function GoalsScreen({ onSaved }: Props) {
     if (t.protein_goal) setProtein(String(t.protein_goal));
     if (t.carbs_goal) setCarbs(String(t.carbs_goal));
     if (t.fat_goal) setFat(String(t.fat_goal));
+    if (t.fiber_goal) setFiber(String(t.fiber_goal));
     if (t.water_goal_ml) setWater(String(t.water_goal_ml));
   };
 
@@ -73,6 +76,7 @@ export default function GoalsScreen({ onSaved }: Props) {
         protein_goal: parseGoal(protein),
         carbs_goal: parseGoal(carbs),
         fat_goal: parseGoal(fat),
+        fiber_goal: parseGoal(fiber),
         water_goal_ml: parseFloat(water) || 2000,
       });
       setTemplateName('');
@@ -109,6 +113,7 @@ export default function GoalsScreen({ onSaved }: Props) {
         protein_goal: parseGoal(protein),
         carbs_goal: parseGoal(carbs),
         fat_goal: parseGoal(fat),
+        fiber_goal: parseGoal(fiber),
         water_goal_ml: parseFloat(water) || 2000,
       };
       await save(input);
@@ -150,6 +155,7 @@ export default function GoalsScreen({ onSaved }: Props) {
         <TextInput label="Calorie Goal (kcal) *" value={kcal} onChangeText={setKcal} keyboardType="decimal-pad" mode="outlined" />
         <TextInput label="Protein Goal (g)" value={protein} onChangeText={setProtein} keyboardType="decimal-pad" mode="outlined" />
         <TextInput label="Carbs Goal (g)" value={carbs} onChangeText={setCarbs} keyboardType="decimal-pad" mode="outlined" />
+        <TextInput label="Fiber Goal (g)" value={fiber} onChangeText={setFiber} keyboardType="decimal-pad" mode="outlined" />
         <TextInput label="Fat Goal (g)" value={fat} onChangeText={setFat} keyboardType="decimal-pad" mode="outlined" />
         <TextInput
           label="Water Goal (ml)"

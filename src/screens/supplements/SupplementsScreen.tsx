@@ -1,7 +1,8 @@
 import React, { useEffect, useCallback } from 'react';
-import { ScrollView, View, StyleSheet } from 'react-native';
+import { ScrollView, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { FAB, Text, Surface, Chip } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MoreStackParamList } from '@/navigation/types';
 import { useSupplements } from '@/hooks/useSupplements';
@@ -30,6 +31,20 @@ export default function SupplementsScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content}>
+        {/* Supplement Guide Banner */}
+        <TouchableOpacity onPress={() => navigation.navigate('SupplementGuide')} activeOpacity={0.8}>
+          <Surface style={styles.guideBanner} elevation={2}>
+            <Ionicons name="book-outline" size={22} color="#fff" />
+            <View style={{ flex: 1 }}>
+              <Text variant="titleSmall" style={styles.guideBannerTitle}>Supplement Guide</Text>
+              <Text variant="bodySmall" style={styles.guideBannerSubtitle}>
+                31 supplements · categories · dosage & timing
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#fff" />
+          </Surface>
+        </TouchableOpacity>
+
         {supplements.length === 0 && !loading ? (
           <EmptyState
             icon="medkit-outline"
@@ -107,4 +122,14 @@ const styles = StyleSheet.create({
   cycleChip: { backgroundColor: 'rgba(255,180,100,0.2)' },
   chipText: { fontSize: 11 },
   fab: { position: 'absolute', right: 16, bottom: 16 },
+  guideBanner: {
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#4ECDC4',
+  },
+  guideBannerTitle: { color: '#fff', fontWeight: '700' },
+  guideBannerSubtitle: { color: 'rgba(255,255,255,0.85)', marginTop: 1 },
 });

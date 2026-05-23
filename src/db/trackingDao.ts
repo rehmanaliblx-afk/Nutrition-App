@@ -49,15 +49,16 @@ export async function getGoalForDate(date: string): Promise<DailyGoal | null> {
 export async function upsertGoal(input: DailyGoalInput): Promise<void> {
   const db = getDatabase();
   await db.runAsync(
-    `INSERT INTO daily_goals (date, kcal_goal, protein_goal, carbs_goal, fat_goal, water_goal_ml)
-     VALUES (?, ?, ?, ?, ?, ?)
+    `INSERT INTO daily_goals (date, kcal_goal, protein_goal, carbs_goal, fat_goal, fiber_goal, water_goal_ml)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(date) DO UPDATE SET
        kcal_goal = excluded.kcal_goal,
        protein_goal = excluded.protein_goal,
        carbs_goal = excluded.carbs_goal,
        fat_goal = excluded.fat_goal,
+       fiber_goal = excluded.fiber_goal,
        water_goal_ml = excluded.water_goal_ml`,
-    [input.date, input.kcal_goal, input.protein_goal, input.carbs_goal, input.fat_goal, input.water_goal_ml ?? 2000]
+    [input.date, input.kcal_goal, input.protein_goal, input.carbs_goal, input.fat_goal, input.fiber_goal ?? null, input.water_goal_ml ?? 2000]
   );
 }
 
@@ -100,15 +101,16 @@ export async function getAllGoalTemplates(): Promise<GoalTemplate[]> {
 export async function upsertGoalTemplate(template: Omit<GoalTemplate, 'id'>): Promise<void> {
   const db = getDatabase();
   await db.runAsync(
-    `INSERT INTO goal_templates (name, kcal_goal, protein_goal, carbs_goal, fat_goal, water_goal_ml)
-     VALUES (?, ?, ?, ?, ?, ?)
+    `INSERT INTO goal_templates (name, kcal_goal, protein_goal, carbs_goal, fat_goal, fiber_goal, water_goal_ml)
+     VALUES (?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(name) DO UPDATE SET
        kcal_goal = excluded.kcal_goal,
        protein_goal = excluded.protein_goal,
        carbs_goal = excluded.carbs_goal,
        fat_goal = excluded.fat_goal,
+       fiber_goal = excluded.fiber_goal,
        water_goal_ml = excluded.water_goal_ml`,
-    [template.name, template.kcal_goal, template.protein_goal, template.carbs_goal, template.fat_goal, template.water_goal_ml]
+    [template.name, template.kcal_goal, template.protein_goal, template.carbs_goal, template.fat_goal, template.fiber_goal ?? null, template.water_goal_ml]
   );
 }
 

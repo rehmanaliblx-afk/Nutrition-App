@@ -1,23 +1,25 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Text, Button, TextInput, Searchbar, List, Modal, Portal, Divider, Chip } from 'react-native-paper';
+import { Text, Button, TextInput, Searchbar, List, Modal, Portal, Divider, Chip, ActivityIndicator } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { TrackingStackParamList } from '@/navigation/types';
 import { useDailyLog } from '@/hooks/useDailyLog';
 import { getAllIngredients, getIngredientById } from '@/db/ingredientsDao';
 import { getAllRecipes, getRecipeById } from '@/db/recipesDao';
-import { getRecentFoods } from '@/db/trackingDao';
+import { getRecentFoods, addMealEntry } from '@/db/trackingDao';
+import { getAllTemplates, getTemplateById, MealTemplate } from '@/db/mealTemplatesDao';
 import { Ingredient, Recipe } from '@/db/schema';
 import { MealType, FoodType } from '@/constants/macros';
 import { roundMacro } from '@/utils/macroCalculations';
 import { useDatabase } from '@/context/DatabaseContext';
 import { useMealSlots } from '@/hooks/useMealSlots';
+import { todayString } from '@/utils/dateUtils';
 
 type Props = NativeStackScreenProps<TrackingStackParamList, 'AddMealEntry'>;
 
 type FoodItem = { type: FoodType; item: Ingredient | Recipe };
-type PickerTab = 'recent' | 'all';
+type PickerTab = 'recent' | 'all' | 'templates';
 
 export default function AddMealEntryScreen({ route, navigation }: Props) {
   const { date, mealType: initialMealType } = route.params;
@@ -39,16 +41,19 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
   const [filteredIngredients, setFilteredIngredients] = useState<Ingredient[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
   const [recentFoods, setRecentFoods] = useState<FoodItem[]>([]);
+  const [templates, setTemplates] = useState<MealTemplate[]>([]);
+  const [applyingTemplate, setApplyingTemplate] = useState(false);
 
   useEffect(() => {
     if (!isReady) return;
     loadSlots();
-    Promise.all([getAllIngredients(), getAllRecipes()])
-      .then(([ings, recs]) => {
+    Promise.all([getAllIngredients(), getAllRecipes(), getAllTemplates()])
+      .then(([ings, recs, tmps]) => {
         setAllIngredients(ings);
         setAllRecipes(recs);
         setFilteredIngredients(ings);
         setFilteredRecipes(recs);
+        setTemplates(tmps);
       })
       .catch((e) => console.warn('Failed to load food items:', e));
 
@@ -94,6 +99,34 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
     setPickerVisible(false);
   };
 
+  const handleApplyTemplate = async (template: MealTemplate) => {
+    setApplyingTemplate(true);
+    setPickerVisible(false);
+    try {
+      const full = await getTemplateById(template.id);
+      if (!full || full.entries.length === 0) {
+        Alert.alert('Empty Template', 'This template has no entries.');
+        return;
+      }
+      for (const entry of full.entries) {
+        await addMealEntry({
+          date,
+          meal_type: entry.mealType,
+          food_type: entry.foodType as FoodType,
+          food_id: entry.foodId,
+          grams: entry.grams,
+        });
+      }
+      Alert.alert('Applied', `${full.entries.length} items added from template "${template.name}".`, [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    } catch (e) {
+      Alert.alert('Error', String(e));
+    } finally {
+      setApplyingTemplate(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!selectedFood) {
       Alert.alert('Required', 'Please select a food item.');
@@ -120,6 +153,12 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
+      {applyingTemplate && (
+        <View style={styles.applyingOverlay}>
+          <ActivityIndicator size="large" />
+          <Text style={{ marginTop: 12 }}>Applying template…</Text>
+        </View>
+      )}
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text variant="titleMedium" style={styles.label}>Meal</Text>
         <View style={styles.chipRow}>
@@ -133,7 +172,7 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
         <Divider style={styles.divider} />
         <Text variant="titleMedium" style={styles.label}>Food</Text>
         <Button mode="outlined" icon="magnify" onPress={openPicker} style={styles.pickBtn}>
-          {selectedFood ? selectedFood.item.name : 'Pick Ingredient or Recipe'}
+          {selectedFood ? selectedFood.item.name : 'Pick Ingredient, Recipe or Template'}
         </Button>
 
         {selectedFood && (
@@ -160,7 +199,7 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
         <Modal visible={pickerVisible} onDismiss={() => setPickerVisible(false)} contentContainerStyle={styles.modal}>
           <Text variant="titleMedium" style={styles.modalTitle}>Select Food</Text>
           <Searchbar
-            placeholder="Search..."
+            placeholder="Search ingredients or recipes..."
             value={pickerQuery}
             onChangeText={handleSearch}
             style={styles.modalSearch}
@@ -174,6 +213,11 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
             <Chip selected={pickerTab === 'all'} onPress={() => setPickerTab('all')} compact style={styles.tabChip}>
               All Foods
             </Chip>
+            {templates.length > 0 && (
+              <Chip selected={pickerTab === 'templates'} onPress={() => setPickerTab('templates')} compact style={styles.tabChip}>
+                Templates
+              </Chip>
+            )}
           </View>
 
           <ScrollView style={styles.modalList} keyboardShouldPersistTaps="handled">
@@ -224,6 +268,24 @@ export default function AddMealEntryScreen({ route, navigation }: Props) {
                 )}
               </>
             )}
+
+            {pickerTab === 'templates' && (
+              <>
+                <List.Subheader>Meal Templates (applies all entries)</List.Subheader>
+                {templates.map((t) => (
+                  <List.Item
+                    key={`tmpl-${t.id}`}
+                    title={t.name}
+                    description={t.description ?? 'Tap to apply all entries to today\'s log'}
+                    left={(p) => <List.Icon {...p} icon="calendar-check" />}
+                    onPress={() => handleApplyTemplate(t)}
+                  />
+                ))}
+                {templates.length === 0 && (
+                  <Text style={styles.noResults}>No templates yet. Create one in Meal Templates.</Text>
+                )}
+              </>
+            )}
           </ScrollView>
         </Modal>
       </Portal>
@@ -240,6 +302,14 @@ const styles = StyleSheet.create({
   divider: { marginVertical: 8 },
   pickBtn: { marginBottom: 4 },
   saveBtn: { marginTop: 16 },
+  applyingOverlay: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(255,255,255,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 99,
+  },
   modal: { backgroundColor: 'white', margin: 20, borderRadius: 12, maxHeight: '85%', overflow: 'hidden' },
   modalTitle: { padding: 16, fontWeight: 'bold' },
   modalSearch: { marginHorizontal: 12, marginBottom: 4 },

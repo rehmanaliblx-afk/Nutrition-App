@@ -240,4 +240,11 @@ export const migrations: Migration[] = [
       )`,
     ],
   },
+  {
+    version: 7,
+    up: [
+      `ALTER TABLE daily_goals ADD COLUMN fiber_goal REAL`,
+      `ALTER TABLE goal_templates ADD COLUMN fiber_goal REAL`,
+    ],
+  },
 ];

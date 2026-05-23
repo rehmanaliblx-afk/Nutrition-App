@@ -25,6 +25,8 @@ import MealTemplatesScreen from '@/screens/tracking/MealTemplatesScreen';
 import WeeklyReportScreen from '@/screens/tracking/WeeklyReportScreen';
 import MacroRecommendationsScreen from '@/screens/settings/MacroRecommendationsScreen';
 import AdaptiveTDEEScreen from '@/screens/tracking/AdaptiveTDEEScreen';
+import MacroDetailScreen from '@/screens/tracking/MacroDetailScreen';
+import SupplementGuideScreen from '@/screens/supplements/SupplementGuideScreen';
 
 const Stack = createNativeStackNavigator<NutritionStackParamList>();
 
@@ -66,6 +68,8 @@ export default function NutritionStack() {
       <Stack.Screen name="WeeklyReport" component={WeeklyReportScreen} options={{ title: 'Weekly Report' }} />
       <Stack.Screen name="MacroRecommendations" component={MacroRecommendationsScreen} options={{ title: 'Macro Calculator' }} />
       <Stack.Screen name="AdaptiveTDEE" component={AdaptiveTDEEScreen} options={{ title: 'Smart TDEE Calculator' }} />
+      <Stack.Screen name="MacroDetail" component={MacroDetailScreen} options={{ title: 'Macro Details', headerShown: false }} />
+      <Stack.Screen name="SupplementGuide" component={SupplementGuideScreen} options={{ title: 'Supplement Guide', headerShown: false }} />
     </Stack.Navigator>
   );
 }
