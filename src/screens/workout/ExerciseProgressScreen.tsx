@@ -227,6 +227,70 @@ export default function ExerciseProgressScreen({ route, navigation }: Props) {
           )}
         </Surface>
 
+        {/* Progressive Overload Card */}
+        {history.length >= 2 && (() => {
+          const latest = history[0];
+          const prev = history[1];
+          const latestBest = bestSet(latest.sets);
+          const prevBest = bestSet(prev.sets);
+          if (!latestBest || !prevBest) return null;
+
+          const sameWeight = latestBest.weightKg === prevBest.weightKg;
+          const moreReps = (latestBest.reps ?? 0) > (prevBest.reps ?? 0);
+          const moreWeight = (latestBest.weightKg ?? 0) > (prevBest.weightKg ?? 0);
+
+          let suggestion = '';
+          let suggestColor = '#4ECDC4';
+          let icon: React.ComponentProps<typeof Ionicons>['name'] = 'arrow-up-circle-outline';
+
+          if (moreWeight) {
+            suggestion = `New PR! Try ${((latestBest.weightKg ?? 0) + 2.5).toFixed(1)} kg next session`;
+            suggestColor = '#4CAF50';
+            icon = 'trophy-outline';
+          } else if (sameWeight && moreReps) {
+            suggestion = `Great reps! Try ${(latestBest.weightKg ?? 0) + 2.5} kg × ${latestBest.reps} next session`;
+            suggestColor = '#4ECDC4';
+          } else if (sameWeight && (latestBest.reps ?? 0) >= (prevBest.reps ?? 0)) {
+            suggestion = `Same weight. Try +1 rep or +2.5 kg next session`;
+            suggestColor = '#FF9800';
+            icon = 'fitness-outline';
+          } else {
+            suggestion = `Prev: ${prevBest.weightKg} kg × ${prevBest.reps}. Keep pushing!`;
+            suggestColor = '#888';
+          }
+
+          return (
+            <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
+              <View style={styles.cardHeader}>
+                <Ionicons name={icon} size={18} color={suggestColor} />
+                <Text variant="titleSmall" style={[styles.cardTitle, { color: suggestColor }]}>
+                  Progressive Overload
+                </Text>
+              </View>
+              <Divider style={{ marginBottom: 12 }} />
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>LAST SESSION</Text>
+                  <Text variant="titleMedium" style={{ fontWeight: '700', color: theme.colors.onSurface }}>
+                    {latestBest.weightKg} kg × {latestBest.reps}
+                  </Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant }}>PREV SESSION</Text>
+                  <Text variant="titleMedium" style={{ fontWeight: '700', color: theme.colors.onSurfaceVariant }}>
+                    {prevBest.weightKg} kg × {prevBest.reps}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ backgroundColor: suggestColor + '18', borderRadius: 10, padding: 12 }}>
+                <Text style={{ color: suggestColor, fontWeight: '700', fontSize: 14 }}>
+                  💡 {suggestion}
+                </Text>
+              </View>
+            </Surface>
+          );
+        })()}
+
         {/* History Table */}
         <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
           <View style={styles.cardHeader}>

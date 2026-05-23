@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { View, StyleSheet, FlatList, TouchableOpacity, StatusBar } from 'react-native';
 import { Text, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,8 @@ import { WorkoutStackParamList } from '@/navigation/types';
 import { useWorkoutSession } from '@/hooks/useWorkoutSession';
 import { calcCurrentStreak } from '@/utils/streakCalc';
 import { WorkoutSession } from '@/db/workoutSessionDao';
+import { getDatabase } from '@/db/database';
+import { useDatabase } from '@/context/DatabaseContext';
 
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'WorkoutHistory'>;
 
@@ -32,18 +34,47 @@ export default function WorkoutHistoryScreen({ navigation }: Props) {
   const theme = useTheme();
   const drawerNav = useNavigation();
   const { sessions, loading, activeDates, load } = useWorkoutSession();
+  const { isReady } = useDatabase();
+  const [totalVolume, setTotalVolume] = useState<number>(0);
+  const [weeklyVolume, setWeeklyVolume] = useState<number>(0);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   useEffect(() => {
     const unsub = navigation.addListener('focus', load);
     return unsub;
   }, [navigation, load]);
 
+  useEffect(() => {
+    if (!isReady) return;
+    const db = getDatabase();
+    // Total volume = sum of weight * reps for all completed sets
+    db.getFirstAsync<{ total: number }>(
+      `SELECT COALESCE(SUM(weight_kg * reps), 0) as total
+       FROM workout_session_sets WHERE completed = 1 AND weight_kg IS NOT NULL AND reps IS NOT NULL`
+    ).then((r) => setTotalVolume(Math.round((r?.total ?? 0) / 1000))); // in tonnes
+
+    // This week's volume
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoStr = weekAgo.toISOString().split('T')[0];
+    db.getFirstAsync<{ total: number }>(
+      `SELECT COALESCE(SUM(wss.weight_kg * wss.reps), 0) as total
+       FROM workout_session_sets wss
+       JOIN workout_sessions ws ON wss.session_id = ws.id
+       WHERE wss.completed = 1 AND wss.weight_kg IS NOT NULL AND wss.reps IS NOT NULL
+       AND DATE(ws.started_at) >= ?`,
+      [weekAgoStr]
+    ).then((r) => setWeeklyVolume(Math.round(r?.total ?? 0)));
+  }, [isReady, sessions]);
+
   const streak = calcCurrentStreak(activeDates);
   const totalSets = sessions.reduce((acc, s) => acc + (s.totalSets ?? 0), 0);
+
+  const weekAgoDate = new Date();
+  weekAgoDate.setDate(weekAgoDate.getDate() - 7);
+  const weekSessionCount = sessions.filter((s) => new Date(s.startedAt) >= weekAgoDate).length;
+  const avgVolumePerSession = weekSessionCount > 0 ? Math.round(weeklyVolume / weekSessionCount) : 0;
 
   const renderStatBox = (label: string, value: string | number, icon: React.ComponentProps<typeof Ionicons>['name']) => (
     <Surface style={[styles.statBox, { backgroundColor: theme.colors.surface }]} elevation={1}>
@@ -114,11 +145,18 @@ export default function WorkoutHistoryScreen({ navigation }: Props) {
         refreshing={loading}
         onRefresh={load}
         ListHeaderComponent={
-          <View style={styles.statsRow}>
-            {renderStatBox('Sessions', sessions.length, 'calendar-outline')}
-            {renderStatBox('Total Sets', totalSets, 'layers-outline')}
-            {renderStatBox('Day Streak', streak, 'flame-outline')}
-          </View>
+          <>
+            <View style={styles.statsRow}>
+              {renderStatBox('Sessions', sessions.length, 'calendar-outline')}
+              {renderStatBox('Total Sets', totalSets, 'layers-outline')}
+              {renderStatBox('Day Streak', streak, 'flame-outline')}
+            </View>
+            <View style={styles.statsRow}>
+              {renderStatBox('This Week', `${weeklyVolume} kg`, 'barbell-outline')}
+              {renderStatBox('Total Volume', `${totalVolume} t`, 'stats-chart-outline')}
+              {renderStatBox('Avg/Session', avgVolumePerSession > 0 ? `${avgVolumePerSession} kg` : '—', 'trending-up-outline')}
+            </View>
+          </>
         }
         ListEmptyComponent={
           !loading ? (
