@@ -9,7 +9,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Image,
 } from 'react-native';
+import * as DocumentPicker from 'expo-document-picker';
 import {
   Text,
   Button,
@@ -113,6 +115,7 @@ interface FormState {
   shouldersCm: string;
   bodyFatPct: string;
   notes: string;
+  photoUri: string | null;
 }
 
 const emptyForm = (): FormState => ({
@@ -127,6 +130,7 @@ const emptyForm = (): FormState => ({
   shouldersCm: '',
   bodyFatPct: '',
   notes: '',
+  photoUri: null,
 });
 
 function measurementToForm(m: BodyMeasurement): FormState {
@@ -142,6 +146,7 @@ function measurementToForm(m: BodyMeasurement): FormState {
     shouldersCm: m.shouldersCm != null ? String(m.shouldersCm) : '',
     bodyFatPct: m.bodyFatPct != null ? String(m.bodyFatPct) : '',
     notes: m.notes ?? '',
+    photoUri: m.photoPath ?? null,
   };
 }
 
@@ -152,6 +157,7 @@ export default function BodyMeasurementsScreen({ navigation }: Props) {
   const [form, setForm] = useState<FormState>(emptyForm());
   const [saving, setSaving] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [viewPhotoUri, setViewPhotoUri] = useState<string | null>(null);
 
   useEffect(() => { load(); }, [load]);
 
@@ -181,7 +187,7 @@ export default function BodyMeasurementsScreen({ navigation }: Props) {
         calvesCm: parseNum(form.calvesCm),
         shouldersCm: parseNum(form.shouldersCm),
         bodyFatPct: parseNum(form.bodyFatPct),
-        photoPath: null,
+        photoPath: form.photoUri ?? null,
         notes: form.notes.trim() || null,
       });
       setModalVisible(false);
@@ -215,6 +221,17 @@ export default function BodyMeasurementsScreen({ navigation }: Props) {
 
   const setField = (key: keyof FormState) => (val: string) =>
     setForm((prev) => ({ ...prev, [key]: val }));
+
+  const handlePickPhoto = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({ type: 'image/*' });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setForm((prev) => ({ ...prev, photoUri: result.assets[0].uri }));
+      }
+    } catch (e) {
+      Alert.alert('Error', 'Could not pick photo: ' + String(e));
+    }
+  };
 
   const renderItem = useCallback(({ item }: { item: BodyMeasurement }) => (
     <Surface style={styles.historyCard} elevation={1}>
@@ -314,6 +331,13 @@ export default function BodyMeasurementsScreen({ navigation }: Props) {
                 {m.notes && <Text style={styles.historyNotes}>{m.notes}</Text>}
               </View>
               <View style={styles.historyActions}>
+                {m.photoPath && (
+                  <IconButton
+                    icon="camera"
+                    size={18}
+                    onPress={() => setViewPhotoUri(m.photoPath!)}
+                  />
+                )}
                 <IconButton icon="pencil" size={18} onPress={() => openEdit(m)} />
                 <IconButton icon="delete-outline" size={18} onPress={() => handleDelete(m)} />
               </View>
@@ -324,6 +348,29 @@ export default function BodyMeasurementsScreen({ navigation }: Props) {
       </ScrollView>
 
       <FAB icon="plus" style={styles.fab} onPress={openAdd} />
+
+      {/* Full-screen Photo Viewer */}
+      <Modal
+        visible={viewPhotoUri !== null}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setViewPhotoUri(null)}
+      >
+        <TouchableOpacity
+          style={styles.photoViewerOverlay}
+          activeOpacity={1}
+          onPress={() => setViewPhotoUri(null)}
+        >
+          {viewPhotoUri && (
+            <Image
+              source={{ uri: viewPhotoUri }}
+              style={styles.photoViewerImage}
+              resizeMode="contain"
+            />
+          )}
+          <Text style={styles.photoViewerClose}>Tap anywhere to close</Text>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Add/Edit Modal */}
       <Modal
@@ -447,6 +494,22 @@ export default function BodyMeasurementsScreen({ navigation }: Props) {
                 multiline
                 numberOfLines={2}
               />
+              {/* Photo picker */}
+              <Button
+                mode="outlined"
+                onPress={handlePickPhoto}
+                icon="camera"
+                style={styles.photoBtn}
+              >
+                {form.photoUri ? 'Change Photo' : 'Add Photo'}
+              </Button>
+              {form.photoUri && (
+                <Image
+                  source={{ uri: form.photoUri }}
+                  style={styles.photoThumb}
+                  resizeMode="cover"
+                />
+              )}
               <Button
                 mode="contained"
                 onPress={handleSave}
@@ -518,4 +581,18 @@ const styles = StyleSheet.create({
   twoCol: { flexDirection: 'row', gap: 8 },
   halfInput: { flex: 1 },
   saveBtn: { marginTop: 8 },
+  photoBtn: { marginTop: 4 },
+  photoThumb: { width: '100%', height: 180, borderRadius: 8, marginTop: 8 },
+  photoViewerOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  photoViewerImage: { width: '100%', height: '80%' },
+  photoViewerClose: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 13,
+    marginTop: 16,
+  },
 });

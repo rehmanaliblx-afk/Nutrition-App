@@ -259,6 +259,21 @@ export default function DashboardScreen() {
           </View>
         </Surface>
 
+        {/* Smart Insights card */}
+        <Surface style={styles.macroCard} elevation={1}>
+          <Text variant="labelMedium" style={styles.subTitle}>Smart Insights</Text>
+          <Text variant="bodySmall" style={{ opacity: 0.6, marginBottom: 10 }}>
+            Discover your true maintenance calories based on actual weight & food data.
+          </Text>
+          <Button
+            mode="contained-tonal"
+            icon="chart-line"
+            onPress={() => drawerNav.dispatch(CommonActions.navigate({ name: 'AdaptiveTDEE' }))}
+          >
+            View Smart TDEE
+          </Button>
+        </Surface>
+
         {/* Water & Weight row */}
         <View style={styles.quickRow}>
           <Surface style={[styles.quickCard, { flex: 1 }]} elevation={1}>

@@ -25,6 +25,7 @@ export type NutritionStackParamList = {
   MealTemplates: undefined;
   WeeklyReport: undefined;
   MacroRecommendations: undefined;
+  AdaptiveTDEE: undefined;
 };
 
 export type WorkoutStackParamList = {

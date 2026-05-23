@@ -207,3 +207,10 @@ This file contains exact versions tested by Expo team for the current SDK.
 ## Branch
 
 Active development branch: `claude/api-response-error-ZxyrV`
+
+---
+
+## Weight vs Target Graph Location
+The weight progress graph (actual vs target with trend line) is in:
+Navigation: Workout drawer → Weight Log screen
+It shows: actual weight line, target pace line, trend line (linear regression), projected completion date
