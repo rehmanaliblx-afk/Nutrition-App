@@ -149,7 +149,7 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
         {/* Clip to one half */}
         <View style={{ width: DISP_W, height: DISP_H, overflow: 'hidden' }}>
           <Image
-            source={require('@/assets/body_diagram.png')}
+            source={require('../../assets/body_diagram.png')}
             style={{ width: FULL_W, height: DISP_H, marginLeft: view === 'back' ? -DISP_W : 0 }}
             resizeMode="stretch"
           />
