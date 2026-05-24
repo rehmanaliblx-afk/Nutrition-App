@@ -42,81 +42,73 @@ function toRegions(names: string[]): Set<MuscleGroup> {
   return result;
 }
 
-// Original image: 713 × 678 (front body LEFT half, back body RIGHT half)
-// Each half is 356.5 × 678. We display each half at:
+// Original image: 713×678 (front body LEFT half, back body RIGHT half)
+// body_diagram_clean.png has no pre-highlighted muscles (programmatically removed)
+// Overlay coords derived from actual pixel analysis of the PNG.
+// FRONT body center x≈92, BACK body center x≈74 (bodies are not centred at 77)
 const DISP_W = 155;
-const FULL_W = DISP_W * 2;          // 310  — full image rendered width
+const FULL_W = DISP_W * 2;
 const DISP_H = Math.round(FULL_W * (678 / 713)); // 295
 
 type BodyView = 'front' | 'back';
 
 interface Overlay { m: MuscleGroup; l: number; t: number; w: number; h: number; br: number; }
 
-// Mask overlays suppress pre-highlighted areas baked into the PNG (chest front, traps back)
-interface Mask { l: number; t: number; w: number; h: number; br: number; }
-const FRONT_MASKS: Mask[] = [
-  // Suppress pre-highlighted chest in PNG
-  { l: 22, t: 96, w: 111, h: 38, br: 16 },
-];
-const BACK_MASKS: Mask[] = [
-  // Suppress pre-highlighted traps in PNG
-  { l: 34, t: 60, w: 87, h: 44, br: 8 },
-];
-
-// All coordinates are in the 155 × 295 display space of ONE HALF
+// FRONT: coordinates in 155×295 display space
 const FRONT: Overlay[] = [
-  // Chest — two pecs
-  { m: 'chest',     l: 26,  t: 100, w: 50, h: 32, br: 16 },
-  { m: 'chest',     l: 79,  t: 100, w: 50, h: 32, br: 16 },
-  // Anterior deltoids
-  { m: 'shoulders', l: 8,   t: 86,  w: 28, h: 24, br: 12 },
-  { m: 'shoulders', l: 119, t: 86,  w: 28, h: 24, br: 12 },
-  // Biceps
-  { m: 'biceps',    l: 6,   t: 113, w: 18, h: 38, br: 9  },
-  { m: 'biceps',    l: 131, t: 113, w: 18, h: 38, br: 9  },
-  // Forearms
-  { m: 'forearms',  l: 4,   t: 155, w: 16, h: 33, br: 8  },
-  { m: 'forearms',  l: 135, t: 155, w: 16, h: 33, br: 8  },
-  // Rectus abdominis + obliques (core)
-  { m: 'core',      l: 50,  t: 133, w: 55, h: 52, br: 8  },
-  // Quadriceps — left & right
-  { m: 'quads',     l: 33,  t: 195, w: 30, h: 50, br: 13 },
-  { m: 'quads',     l: 92,  t: 195, w: 30, h: 50, br: 13 },
-  // Calves
-  { m: 'calves',    l: 36,  t: 253, w: 23, h: 28, br: 11 },
-  { m: 'calves',    l: 96,  t: 253, w: 23, h: 28, br: 11 },
+  // Chest — two pecs (red pre-highlight was at display l=67,t=53,w=51)
+  { m: 'chest',     l: 65,  t: 53,  w: 24, h: 24, br: 11 },
+  { m: 'chest',     l: 93,  t: 53,  w: 24, h: 24, br: 11 },
+  // Anterior deltoids (shoulder widens from x=70 at y=44 to x=56 at y=54)
+  { m: 'shoulders', l: 53,  t: 44,  w: 18, h: 24, br: 9  },
+  { m: 'shoulders', l: 113, t: 44,  w: 18, h: 24, br: 9  },
+  // Biceps (arms separate from torso at y≈98)
+  { m: 'biceps',    l: 46,  t: 87,  w: 20, h: 44, br: 10 },
+  { m: 'biceps',    l: 119, t: 87,  w: 20, h: 44, br: 10 },
+  // Forearms (arm width ≈7-13px at y=131-163)
+  { m: 'forearms',  l: 46,  t: 131, w: 13, h: 32, br: 6  },
+  { m: 'forearms',  l: 127, t: 131, w: 13, h: 32, br: 6  },
+  // Core / abs (torso centre x=74-116 at waist)
+  { m: 'core',      l: 68,  t: 78,  w: 46, h: 76, br: 8  },
+  // Quadriceps (legs split at y=174, each ~24px wide)
+  { m: 'quads',     l: 63,  t: 163, w: 27, h: 65, br: 13 },
+  { m: 'quads',     l: 97,  t: 163, w: 27, h: 65, br: 13 },
+  // Calves front (lower leg x=56-77 / x=108-129)
+  { m: 'calves',    l: 55,  t: 228, w: 24, h: 40, br: 11 },
+  { m: 'calves',    l: 106, t: 228, w: 24, h: 40, br: 11 },
 ];
 
+// BACK: coordinates in 155×295 display space
 const BACK: Overlay[] = [
-  // Upper trapezius (wide across top)
-  { m: 'traps',      l: 38,  t: 62,  w: 79, h: 18, br: 8  },
-  // Mid trapezius
-  { m: 'traps',      l: 47,  t: 86,  w: 61, h: 22, br: 6  },
-  // Rear deltoids
-  { m: 'shoulders',  l: 8,   t: 66,  w: 27, h: 23, br: 11 },
-  { m: 'shoulders',  l: 120, t: 66,  w: 27, h: 23, br: 11 },
-  // Latissimus dorsi (sweep from armpit to waist)
-  { m: 'back',       l: 11,  t: 96,  w: 26, h: 42, br: 12 },
-  { m: 'back',       l: 118, t: 96,  w: 26, h: 42, br: 12 },
-  // Rhomboids (between shoulder blades)
-  { m: 'back',       l: 52,  t: 96,  w: 51, h: 24, br: 6  },
-  // Erector spinae / lower back
-  { m: 'back',       l: 58,  t: 126, w: 39, h: 22, br: 6  },
-  // Triceps
-  { m: 'triceps',    l: 5,   t: 91,  w: 18, h: 37, br: 9  },
-  { m: 'triceps',    l: 132, t: 91,  w: 18, h: 37, br: 9  },
-  // Forearms
-  { m: 'forearms',   l: 4,   t: 132, w: 16, h: 33, br: 8  },
-  { m: 'forearms',   l: 135, t: 132, w: 16, h: 33, br: 8  },
-  // Gluteus maximus
-  { m: 'glutes',     l: 35,  t: 160, w: 30, h: 27, br: 13 },
-  { m: 'glutes',     l: 90,  t: 160, w: 30, h: 27, br: 13 },
-  // Hamstrings
-  { m: 'hamstrings', l: 34,  t: 190, w: 28, h: 46, br: 12 },
-  { m: 'hamstrings', l: 93,  t: 190, w: 28, h: 46, br: 12 },
-  // Calves (back)
-  { m: 'calves',     l: 36,  t: 258, w: 23, h: 26, br: 11 },
-  { m: 'calves',     l: 96,  t: 258, w: 23, h: 26, br: 11 },
+  // Upper trapezius — narrow band at neck (red pre-highlight t=31,w=53)
+  { m: 'traps',      l: 63,  t: 31,  w: 22, h: 14, br: 7  },
+  // Mid trapezius — widens across shoulders
+  { m: 'traps',      l: 42,  t: 44,  w: 65, h: 16, br: 7  },
+  // Rear deltoids (shoulder widens from x=59 at y=44 to x=40 at y=54)
+  { m: 'shoulders',  l: 37,  t: 44,  w: 22, h: 24, br: 11 },
+  { m: 'shoulders',  l: 90,  t: 44,  w: 22, h: 24, br: 11 },
+  // Latissimus dorsi (armpit sweep, body x=35-113 at y=65)
+  { m: 'back',       l: 32,  t: 65,  w: 25, h: 78, br: 12 },
+  { m: 'back',       l: 92,  t: 65,  w: 25, h: 78, br: 12 },
+  // Rhomboids (between shoulder blades, torso centre x=52-92)
+  { m: 'back',       l: 52,  t: 65,  w: 40, h: 28, br: 7  },
+  // Erector spinae / lower back (torso x=50-98 at y=141)
+  { m: 'back',       l: 52,  t: 125, w: 46, h: 24, br: 7  },
+  // Triceps (back of upper arms, arm x=30-45 / x=103-118 at y=98)
+  { m: 'triceps',    l: 28,  t: 87,  w: 18, h: 44, br: 9  },
+  { m: 'triceps',    l: 103, t: 87,  w: 18, h: 44, br: 9  },
+  // Forearms back
+  { m: 'forearms',   l: 27,  t: 131, w: 13, h: 32, br: 6  },
+  { m: 'forearms',   l: 109, t: 131, w: 13, h: 32, br: 6  },
+  // Glutes (legs split at y=185, x=48-69 / x=80-101)
+  { m: 'glutes',     l: 44,  t: 157, w: 26, h: 32, br: 13 },
+  { m: 'glutes',     l: 78,  t: 157, w: 26, h: 32, br: 13 },
+  // Hamstrings (back of thighs, y=185-228)
+  { m: 'hamstrings', l: 43,  t: 185, w: 28, h: 43, br: 12 },
+  { m: 'hamstrings', l: 78,  t: 185, w: 28, h: 43, br: 12 },
+  // Calves back (leg x=46-62 / x=87-102 at y=228)
+  { m: 'calves',     l: 44,  t: 228, w: 20, h: 38, br: 10 },
+  { m: 'calves',     l: 86,  t: 228, w: 20, h: 38, br: 10 },
 ];
 
 interface Props { primaryMuscles: string[]; secondaryMuscles: string[]; stabilizerMuscles: string[]; }
@@ -137,11 +129,9 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
   };
 
   const overlays = view === 'front' ? FRONT : BACK;
-  const masks = view === 'front' ? FRONT_MASKS : BACK_MASKS;
 
   return (
     <View style={styles.container}>
-      {/* FRONT / BACK toggle */}
       <View style={[styles.toggle, { borderColor: theme.colors.outlineVariant, backgroundColor: theme.colors.surfaceVariant }]}>
         {(['front', 'back'] as BodyView[]).map((v) => (
           <TouchableOpacity
@@ -156,26 +146,15 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
         ))}
       </View>
 
-      {/* Body image + overlay */}
       <View style={{ width: DISP_W, height: DISP_H }}>
-        {/* Clip to one half */}
         <View style={{ width: DISP_W, height: DISP_H, overflow: 'hidden' }}>
           <Image
-            source={require('../../assets/body_diagram.png')}
+            source={require('../../assets/body_diagram_clean.png')}
             style={{ width: FULL_W, height: DISP_H, marginLeft: view === 'back' ? -DISP_W : 0 }}
             resizeMode="stretch"
           />
         </View>
 
-        {/* Gray masks to suppress pre-highlighted areas baked into the PNG */}
-        {masks.map((m, i) => (
-          <View
-            key={`mask-${i}`}
-            style={[styles.overlay, { left: m.l, top: m.t, width: m.w, height: m.h, borderRadius: m.br, backgroundColor: 'rgba(200,190,175,0.88)' }]}
-          />
-        ))}
-
-        {/* Muscle highlight overlays — only rendered when active */}
         {overlays.map((item, i) => {
           const s = getStyle(item.m);
           if (!s) return null;
@@ -192,7 +171,6 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
         })}
       </View>
 
-      {/* Legend */}
       <View style={styles.legend}>
         {[
           { label: 'Primary',    color: '#E53935' },
