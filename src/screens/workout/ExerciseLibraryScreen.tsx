@@ -5,6 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
   StatusBar,
+  ScrollView,
 } from 'react-native';
 import { Text, Searchbar, useTheme, Surface } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -80,6 +81,30 @@ function filterByMuscle(exercises: Exercise[], muscle: MuscleGroup): Exercise[] 
     default:
       return exercises;
   }
+}
+
+// Sub-muscles per muscle group
+const SUB_MUSCLES: Partial<Record<MuscleGroup, string[]>> = {
+  shoulders: ['Anterior Deltoid', 'Medial Deltoid', 'Lateral Deltoid', 'Posterior Deltoid', 'Rear Deltoid'],
+  chest: ['Pectoralis Major', 'Pectoralis Major (Upper)', 'Pectoralis Major (Lower)', 'Upper Pectoralis'],
+  back: ['Latissimus Dorsi', 'Rhomboids', 'Teres Major', 'Erector Spinae'],
+  biceps: ['Biceps Brachii', 'Biceps Brachii (Long Head)', 'Biceps Brachii (Short Head)', 'Brachialis'],
+  triceps: ['Triceps Brachii', 'Triceps Brachii (Long Head)', 'Triceps Brachii (Lateral Head)', 'Triceps Brachii (Medial Head)'],
+  core: ['Rectus Abdominis', 'Obliques', 'Transverse Abdominis', 'Hip Flexors'],
+  quads: ['Quadriceps', 'Rectus Femoris', 'Adductors'],
+  glutes: ['Gluteus Maximus', 'Gluteus Medius'],
+  hamstrings: ['Hamstrings', 'Biceps Femoris'],
+  calves: ['Gastrocnemius', 'Soleus'],
+  traps: ['Trapezius', 'Upper Trapezius'],
+};
+
+function filterBySubMuscle(exercises: Exercise[], subMuscle: string): Exercise[] {
+  const q = subMuscle.toLowerCase();
+  return exercises.filter(
+    (e) =>
+      e.primaryMuscles.some((m) => m.toLowerCase().includes(q) || q.includes(m.toLowerCase())) ||
+      e.secondaryMuscles.some((m) => m.toLowerCase().includes(q) || q.includes(m.toLowerCase()))
+  );
 }
 
 type ListItem =
@@ -197,9 +222,20 @@ export default function ExerciseLibraryScreen({ navigation }: Props) {
   const drawerNav = useNavigation();
   const [search, setSearch] = useState('');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroup | null>(null);
+  const [selectedSubMuscle, setSelectedSubMuscle] = useState<string | null>(null);
+
+  const handleSelectMuscle = useCallback((muscle: MuscleGroup | null) => {
+    setSelectedMuscle(muscle);
+    setSelectedSubMuscle(null);
+  }, []);
+
+  const subMuscles = selectedMuscle ? (SUB_MUSCLES[selectedMuscle] ?? null) : null;
 
   const filtered = useMemo(() => {
     let list = selectedMuscle ? filterByMuscle(EXERCISES, selectedMuscle) : EXERCISES;
+    if (selectedSubMuscle) {
+      list = filterBySubMuscle(list, selectedSubMuscle);
+    }
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -210,7 +246,7 @@ export default function ExerciseLibraryScreen({ navigation }: Props) {
       );
     }
     return list;
-  }, [selectedMuscle, search]);
+  }, [selectedMuscle, selectedSubMuscle, search]);
 
   const compound = useMemo(
     () => filtered.filter((e) => (e as any).type === 'compound'),
@@ -303,8 +339,45 @@ export default function ExerciseLibraryScreen({ navigation }: Props) {
           style={[styles.diagramCard, { backgroundColor: theme.colors.surface }]}
           elevation={1}
         >
-          <BodyDiagram selected={selectedMuscle} onSelect={setSelectedMuscle} />
+          <BodyDiagram selected={selectedMuscle} onSelect={handleSelectMuscle} />
         </Surface>
+
+        {/* Sub-muscle filter chips */}
+        {subMuscles && subMuscles.length > 0 && (
+          <View style={styles.subMuscleSection}>
+            <Text variant="labelSmall" style={[styles.subMuscleLabel, { color: theme.colors.onSurfaceVariant }]}>
+              {MUSCLE_LABELS[selectedMuscle!]} — filter by muscle:
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.subMuscleChips}>
+              {subMuscles.map((sm) => {
+                const active = selectedSubMuscle === sm;
+                return (
+                  <TouchableOpacity
+                    key={sm}
+                    style={[
+                      styles.subChip,
+                      {
+                        backgroundColor: active ? theme.colors.primary : theme.colors.surfaceVariant,
+                        borderColor: active ? theme.colors.primary : theme.colors.outlineVariant,
+                      },
+                    ]}
+                    onPress={() => setSelectedSubMuscle(active ? null : sm)}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        fontWeight: '600',
+                        color: active ? '#fff' : theme.colors.onSurfaceVariant,
+                      }}
+                    >
+                      {sm}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Results summary */}
         <View style={styles.resultsRow}>
@@ -313,11 +386,15 @@ export default function ExerciseLibraryScreen({ navigation }: Props) {
             style={{ color: theme.colors.onSurfaceVariant }}
           >
             {filtered.length} exercise{filtered.length !== 1 ? 's' : ''}
-            {selectedMuscle ? ` for ${MUSCLE_LABELS[selectedMuscle]}` : ' total'}
+            {selectedSubMuscle
+              ? ` for ${selectedSubMuscle}`
+              : selectedMuscle
+              ? ` for ${MUSCLE_LABELS[selectedMuscle]}`
+              : ' total'}
           </Text>
           {selectedMuscle && (
             <TouchableOpacity
-              onPress={() => setSelectedMuscle(null)}
+              onPress={() => handleSelectMuscle(null)}
               style={[
                 styles.clearBtn,
                 { backgroundColor: theme.colors.errorContainer },
@@ -337,7 +414,7 @@ export default function ExerciseLibraryScreen({ navigation }: Props) {
         </View>
       </View>
     ),
-    [search, selectedMuscle, filtered.length, theme]
+    [search, selectedMuscle, selectedSubMuscle, subMuscles, filtered.length, theme, handleSelectMuscle]
   );
 
   return (
@@ -417,6 +494,28 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 20,
     overflow: 'hidden',
+  },
+  subMuscleSection: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  subMuscleLabel: {
+    marginBottom: 8,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  subMuscleChips: {
+    flexDirection: 'row',
+    gap: 8,
+    paddingBottom: 4,
+  },
+  subChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
   },
   resultsRow: {
     flexDirection: 'row',

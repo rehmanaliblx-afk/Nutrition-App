@@ -84,6 +84,7 @@ export default function MacroRecommendationsScreen({ navigation }: Props) {
         carbs_goal: result.carbs,
         fat_goal: result.fat,
         water_goal_ml: 2000,
+        fiber_goal: null,
       });
       Alert.alert('Applied!', 'Your daily goal has been updated.');
     } catch (e) {

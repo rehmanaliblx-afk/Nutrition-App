@@ -1,11 +1,14 @@
-import React, { useCallback } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Image, ActivityIndicator } from 'react-native';
 import { Text, Chip, Divider, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WorkoutStackParamList } from '@/navigation/types';
 import { EXERCISES, CATEGORY_LABELS } from '@/constants/exercises';
+import ExerciseMuscleMap from '@/components/workout/ExerciseMuscleMap';
+import { getAppSetting } from '@/db/mealSlotsDao';
+import { useDatabase } from '@/context/DatabaseContext';
 
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'ExerciseDetail'>;
 
@@ -21,9 +24,61 @@ const MUSCLE_COLORS = {
   stabilizer: '#43A047',
 };
 
+interface ExerciseDBResult {
+  gifUrl: string;
+  name: string;
+}
+
 export default function ExerciseDetailScreen({ route, navigation }: Props) {
   const theme = useTheme();
+  const { isReady } = useDatabase();
   const exercise = EXERCISES.find((e) => e.id === route.params.exerciseId);
+
+  const [gifUrl, setGifUrl] = useState<string | null>(null);
+  const [gifLoading, setGifLoading] = useState(false);
+  const [gifError, setGifError] = useState<string | null>(null);
+  const [apiKeyMissing, setApiKeyMissing] = useState(false);
+
+  useEffect(() => {
+    if (!isReady || !exercise) return;
+    let cancelled = false;
+
+    (async () => {
+      const key = await getAppSetting('exercisedb_api_key');
+      if (!key) {
+        setApiKeyMissing(true);
+        return;
+      }
+      setApiKeyMissing(false);
+      setGifLoading(true);
+      setGifError(null);
+      try {
+        const nameParam = encodeURIComponent(exercise.name.toLowerCase());
+        const res = await fetch(
+          `https://exercisedb.p.rapidapi.com/exercises/name/${nameParam}?limit=1&offset=0`,
+          {
+            headers: {
+              'x-rapidapi-key': key,
+              'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
+            },
+          }
+        );
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        const data: ExerciseDBResult[] = await res.json();
+        if (!cancelled && data.length > 0) {
+          setGifUrl(data[0].gifUrl);
+        } else if (!cancelled) {
+          setGifError('No animation found for this exercise.');
+        }
+      } catch (e: any) {
+        if (!cancelled) setGifError('Could not load animation. Check internet connection.');
+      } finally {
+        if (!cancelled) setGifLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [isReady, exercise]);
 
   if (!exercise) {
     return (
@@ -68,7 +123,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Hero Section */}
+        {/* Hero */}
         <View style={[styles.hero, { backgroundColor: theme.colors.primary }]}>
           <Text variant="headlineSmall" style={styles.heroName}>{exercise.name}</Text>
           <View style={styles.heroBadges}>
@@ -85,7 +140,59 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           </View>
         </View>
 
-        {/* Muscles */}
+        {/* Muscle Map + GIF side by side layout */}
+        <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
+          <View style={styles.mapGifRow}>
+            {/* Left: SVG muscle map */}
+            <View style={styles.mapCol}>
+              <ExerciseMuscleMap
+                primaryMuscles={exercise.primaryMuscles}
+                secondaryMuscles={exercise.secondaryMuscles}
+                stabilizerMuscles={exercise.stabilizerMuscles}
+              />
+            </View>
+
+            {/* Right: GIF animation */}
+            <View style={styles.gifCol}>
+              <Text variant="labelSmall" style={[styles.gifLabel, { color: theme.colors.onSurfaceVariant }]}>
+                EXERCISE ANIMATION
+              </Text>
+              {gifLoading && (
+                <View style={styles.gifPlaceholder}>
+                  <ActivityIndicator color={theme.colors.primary} />
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8, textAlign: 'center' }}>
+                    Loading…
+                  </Text>
+                </View>
+              )}
+              {!gifLoading && gifUrl && (
+                <Image
+                  source={{ uri: gifUrl }}
+                  style={styles.gif}
+                  resizeMode="contain"
+                />
+              )}
+              {!gifLoading && gifError && (
+                <View style={styles.gifPlaceholder}>
+                  <Ionicons name="cloud-offline-outline" size={28} color={theme.colors.onSurfaceVariant} />
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 6, textAlign: 'center' }}>
+                    {gifError}
+                  </Text>
+                </View>
+              )}
+              {!gifLoading && apiKeyMissing && (
+                <View style={styles.gifPlaceholder}>
+                  <Ionicons name="key-outline" size={28} color={theme.colors.onSurfaceVariant} />
+                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 6, textAlign: 'center' }}>
+                    Add ExerciseDB API key in Settings to see animations
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        </Surface>
+
+        {/* Target Muscles — keep existing UI unchanged */}
         <SectionCard icon="body" title="Target Muscles">
           <View style={styles.muscleGroup}>
             <Text variant="labelSmall" style={{ color: MUSCLE_COLORS.primary, fontWeight: '700', marginBottom: 6 }}>
@@ -221,6 +328,23 @@ const styles = StyleSheet.create({
   card: { marginHorizontal: 16, marginTop: 16, borderRadius: 16, padding: 16 },
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   cardTitle: { fontWeight: '700', letterSpacing: 0.3 },
+
+  // Map + GIF row
+  mapGifRow: { flexDirection: 'row', gap: 12 },
+  mapCol: { flex: 1, alignItems: 'center' },
+  gifCol: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  gifLabel: { fontWeight: '700', marginBottom: 8, letterSpacing: 0.4 },
+  gif: { width: '100%', aspectRatio: 1, borderRadius: 10 },
+  gifPlaceholder: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 10,
+    backgroundColor: 'rgba(128,128,128,0.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+  },
+
   muscleGroup: {},
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
   muscleChip: { borderRadius: 8 },
