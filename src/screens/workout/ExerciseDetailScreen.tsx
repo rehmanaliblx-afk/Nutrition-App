@@ -59,28 +59,65 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
       if (gifUrl) return; // already loaded
       setGifLoading(true);
       setGifError(null);
+
+      const headers = {
+        'x-rapidapi-key': key,
+        'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
+      };
+
       try {
-        const nameParam = encodeURIComponent(exercise.name.toLowerCase());
-        const res = await fetch(
-          `https://exercisedb.p.rapidapi.com/exercises/name/${nameParam}?limit=1&offset=0`,
-          {
-            headers: {
-              'x-rapidapi-key': key,
-              'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
-            },
+        // Try exact name first, then a relaxed search (spaces, no punctuation)
+        const candidates = [
+          exercise.name.toLowerCase(),
+          exercise.name.toLowerCase().replace(/[^a-z0-9 ]/g, ''),
+          exercise.name.toLowerCase().split(' ')[0],
+        ];
+
+        let rawGif: string | null = null;
+        let lastStatus = 0;
+        for (const cand of candidates) {
+          const res = await fetch(
+            `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(cand)}?limit=1&offset=0`,
+            { headers }
+          );
+          lastStatus = res.status;
+          if (!res.ok) continue;
+          const json = await res.json();
+          // v2 wraps results: { success, data:[...] }; v1 returned a plain array
+          const items: ExerciseDBResult[] = Array.isArray(json) ? json : (json.data ?? []);
+          if (items.length > 0 && items[0].gifUrl) {
+            rawGif = items[0].gifUrl;
+            break;
           }
-        );
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        const json = await res.json();
-        // ExerciseDB v2 wraps results: { success, data: [...] }; v1 returned plain array
-        const items: ExerciseDBResult[] = Array.isArray(json) ? json : (json.data ?? []);
-        if (!cancelled && items.length > 0) {
-          setGifUrl(items[0].gifUrl);
-        } else if (!cancelled) {
-          setGifError('No animation found for this exercise.');
         }
+
+        if (!rawGif) {
+          if (!cancelled) {
+            setGifError(
+              lastStatus === 401 || lastStatus === 403
+                ? 'API key rejected (check key / subscription).'
+                : lastStatus === 429
+                ? 'Daily request limit reached.'
+                : 'No animation found for this exercise.'
+            );
+          }
+          return;
+        }
+
+        // ExerciseDB v2 gifUrls require the API key to access. Fetch with
+        // auth headers and convert to a base64 data URI so <Image> can show it.
+        const imgRes = await fetch(rawGif, { headers });
+        if (!imgRes.ok) throw new Error(`gif ${imgRes.status}`);
+        const blob = await imgRes.blob();
+        const dataUri: string = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+        if (!cancelled) setGifUrl(dataUri);
       } catch (e: any) {
-        if (!cancelled) setGifError('Could not load animation.');
+        if (!cancelled) setGifError(`Could not load animation (${e?.message ?? 'error'}).`);
       } finally {
         if (!cancelled) setGifLoading(false);
       }
@@ -179,6 +216,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
                   source={{ uri: gifUrl }}
                   style={styles.gif}
                   resizeMode="contain"
+                  onError={() => { setGifUrl(null); setGifError('Image failed to display.'); }}
                 />
               )}
               {!gifLoading && gifError && (
