@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
-import Svg, { Path } from 'react-native-svg';
+import Svg, { Path, G } from 'react-native-svg';
 
 // Internal region identifiers — superset of MuscleGroup.
 // 'front_shoulders' = anterior/lateral deltoid (FRONT view only).
@@ -266,7 +266,6 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
       </View>
 
       <View style={{ width: DISP_W, height: DISP_H }}>
-        <View style={{ width: DISP_W, height: DISP_H }}>
           <Image
             source={view === 'front'
               ? require('../../assets/body_front.png')
@@ -274,9 +273,10 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
             style={{ width: DISP_W, height: DISP_H }}
             resizeMode="stretch"
           />
-        </View>
 
         <Svg width={DISP_W} height={DISP_H} style={StyleSheet.absoluteFill}>
+          {/* Front paths were calibrated for x-centre=93; image is now centred at x=77 → shift -16 */}
+          <G transform={view === 'front' ? 'translate(-16, 0)' : undefined}>
           {muscles.map(({ m, paths }) => {
             const c = getCol(m);
             if (!c) return null;
@@ -291,6 +291,7 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
               />
             ));
           })}
+          </G>
         </Svg>
       </View>
 
