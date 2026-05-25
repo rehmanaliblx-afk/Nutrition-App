@@ -135,11 +135,12 @@ function toRegions(names: string[]): Set<Region> {
   return result;
 }
 
-// Two separate anatomical images (cropped to 155×295 aspect ratio).
-// body_front.png: 612×1166 crop, figure centered at 60% of width.
-// body_back.png:  628×1197 crop, figure centered at 48% of width.
+// Image: 713×678 (front body LEFT half, back body RIGHT half).
+// body_diagram_clean.png — clean diagram, no labels.
+// Paths extracted by pixel-level flood-fill contour tracing, scaled to 155×295.
 const DISP_W = 155;
-const DISP_H = 295;
+const FULL_W  = DISP_W * 2;
+const DISP_H  = 295;
 
 type BodyView = 'front' | 'back';
 
@@ -264,14 +265,10 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
       </View>
 
       <View style={{ width: DISP_W, height: DISP_H }}>
-        <View style={{ width: DISP_W, height: DISP_H }}>
+        <View style={{ width: DISP_W, height: DISP_H, overflow: 'hidden' }}>
           <Image
-            source={
-              view === 'front'
-                ? require('../../assets/body_front.png')
-                : require('../../assets/body_back.png')
-            }
-            style={{ width: DISP_W, height: DISP_H }}
+            source={require('../../assets/body_diagram_clean.png')}
+            style={{ width: FULL_W, height: DISP_H, marginLeft: view === 'back' ? -DISP_W : 0 }}
             resizeMode="stretch"
           />
         </View>
