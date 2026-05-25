@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, Alert, Modal, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { Text, Button, Divider, List, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -76,6 +76,7 @@ export default function SettingsScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
       <Text variant="headlineMedium" style={styles.title}>More</Text>
       <Divider />
 
@@ -168,6 +169,7 @@ export default function SettingsScreen({ navigation }: Props) {
           </Button>
         </View>
       </List.Section>
+      </ScrollView>
       {/* ExerciseDB API Key Modal */}
       <Modal
         visible={apiKeyModalVisible}
@@ -220,6 +222,7 @@ export default function SettingsScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+  scrollContent: { paddingBottom: 32 },
   title: { padding: 16, fontWeight: 'bold' },
   dangerBtn: { paddingHorizontal: 16, paddingTop: 8 },
   modalOverlay: {

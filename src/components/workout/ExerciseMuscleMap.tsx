@@ -5,30 +5,56 @@ import Svg, { Path } from 'react-native-svg';
 import { MuscleGroup } from './BodyDiagram';
 
 const MUSCLE_TO_REGION: Record<string, MuscleGroup> = {
+  // Chest
   'pectoralis major': 'chest', 'pectoralis major (upper)': 'chest',
   'pectoralis major (lower)': 'chest', 'upper pectoralis': 'chest',
-  'serratus anterior': 'chest',
+  'serratus anterior': 'chest', 'chest': 'chest',
+  'lower chest': 'chest', 'upper chest': 'chest',
+  // Shoulders
   'anterior deltoid': 'shoulders', 'medial deltoid': 'shoulders',
   'lateral deltoid': 'shoulders', 'posterior deltoid': 'shoulders',
-  'rear deltoid': 'shoulders', 'deltoid': 'shoulders',
+  'rear deltoid': 'shoulders', 'deltoid': 'shoulders', 'front deltoid': 'shoulders',
   'rotator cuff': 'shoulders', 'supraspinatus': 'shoulders',
-  'latissimus dorsi': 'back', 'rhomboids': 'back',
+  'shoulders': 'shoulders', 'shoulder girdle': 'shoulders',
+  'shoulder stabilizers': 'shoulders',
+  // Back
+  'latissimus dorsi': 'back', 'lats': 'back', 'rhomboids': 'back',
   'teres major': 'back', 'lower back': 'back', 'erector spinae': 'back',
+  'upper back': 'back', 'middle back': 'back', 'back': 'back',
+  // Traps
   'trapezius': 'traps', 'upper trapezius': 'traps',
   'trapezius (mid/lower)': 'traps', 'trapezius (middle)': 'traps',
+  'middle trapezius': 'traps',
+  // Biceps
   'biceps brachii': 'biceps', 'biceps brachii (long head)': 'biceps',
   'biceps brachii (short head)': 'biceps', 'brachialis': 'biceps',
+  'biceps': 'biceps', 'biceps brachii (long head) (long head)': 'biceps',
+  'arms': 'biceps',
+  // Triceps
   'triceps brachii': 'triceps', 'triceps brachii (long head)': 'triceps',
   'triceps brachii (lateral head)': 'triceps', 'triceps brachii (medial head)': 'triceps',
-  'anconeus': 'triceps',
+  'anconeus': 'triceps', 'triceps': 'triceps',
+  'triceps long head': 'triceps', 'triceps medial head': 'triceps',
+  // Forearms
   'brachioradialis': 'forearms', 'forearms': 'forearms',
+  'forearm flexors': 'forearms', 'grip muscles': 'forearms',
+  // Core
   'rectus abdominis': 'core', 'rectus abdominis (lower)': 'core',
   'obliques': 'core', 'transverse abdominis': 'core',
-  'hip flexors': 'core', 'core': 'core',
+  'hip flexors': 'core', 'core': 'core', 'entire core': 'core',
+  'abdominals': 'core', 'abs': 'core',
+  // Quads / Legs
   'quadriceps': 'quads', 'rectus femoris': 'quads', 'adductors': 'quads',
+  'quads': 'quads', 'legs': 'quads',
+  // Hamstrings
   'hamstrings': 'hamstrings', 'biceps femoris': 'hamstrings',
+  // Calves
   'gastrocnemius': 'calves', 'soleus': 'calves', 'calves': 'calves',
+  'tibialis anterior': 'calves', 'popliteus': 'calves',
+  'ankle stabilizers': 'calves',
+  // Glutes
   'gluteus maximus': 'glutes', 'gluteus medius': 'glutes', 'glutes': 'glutes',
+  'glutes (medius)': 'glutes', 'hip abductors': 'glutes', 'hip stabilizers': 'glutes',
 };
 
 function toRegions(names: string[]): Set<MuscleGroup> {
