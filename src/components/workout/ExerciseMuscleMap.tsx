@@ -10,57 +10,117 @@ import Svg, { Path } from 'react-native-svg';
 type Region = string;
 
 const MUSCLE_TO_REGION: Record<string, Region> = {
-  // ── Chest ────────────────────────────────────────────────────────
+  // ── Chest ─────────────────────────────────────────────────────────────────────
   'pectoralis major': 'chest', 'pectoralis major (upper)': 'chest',
-  'pectoralis major (lower)': 'chest', 'upper pectoralis': 'chest',
-  'chest': 'chest', 'lower chest': 'chest', 'upper chest': 'chest',
-  // ── Serratus (front, side of ribcage) ────────────────────────────
+  'pectoralis major (lower)': 'chest', 'pectoralis minor': 'chest',
+  'upper pectoralis': 'chest', 'chest': 'chest',
+  'lower chest': 'chest', 'upper chest': 'chest',
+  'sternal head': 'chest', 'clavicular head': 'chest',
+
+  // ── Serratus anterior (front, side of ribcage) ────────────────────────────────
   'serratus anterior': 'serratus',
-  // ── Front shoulders (anterior/lateral deltoid – FRONT view only) ─
+
+  // ── Front shoulders: anterior + lateral deltoid (FRONT view only) ────────────
   'anterior deltoid': 'front_shoulders', 'lateral deltoid': 'front_shoulders',
   'medial deltoid': 'front_shoulders',   'front deltoid': 'front_shoulders',
   'deltoid': 'front_shoulders',          'shoulders': 'front_shoulders',
   'shoulder girdle': 'front_shoulders',  'shoulder stabilizers': 'front_shoulders',
-  // ── Back shoulders (posterior/rear deltoid – BACK view only) ─────
-  'posterior deltoid': 'shoulders', 'rear deltoid': 'shoulders',
-  'rotator cuff': 'shoulders',      'supraspinatus': 'shoulders',
-  // ── Back ─────────────────────────────────────────────────────────
-  'latissimus dorsi': 'back', 'lats': 'back', 'rhomboids': 'back',
-  'teres major': 'back', 'lower back': 'back', 'erector spinae': 'back',
-  'upper back': 'back', 'middle back': 'back', 'back': 'back',
-  // ── Traps ────────────────────────────────────────────────────────
-  'trapezius': 'traps', 'upper trapezius': 'traps',
+  'deltoid (anterior head)': 'front_shoulders',
+  'deltoid (lateral head)': 'front_shoulders',
+
+  // ── Back shoulders: posterior deltoid + rotator cuff (BACK view only) ────────
+  'posterior deltoid': 'shoulders',   'rear deltoid': 'shoulders',
+  'rotator cuff': 'shoulders',        'supraspinatus': 'shoulders',
+  'infraspinatus': 'shoulders',       'teres minor': 'shoulders',
+  'subscapularis': 'shoulders',
+  'deltoid (posterior head)': 'shoulders',
+
+  // ── Back ──────────────────────────────────────────────────────────────────────
+  'latissimus dorsi': 'back', 'lats': 'back',
+  'rhomboids': 'back',        'rhomboid major': 'back',  'rhomboid minor': 'back',
+  'teres major': 'back',      'lower back': 'back',      'erector spinae': 'back',
+  'upper back': 'back',       'middle back': 'back',     'back': 'back',
+  'thoracolumbar fascia': 'back', 'multifidus': 'back',
+  'quadratus lumborum': 'back',   'spinal erectors': 'back',
+  'serratus posterior': 'back',
+
+  // ── Traps + Neck (neck muscles map to traps — nearest visible region) ─────────
+  'trapezius': 'traps',           'upper trapezius': 'traps',
   'trapezius (mid/lower)': 'traps', 'trapezius (middle)': 'traps',
-  'middle trapezius': 'traps',
-  // ── Biceps ───────────────────────────────────────────────────────
-  'biceps brachii': 'biceps', 'biceps brachii (long head)': 'biceps',
+  'middle trapezius': 'traps',    'lower trapezius': 'traps',
+  'lower traps': 'traps',         'middle traps': 'traps',
+  'levator scapulae': 'traps',    'sternocleidomastoid': 'traps',
+  'omohyoid': 'traps',            'scalenes': 'traps',
+  'neck': 'traps',                'splenius capitis': 'traps',
+  'suboccipitals': 'traps',       'cervical erectors': 'traps',
+
+  // ── Biceps ────────────────────────────────────────────────────────────────────
+  'biceps brachii': 'biceps',              'biceps brachii (long head)': 'biceps',
   'biceps brachii (short head)': 'biceps', 'brachialis': 'biceps',
-  'biceps': 'biceps', 'arms': 'biceps',
-  // ── Triceps ──────────────────────────────────────────────────────
-  'triceps brachii': 'triceps', 'triceps brachii (long head)': 'triceps',
-  'triceps brachii (lateral head)': 'triceps', 'triceps brachii (medial head)': 'triceps',
+  'biceps': 'biceps',                      'arms': 'biceps',
+  'coracobrachialis': 'biceps',
+
+  // ── Triceps ───────────────────────────────────────────────────────────────────
+  'triceps brachii': 'triceps',               'triceps brachii (long head)': 'triceps',
+  'triceps brachii (lateral head)': 'triceps','triceps brachii (medial head)': 'triceps',
   'anconeus': 'triceps', 'triceps': 'triceps',
-  'triceps long head': 'triceps', 'triceps medial head': 'triceps',
-  // ── Forearms ─────────────────────────────────────────────────────
-  'brachioradialis': 'forearms', 'forearms': 'forearms',
-  'forearm flexors': 'forearms', 'grip muscles': 'forearms',
-  // ── Core (front abs) ─────────────────────────────────────────────
-  'rectus abdominis': 'core', 'rectus abdominis (lower)': 'core',
-  'obliques': 'core', 'transverse abdominis': 'core',
-  'hip flexors': 'core', 'core': 'core', 'entire core': 'core',
-  'abdominals': 'core', 'abs': 'core',
-  // ── Quads / Legs ─────────────────────────────────────────────────
-  'quadriceps': 'quads', 'rectus femoris': 'quads', 'adductors': 'quads',
-  'quads': 'quads', 'legs': 'quads',
-  // ── Hamstrings ───────────────────────────────────────────────────
-  'hamstrings': 'hamstrings', 'biceps femoris': 'hamstrings',
-  // ── Calves ───────────────────────────────────────────────────────
-  'gastrocnemius': 'calves', 'soleus': 'calves', 'calves': 'calves',
-  'tibialis anterior': 'calves', 'popliteus': 'calves',
-  'ankle stabilizers': 'calves',
-  // ── Glutes ───────────────────────────────────────────────────────
-  'gluteus maximus': 'glutes', 'gluteus medius': 'glutes', 'glutes': 'glutes',
-  'glutes (medius)': 'glutes', 'hip abductors': 'glutes', 'hip stabilizers': 'glutes',
+  'triceps long head': 'triceps',   'triceps medial head': 'triceps',
+  'triceps lateral head': 'triceps',
+
+  // ── Forearms (all wrist/hand muscles, from reference image forearm section) ───
+  'brachioradialis': 'forearms',        'forearms': 'forearms',
+  'forearm flexors': 'forearms',        'grip muscles': 'forearms',
+  'pronator teres': 'forearms',         'pronator quadratus': 'forearms',
+  'supinator': 'forearms',
+  'extensor carpi ulnaris': 'forearms', 'flexor carpi ulnaris': 'forearms',
+  'extensor carpi radialis': 'forearms','extensor carpi radialis brevis': 'forearms',
+  'extensor carpi radialis longus': 'forearms', 'flexor carpi radialis': 'forearms',
+  'extensor pollicis brevis': 'forearms','extensor pollicis longus': 'forearms',
+  'abductor pollicis longus': 'forearms','flexor pollicis longus': 'forearms',
+  'flexor digitorum superficialis': 'forearms','flexor digitorum profundus': 'forearms',
+  'extensor digitorum': 'forearms',     'extensor digiti minimi': 'forearms',
+  'palmaris longus': 'forearms',
+  'wrist flexors': 'forearms',          'wrist extensors': 'forearms',
+  'finger flexors': 'forearms',         'finger extensors': 'forearms',
+
+  // ── Core / Abs (front: rectus abdominis + obliques) ──────────────────────────
+  'rectus abdominis': 'core',    'rectus abdominis (lower)': 'core',
+  'obliques': 'core',            'external oblique': 'core',  'external obliques': 'core',
+  'internal oblique': 'core',    'internal obliques': 'core',
+  'transverse abdominis': 'core','transversus abdominis': 'core',
+  'hip flexors': 'core',         'core': 'core',   'entire core': 'core',
+  'abdominals': 'core',          'abs': 'core',
+  'lower abs': 'core',           'upper abs': 'core',
+  'iliopsoas': 'core',           'psoas major': 'core',  'iliacus': 'core',
+  'full body': 'core',
+
+  // ── Quads + Thigh (FRONT view: rectus femoris, vastus heads, adductors) ──────
+  'quadriceps': 'quads',       'rectus femoris': 'quads',
+  'vastus lateralis': 'quads', 'vastus medialis': 'quads', 'vastus intermedius': 'quads',
+  'adductors': 'quads',        'adductor longus': 'quads', 'adductor brevis': 'quads',
+  'adductor magnus': 'quads',  'pectineus': 'quads',
+  'tensor fasciae latae': 'quads', 'iliotibial band': 'quads', 'it band': 'quads',
+  'sartorius': 'quads',        'gracilis': 'quads',
+  'quads': 'quads',            'legs': 'quads',
+
+  // ── Hamstrings (BACK view: biceps femoris, semitendinosus, semimembranosus) ──
+  'hamstrings': 'hamstrings',      'biceps femoris': 'hamstrings',
+  'semitendinosus': 'hamstrings',  'semimembranosus': 'hamstrings',
+
+  // ── Calves (front: tibialis anterior; back: gastrocnemius, soleus, peroneus) ─
+  'gastrocnemius': 'calves',     'soleus': 'calves',     'calves': 'calves',
+  'tibialis anterior': 'calves', 'popliteus': 'calves',  'ankle stabilizers': 'calves',
+  'peroneus longus': 'calves',   'peroneus brevis': 'calves',
+  'fibularis longus': 'calves',  'fibularis brevis': 'calves',
+  'flexor hallucis longus': 'calves',   'flexor digitorum longus': 'calves',
+  'extensor digitorum longus': 'calves','extensor hallucis longus': 'calves',
+  'tibialis posterior': 'calves',
+
+  // ── Glutes (BACK view: gluteus maximus, medius, minimus; deep hip rotators) ──
+  'gluteus maximus': 'glutes',  'gluteus medius': 'glutes', 'gluteus minimus': 'glutes',
+  'glutes': 'glutes',           'glutes (medius)': 'glutes',
+  'hip abductors': 'glutes',    'hip stabilizers': 'glutes',
+  'piriformis': 'glutes',       'deep hip rotators': 'glutes',
 };
 
 function toRegions(names: string[]): Set<Region> {
