@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Image, ActivityIndicator } from 'react-native';
 import { Text, Chip, Divider, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,6 +9,7 @@ import { EXERCISES, CATEGORY_LABELS } from '@/constants/exercises';
 import ExerciseMuscleMap from '@/components/workout/ExerciseMuscleMap';
 import { getAppSetting } from '@/db/mealSlotsDao';
 import { useDatabase } from '@/context/DatabaseContext';
+import * as FileSystem from 'expo-file-system';
 
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'ExerciseDetail'>;
 
@@ -104,18 +105,17 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           return;
         }
 
-        // ExerciseDB v2 gifUrls require the API key to access. Fetch with
-        // auth headers and convert to a base64 data URI so <Image> can show it.
-        const imgRes = await fetch(rawGif, { headers });
-        if (!imgRes.ok) throw new Error(`gif ${imgRes.status}`);
-        const blob = await imgRes.blob();
-        const dataUri: string = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-        if (!cancelled) setGifUrl(dataUri);
+        // ExerciseDB v2 gifUrls require the API key header to access.
+        // FileReader is not available in Hermes — use expo-file-system instead.
+        const localUri = `${FileSystem.cacheDirectory}exercise_${exercise.id}.gif`;
+        const cached = await FileSystem.getInfoAsync(localUri);
+        if (cached.exists) {
+          if (!cancelled) setGifUrl(localUri);
+          return;
+        }
+        const dl = await FileSystem.downloadAsync(rawGif, localUri, { headers });
+        if (dl.status !== 200) throw new Error(`gif ${dl.status}`);
+        if (!cancelled) setGifUrl(dl.uri);
       } catch (e: any) {
         if (!cancelled) setGifError(`Could not load animation (${e?.message ?? 'error'}).`);
       } finally {
