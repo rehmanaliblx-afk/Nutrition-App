@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Image, ActivityIndicator } from 'react-native';
 import { Text, Chip, Divider, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -38,6 +38,12 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
   const [gifLoading, setGifLoading] = useState(false);
   const [gifError, setGifError] = useState<string | null>(null);
   const [apiKeyMissing, setApiKeyMissing] = useState(false);
+  const [fetchKey, setFetchKey] = useState(0);
+
+  // Re-trigger fetch when screen comes back into focus (e.g. after saving API key)
+  useEffect(() => {
+    return navigation.addListener('focus', () => setFetchKey((k) => k + 1));
+  }, [navigation]);
 
   useEffect(() => {
     if (!isReady || !exercise) return;
@@ -50,6 +56,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
         return;
       }
       setApiKeyMissing(false);
+      if (gifUrl) return; // already loaded
       setGifLoading(true);
       setGifError(null);
       try {
@@ -64,21 +71,23 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           }
         );
         if (!res.ok) throw new Error(`API error ${res.status}`);
-        const data: ExerciseDBResult[] = await res.json();
-        if (!cancelled && data.length > 0) {
-          setGifUrl(data[0].gifUrl);
+        const json = await res.json();
+        // ExerciseDB v2 wraps results: { success, data: [...] }; v1 returned plain array
+        const items: ExerciseDBResult[] = Array.isArray(json) ? json : (json.data ?? []);
+        if (!cancelled && items.length > 0) {
+          setGifUrl(items[0].gifUrl);
         } else if (!cancelled) {
           setGifError('No animation found for this exercise.');
         }
       } catch (e: any) {
-        if (!cancelled) setGifError('Could not load animation. Check internet connection.');
+        if (!cancelled) setGifError('Could not load animation.');
       } finally {
         if (!cancelled) setGifLoading(false);
       }
     })();
 
     return () => { cancelled = true; };
-  }, [isReady, exercise]);
+  }, [isReady, exercise, fetchKey]);
 
   if (!exercise) {
     return (
