@@ -135,11 +135,12 @@ function toRegions(names: string[]): Set<Region> {
   return result;
 }
 
-// Image: 713×678 (front body LEFT half, back body RIGHT half).
-// body_diagram_clean.png — clean diagram, no labels.
-// Paths extracted by pixel-level flood-fill contour tracing, scaled to 155×295.
+// Two separate clean anatomical images, no labels.
+// body_front.png: 613×1168 crop centred at 59.4% of width → figure at x=92/155.
+// body_back.png:  629×1198 crop centred at 47.7% of width → figure at x=74/155.
+// Both render at 155×295 with uniform scale ~0.253, keeping SVG paths calibrated.
 const DISP_W = 155;
-const FULL_W  = DISP_W * 2;
+const FULL_W  = DISP_W * 2;   // kept for layout only
 const DISP_H  = 295;
 
 type BodyView = 'front' | 'back';
@@ -265,10 +266,12 @@ export default function ExerciseMuscleMap({ primaryMuscles, secondaryMuscles, st
       </View>
 
       <View style={{ width: DISP_W, height: DISP_H }}>
-        <View style={{ width: DISP_W, height: DISP_H, overflow: 'hidden' }}>
+        <View style={{ width: DISP_W, height: DISP_H }}>
           <Image
-            source={require('../../assets/body_diagram_clean.png')}
-            style={{ width: FULL_W, height: DISP_H, marginLeft: view === 'back' ? -DISP_W : 0 }}
+            source={view === 'front'
+              ? require('../../assets/body_front.png')
+              : require('../../assets/body_back.png')}
+            style={{ width: DISP_W, height: DISP_H }}
             resizeMode="stretch"
           />
         </View>
