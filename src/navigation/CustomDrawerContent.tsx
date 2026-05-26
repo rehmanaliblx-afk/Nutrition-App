@@ -14,28 +14,31 @@ type NavItem = {
 };
 
 const NUTRITION_ITEMS: NavItem[] = [
-  { label: 'Dashboard', icon: 'home', stack: 'Nutrition', screen: 'Dashboard' },
-  { label: 'Daily Log', icon: 'journal', stack: 'Nutrition', screen: 'DailyLog' },
-  { label: 'Ingredients', icon: 'nutrition', stack: 'Nutrition', screen: 'IngredientList' },
-  { label: 'Recipes', icon: 'restaurant', stack: 'Nutrition', screen: 'RecipeList' },
-  { label: 'History & Charts', icon: 'bar-chart', stack: 'Nutrition', screen: 'History' },
-  { label: 'Weekly Report', icon: 'stats-chart', stack: 'Nutrition', screen: 'WeeklyReport' },
-  { label: 'Body Measurements', icon: 'body', stack: 'Nutrition', screen: 'BodyMeasurements' },
-  { label: 'Meal Templates', icon: 'copy', stack: 'Nutrition', screen: 'MealTemplates' },
-  { label: 'Macro Calculator', icon: 'calculator', stack: 'Nutrition', screen: 'MacroRecommendations' },
-  { label: 'Micronutrients', icon: 'flask', stack: 'Nutrition', screen: 'Micronutrients' },
-  { label: 'My Supplements', icon: 'medkit', stack: 'Nutrition', screen: 'Supplements' },
-  { label: 'Settings', icon: 'settings', stack: 'Nutrition', screen: 'SettingsHome' },
+  { label: 'Dashboard',        icon: 'home',        stack: 'Nutrition', screen: 'Dashboard' },
+  { label: 'Daily Log',        icon: 'journal',     stack: 'Nutrition', screen: 'DailyLog' },
+  { label: 'Ingredients',      icon: 'nutrition',   stack: 'Nutrition', screen: 'IngredientList' },
+  { label: 'Recipes',          icon: 'restaurant',  stack: 'Nutrition', screen: 'RecipeList' },
+  { label: 'Meal Templates',   icon: 'copy',        stack: 'Nutrition', screen: 'MealTemplates' },
+  { label: 'Macro Calculator', icon: 'calculator',  stack: 'Nutrition', screen: 'MacroRecommendations' },
+  { label: 'Micronutrients',   icon: 'flask',       stack: 'Nutrition', screen: 'Micronutrients' },
+  { label: 'My Supplements',   icon: 'medkit',      stack: 'Nutrition', screen: 'Supplements' },
 ];
 
 const WORKOUT_ITEMS: NavItem[] = [
-  { label: 'Exercise Library', icon: 'barbell', stack: 'Workout', screen: 'ExerciseLibrary' },
-  { label: 'Workout Plans', icon: 'list', stack: 'Workout', screen: 'WorkoutPlans' },
-  { label: 'Weight Log', icon: 'scale', stack: 'Workout', screen: 'WeightLog' },
-  { label: 'Workout History', icon: 'calendar', stack: 'Workout', screen: 'WorkoutHistory' },
-  { label: 'Workout Generator', icon: 'flash', stack: 'Workout', screen: 'WorkoutGenerator' },
-  { label: '1RM Calculator', icon: 'trophy', stack: 'Workout', screen: 'OneRMCalculator' },
-  { label: 'Recovery Insights', icon: 'moon', stack: 'Workout', screen: 'RecoveryInsights' },
+  { label: 'Exercise Library',   icon: 'barbell',  stack: 'Workout',   screen: 'ExerciseLibrary' },
+  { label: 'Workout Plans',      icon: 'list',     stack: 'Workout',   screen: 'WorkoutPlans' },
+  { label: 'Weight Log',         icon: 'scale',    stack: 'Workout',   screen: 'WeightLog' },
+  { label: 'Workout Generator',  icon: 'flash',    stack: 'Workout',   screen: 'WorkoutGenerator' },
+  { label: '1RM Calculator',     icon: 'trophy',   stack: 'Workout',   screen: 'OneRMCalculator' },
+  { label: 'Recovery Insights',  icon: 'moon',     stack: 'Workout',   screen: 'RecoveryInsights' },
+  { label: 'Body Measurements',  icon: 'body',     stack: 'Nutrition', screen: 'BodyMeasurements' },
+];
+
+const HISTORY_ITEMS: NavItem[] = [
+  { label: 'Nutrition History', icon: 'bar-chart',   stack: 'Nutrition', screen: 'History' },
+  { label: 'Weekly Report',     icon: 'stats-chart', stack: 'Nutrition', screen: 'WeeklyReport' },
+  { label: 'Workout History',   icon: 'calendar',    stack: 'Workout',   screen: 'WorkoutHistory' },
+  { label: 'Settings',          icon: 'settings',    stack: 'Nutrition', screen: 'SettingsHome' },
 ];
 
 export default function CustomDrawerContent(props: DrawerContentComponentProps) {
@@ -121,6 +124,8 @@ export default function CustomDrawerContent(props: DrawerContentComponentProps) 
         {renderSection('NUTRITION', 'nutrition', NUTRITION_ITEMS)}
         <Divider style={styles.divider} />
         {renderSection('WORKOUT', 'barbell', WORKOUT_ITEMS)}
+        <Divider style={styles.divider} />
+        {renderSection('HISTORY & SETTINGS', 'time', HISTORY_ITEMS)}
       </ScrollView>
     </DrawerContentScrollView>
   );
