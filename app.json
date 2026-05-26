@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Nutrition-App",
-    "slug": "nutrition-app",
+    "name": "FitTrack",
+    "slug": "fittrack",
     "owner": "rehmanali5018",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a1a3c"
     },
     "ios": {
       "supportsTablet": true
@@ -20,7 +20,7 @@
       "package": "com.rehmanali5018.nutritionapp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1a1a3c"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
@@ -31,7 +31,7 @@
     "plugins": [
       [
         "expo-camera",
-        { "cameraPermission": "Allow Nutrition App to access your camera to scan food barcodes." }
+        { "cameraPermission": "Allow FitTrack to access your camera to scan food barcodes." }
       ],
       "expo-document-picker"
     ],
