@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Image, ActivityIndicator } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Image } from 'react-native';
 import { Text, Chip, Divider, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,124 +7,36 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WorkoutStackParamList } from '@/navigation/types';
 import { EXERCISES, CATEGORY_LABELS } from '@/constants/exercises';
 import ExerciseMuscleMap from '@/components/workout/ExerciseMuscleMap';
-import { getAppSetting } from '@/db/mealSlotsDao';
-import { useDatabase } from '@/context/DatabaseContext';
-import * as FileSystem from 'expo-file-system';
 
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'ExerciseDetail'>;
 
 const DIFFICULTY_COLORS = {
-  beginner: '#4CAF50',
+  beginner:     '#4CAF50',
   intermediate: '#FF9800',
-  advanced: '#F44336',
+  advanced:     '#F44336',
 };
 
 const MUSCLE_COLORS = {
-  primary: '#E53935',
-  secondary: '#FB8C00',
+  primary:    '#E53935',
+  secondary:  '#FB8C00',
   stabilizer: '#43A047',
 };
 
-interface ExerciseDBResult {
-  gifUrl: string;
-  name: string;
+function getYouTubeId(url: string): string | null {
+  const m = url.match(/(?:v=|youtu\.be\/|\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return m ? m[1] : null;
 }
 
 export default function ExerciseDetailScreen({ route, navigation }: Props) {
   const theme = useTheme();
-  const { isReady } = useDatabase();
   const exercise = EXERCISES.find((e) => e.id === route.params.exerciseId);
 
-  const [gifUrl, setGifUrl] = useState<string | null>(null);
-  const [gifLoading, setGifLoading] = useState(false);
-  const [gifError, setGifError] = useState<string | null>(null);
-  const [apiKeyMissing, setApiKeyMissing] = useState(false);
-  const [fetchKey, setFetchKey] = useState(0);
-
-  // Re-trigger fetch when screen comes back into focus (e.g. after saving API key)
-  useEffect(() => {
-    return navigation.addListener('focus', () => setFetchKey((k) => k + 1));
-  }, [navigation]);
-
-  useEffect(() => {
-    if (!isReady || !exercise) return;
-    let cancelled = false;
-
-    (async () => {
-      const key = await getAppSetting('exercisedb_api_key');
-      if (!key) {
-        setApiKeyMissing(true);
-        return;
-      }
-      setApiKeyMissing(false);
-      if (gifUrl) return; // already loaded
-      setGifLoading(true);
-      setGifError(null);
-
-      const headers = {
-        'x-rapidapi-key': key,
-        'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
-      };
-
-      try {
-        // Try exact name first, then a relaxed search (spaces, no punctuation)
-        const candidates = [
-          exercise.name.toLowerCase(),
-          exercise.name.toLowerCase().replace(/[^a-z0-9 ]/g, ''),
-          exercise.name.toLowerCase().split(' ')[0],
-        ];
-
-        let rawGif: string | null = null;
-        let lastStatus = 0;
-        for (const cand of candidates) {
-          const res = await fetch(
-            `https://exercisedb.p.rapidapi.com/exercises/name/${encodeURIComponent(cand)}?limit=1&offset=0`,
-            { headers }
-          );
-          lastStatus = res.status;
-          if (!res.ok) continue;
-          const json = await res.json();
-          // v2 wraps results: { success, data:[...] }; v1 returned a plain array
-          const items: ExerciseDBResult[] = Array.isArray(json) ? json : (json.data ?? []);
-          if (items.length > 0 && items[0].gifUrl) {
-            rawGif = items[0].gifUrl;
-            break;
-          }
-        }
-
-        if (!rawGif) {
-          if (!cancelled) {
-            setGifError(
-              lastStatus === 401 || lastStatus === 403
-                ? 'API key rejected (check key / subscription).'
-                : lastStatus === 429
-                ? 'Daily request limit reached.'
-                : 'No animation found for this exercise.'
-            );
-          }
-          return;
-        }
-
-        // ExerciseDB v2 gifUrls require the API key header to access.
-        // FileReader is not available in Hermes — use expo-file-system instead.
-        const localUri = `${FileSystem.cacheDirectory}exercise_${exercise.id}.gif`;
-        const cached = await FileSystem.getInfoAsync(localUri);
-        if (cached.exists) {
-          if (!cancelled) setGifUrl(localUri);
-          return;
-        }
-        const dl = await FileSystem.downloadAsync(rawGif, localUri, { headers });
-        if (dl.status !== 200) throw new Error(`gif ${dl.status}`);
-        if (!cancelled) setGifUrl(dl.uri);
-      } catch (e: any) {
-        if (!cancelled) setGifError(`Could not load animation (${e?.message ?? 'error'}).`);
-      } finally {
-        if (!cancelled) setGifLoading(false);
-      }
-    })();
-
-    return () => { cancelled = true; };
-  }, [isReady, exercise, fetchKey]);
+  const openVideo = useCallback(async () => {
+    if (!exercise) return;
+    const supported = await Linking.canOpenURL(exercise.videoUrl);
+    if (supported) Linking.openURL(exercise.videoUrl);
+    else Alert.alert('Cannot open URL', exercise.videoUrl);
+  }, [exercise?.videoUrl]);
 
   if (!exercise) {
     return (
@@ -135,15 +47,8 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
   }
 
   const alternatives = EXERCISES.filter((e) => exercise.alternatives.includes(e.id));
-
-  const openVideo = useCallback(async () => {
-    const supported = await Linking.canOpenURL(exercise.videoUrl);
-    if (supported) {
-      Linking.openURL(exercise.videoUrl);
-    } else {
-      Alert.alert('Cannot open URL', exercise.videoUrl);
-    }
-  }, [exercise.videoUrl]);
+  const ytId        = getYouTubeId(exercise.videoUrl);
+  const thumbUri    = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null;
 
   const SectionCard = ({
     icon,
@@ -169,7 +74,8 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: theme.colors.background }]} edges={['bottom']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Hero */}
+
+        {/* ── Hero ── */}
         <View style={[styles.hero, { backgroundColor: theme.colors.primary }]}>
           <Text variant="headlineSmall" style={styles.heroName}>{exercise.name}</Text>
           <View style={styles.heroBadges}>
@@ -186,60 +92,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           </View>
         </View>
 
-        {/* Muscle Map + GIF side by side layout */}
-        <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
-          <View style={styles.mapGifRow}>
-            {/* Left: SVG muscle map */}
-            <View style={styles.mapCol}>
-              <ExerciseMuscleMap
-                primaryMuscles={exercise.primaryMuscles}
-                secondaryMuscles={exercise.secondaryMuscles}
-                stabilizerMuscles={exercise.stabilizerMuscles}
-              />
-            </View>
-
-            {/* Right: GIF animation */}
-            <View style={styles.gifCol}>
-              <Text variant="labelSmall" style={[styles.gifLabel, { color: theme.colors.onSurfaceVariant }]}>
-                EXERCISE ANIMATION
-              </Text>
-              {gifLoading && (
-                <View style={styles.gifPlaceholder}>
-                  <ActivityIndicator color={theme.colors.primary} />
-                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8, textAlign: 'center' }}>
-                    Loading…
-                  </Text>
-                </View>
-              )}
-              {!gifLoading && gifUrl && (
-                <Image
-                  source={{ uri: gifUrl }}
-                  style={styles.gif}
-                  resizeMode="contain"
-                  onError={() => { setGifUrl(null); setGifError('Image failed to display.'); }}
-                />
-              )}
-              {!gifLoading && gifError && (
-                <View style={styles.gifPlaceholder}>
-                  <Ionicons name="cloud-offline-outline" size={28} color={theme.colors.onSurfaceVariant} />
-                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 6, textAlign: 'center' }}>
-                    {gifError}
-                  </Text>
-                </View>
-              )}
-              {!gifLoading && apiKeyMissing && (
-                <View style={styles.gifPlaceholder}>
-                  <Ionicons name="key-outline" size={28} color={theme.colors.onSurfaceVariant} />
-                  <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 6, textAlign: 'center' }}>
-                    Add ExerciseDB API key in Settings to see animations
-                  </Text>
-                </View>
-              )}
-            </View>
-          </View>
-        </Surface>
-
-        {/* Target Muscles — keep existing UI unchanged */}
+        {/* ── 1. Target Muscles ── */}
         <SectionCard icon="body" title="Target Muscles">
           <View style={styles.muscleGroup}>
             <Text variant="labelSmall" style={{ color: MUSCLE_COLORS.primary, fontWeight: '700', marginBottom: 6 }}>
@@ -247,9 +100,8 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
             </Text>
             <View style={styles.chips}>
               {exercise.primaryMuscles.map((m) => (
-                <Chip key={m} style={[styles.muscleChip, { backgroundColor: MUSCLE_COLORS.primary + '20' }]} textStyle={{ color: MUSCLE_COLORS.primary, fontSize: 12 }}>
-                  {m}
-                </Chip>
+                <Chip key={m} style={[styles.muscleChip, { backgroundColor: MUSCLE_COLORS.primary + '20' }]}
+                  textStyle={{ color: MUSCLE_COLORS.primary, fontSize: 12 }}>{m}</Chip>
               ))}
             </View>
           </View>
@@ -260,9 +112,8 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
               </Text>
               <View style={styles.chips}>
                 {exercise.secondaryMuscles.map((m) => (
-                  <Chip key={m} style={[styles.muscleChip, { backgroundColor: MUSCLE_COLORS.secondary + '20' }]} textStyle={{ color: MUSCLE_COLORS.secondary, fontSize: 12 }}>
-                    {m}
-                  </Chip>
+                  <Chip key={m} style={[styles.muscleChip, { backgroundColor: MUSCLE_COLORS.secondary + '20' }]}
+                    textStyle={{ color: MUSCLE_COLORS.secondary, fontSize: 12 }}>{m}</Chip>
                 ))}
               </View>
             </View>
@@ -274,16 +125,60 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
               </Text>
               <View style={styles.chips}>
                 {exercise.stabilizerMuscles.map((m) => (
-                  <Chip key={m} style={[styles.muscleChip, { backgroundColor: MUSCLE_COLORS.stabilizer + '20' }]} textStyle={{ color: MUSCLE_COLORS.stabilizer, fontSize: 12 }}>
-                    {m}
-                  </Chip>
+                  <Chip key={m} style={[styles.muscleChip, { backgroundColor: MUSCLE_COLORS.stabilizer + '20' }]}
+                    textStyle={{ color: MUSCLE_COLORS.stabilizer, fontSize: 12 }}>{m}</Chip>
                 ))}
               </View>
             </View>
           )}
         </SectionCard>
 
-        {/* Technique */}
+        {/* ── 2. Muscle Map (full width) ── */}
+        <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="fitness" size={18} color={theme.colors.primary} />
+            <Text variant="titleSmall" style={[styles.cardTitle, { color: theme.colors.primary }]}>
+              Muscle Map
+            </Text>
+          </View>
+          <Divider style={{ marginBottom: 12 }} />
+          <ExerciseMuscleMap
+            primaryMuscles={exercise.primaryMuscles}
+            secondaryMuscles={exercise.secondaryMuscles}
+            stabilizerMuscles={exercise.stabilizerMuscles}
+          />
+        </Surface>
+
+        {/* ── 3. Exercise Animation (YouTube thumbnail, full width) ── */}
+        <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
+          <View style={styles.cardHeader}>
+            <Ionicons name="play-circle" size={18} color={theme.colors.primary} />
+            <Text variant="titleSmall" style={[styles.cardTitle, { color: theme.colors.primary }]}>
+              Exercise Animation
+            </Text>
+          </View>
+          <Divider style={{ marginBottom: 12 }} />
+          <TouchableOpacity onPress={openVideo} activeOpacity={0.85} style={styles.thumbWrap}>
+            {thumbUri ? (
+              <Image source={{ uri: thumbUri }} style={styles.thumb} resizeMode="cover" />
+            ) : (
+              <View style={[styles.thumb, styles.thumbFallback, { backgroundColor: theme.colors.surfaceVariant }]}>
+                <Ionicons name="videocam-outline" size={40} color={theme.colors.onSurfaceVariant} />
+              </View>
+            )}
+            {/* Play button overlay */}
+            <View style={styles.playOverlay}>
+              <View style={styles.playBtn}>
+                <Ionicons name="logo-youtube" size={28} color="#fff" />
+              </View>
+            </View>
+            <View style={[styles.watchLabel, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
+              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>Tap to watch on YouTube</Text>
+            </View>
+          </TouchableOpacity>
+        </Surface>
+
+        {/* ── 4. Technique ── */}
         <SectionCard icon="list" title="Technique">
           {exercise.technique.map((step, i) => (
             <View key={i} style={styles.stepRow}>
@@ -297,7 +192,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           ))}
         </SectionCard>
 
-        {/* Tips */}
+        {/* ── 5. Coaching Tips ── */}
         <SectionCard icon="bulb" title="Coaching Tips">
           {exercise.tips.map((tip, i) => (
             <View key={i} style={styles.tipRow}>
@@ -309,7 +204,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           ))}
         </SectionCard>
 
-        {/* Common Mistakes */}
+        {/* ── 6. Common Mistakes ── */}
         <SectionCard icon="warning" title="Common Mistakes">
           {exercise.commonMistakes.map((m, i) => (
             <View key={i} style={styles.tipRow}>
@@ -321,18 +216,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           ))}
         </SectionCard>
 
-        {/* Video */}
-        <TouchableOpacity
-          style={[styles.videoBtn, { backgroundColor: '#FF0000' }]}
-          onPress={openVideo}
-          activeOpacity={0.8}
-        >
-          <Ionicons name="logo-youtube" size={24} color="#fff" />
-          <Text style={styles.videoBtnText}>Watch on YouTube</Text>
-          <Ionicons name="open-outline" size={18} color="rgba(255,255,255,0.8)" />
-        </TouchableOpacity>
-
-        {/* Alternatives */}
+        {/* ── 7. Alternatives ── */}
         {alternatives.length > 0 && (
           <SectionCard icon="swap-horizontal" title="Alternative Exercises">
             {alternatives.map((alt) => (
@@ -354,62 +238,67 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
             ))}
           </SectionCard>
         )}
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  root:    { flex: 1 },
+  center:  { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { paddingBottom: 32 },
-  hero: { padding: 24, paddingBottom: 28 },
-  heroName: { color: '#fff', fontWeight: '800', marginBottom: 12 },
-  heroBadges: { flexDirection: 'row', gap: 8, marginBottom: 10 },
-  diffBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  diffText: { color: '#fff', fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
-  catBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
-  catText: { color: '#fff', fontSize: 11, fontWeight: '600' },
-  equipRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  equipText: { color: 'rgba(255,255,255,0.8)', fontSize: 13 },
-  card: { marginHorizontal: 16, marginTop: 16, borderRadius: 16, padding: 16 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  cardTitle: { fontWeight: '700', letterSpacing: 0.3 },
 
-  // Map + GIF row
-  mapGifRow: { flexDirection: 'row', gap: 12 },
-  mapCol: { flex: 1, alignItems: 'center' },
-  gifCol: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  gifLabel: { fontWeight: '700', marginBottom: 8, letterSpacing: 0.4 },
-  gif: { width: '100%', aspectRatio: 1, borderRadius: 10 },
-  gifPlaceholder: {
-    width: '100%',
-    aspectRatio: 1,
-    borderRadius: 10,
-    backgroundColor: 'rgba(128,128,128,0.08)',
+  hero:       { padding: 24, paddingBottom: 28 },
+  heroName:   { color: '#fff', fontWeight: '800', marginBottom: 12 },
+  heroBadges: { flexDirection: 'row', gap: 8, marginBottom: 10 },
+  diffBadge:  { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  diffText:   { color: '#fff', fontSize: 11, fontWeight: '700', letterSpacing: 0.5 },
+  catBadge:   { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 12 },
+  catText:    { color: '#fff', fontSize: 11, fontWeight: '600' },
+  equipRow:   { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  equipText:  { color: 'rgba(255,255,255,0.8)', fontSize: 13 },
+
+  card:       { marginHorizontal: 16, marginTop: 16, borderRadius: 16, padding: 16 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  cardTitle:  { fontWeight: '700', letterSpacing: 0.3 },
+
+  // YouTube thumbnail
+  thumbWrap:  { borderRadius: 12, overflow: 'hidden', position: 'relative' },
+  thumb:      { width: '100%', height: 200, borderRadius: 12 },
+  thumbFallback: { alignItems: 'center', justifyContent: 'center' },
+  playOverlay: {
+    ...StyleSheet.absoluteFillObject,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 12,
+  },
+  playBtn: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(255,0,0,0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  watchLabel: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    alignItems: 'center',
   },
 
   muscleGroup: {},
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  muscleChip: { borderRadius: 8 },
-  stepRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, gap: 12 },
-  stepNum: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  chips:       { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  muscleChip:  { borderRadius: 8 },
+
+  stepRow:     { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10, gap: 12 },
+  stepNum:     { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   stepNumText: { fontWeight: '700', fontSize: 13 },
-  stepText: { flex: 1, lineHeight: 22 },
-  tipRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 },
-  videoBtn: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    borderRadius: 14,
-    paddingVertical: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  videoBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  stepText:    { flex: 1, lineHeight: 22 },
+  tipRow:      { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 10 },
+
   altRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1 },
 });
