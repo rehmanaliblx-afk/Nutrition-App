@@ -1,0 +1,33 @@
+name: Fetch Exercise GIF URLs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fetch-gifs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: claude/api-response-error-ZxyrV
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Fetch GIF URLs
+        env:
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+        run: python scripts/fetch_exercise_gifs.py
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          cp scripts/exercise_gifs.json src/constants/exercise_gifs.json
+          git add src/constants/exercise_gifs.json
+          git diff --cached --quiet || git commit -m "Add exercise GIF URLs from ExerciseDB"
+          git push origin claude/api-response-error-ZxyrV
