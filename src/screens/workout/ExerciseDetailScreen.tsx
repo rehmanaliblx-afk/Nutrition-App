@@ -1,5 +1,5 @@
-import React, { useCallback } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Image } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert, Image, ActivityIndicator } from 'react-native';
 import { Text, Chip, Divider, Surface, useTheme } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { WorkoutStackParamList } from '@/navigation/types';
 import { EXERCISES, CATEGORY_LABELS } from '@/constants/exercises';
 import ExerciseMuscleMap from '@/components/workout/ExerciseMuscleMap';
+import * as FileSystem from 'expo-file-system';
 
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'ExerciseDetail'>;
 
@@ -31,6 +32,51 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
   const theme = useTheme();
   const exercise = EXERCISES.find((e) => e.id === route.params.exerciseId);
 
+  const [gifUri, setGifUri]       = useState<string | null>(null);
+  const [gifLoading, setGifLoading] = useState(false);
+  const [gifError, setGifError]   = useState(false);
+
+  useEffect(() => {
+    if (!exercise) return;
+    let cancelled = false;
+
+    (async () => {
+      // 1. Check local cache first
+      const cacheFile = `${FileSystem.cacheDirectory}exgif_${exercise.id}.gif`;
+      const info = await FileSystem.getInfoAsync(cacheFile);
+      if (info.exists) {
+        if (!cancelled) setGifUri(cacheFile);
+        return;
+      }
+
+      // 2. Fetch from oss.exercisedb.dev (free, no API key)
+      setGifLoading(true);
+      try {
+        const name = exercise.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
+        const res = await fetch(
+          `https://oss.exercisedb.dev/api/v1/exercises/name/${encodeURIComponent(name)}?limit=1`,
+          { headers: { 'Accept': 'application/json' } }
+        );
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const json = await res.json();
+        const items = Array.isArray(json) ? json : (json.data ?? json.exercises ?? []);
+        const gifUrl: string | undefined = items[0]?.gifUrl;
+        if (!gifUrl) throw new Error('no gif');
+
+        // 3. Download and cache gif
+        const dl = await FileSystem.downloadAsync(gifUrl, cacheFile);
+        if (dl.status !== 200) throw new Error(`dl ${dl.status}`);
+        if (!cancelled) setGifUri(dl.uri);
+      } catch {
+        if (!cancelled) setGifError(true);
+      } finally {
+        if (!cancelled) setGifLoading(false);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [exercise?.id]);
+
   const openVideo = useCallback(async () => {
     if (!exercise) return;
     const supported = await Linking.canOpenURL(exercise.videoUrl);
@@ -39,32 +85,20 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
   }, [exercise?.videoUrl]);
 
   if (!exercise) {
-    return (
-      <View style={styles.center}>
-        <Text>Exercise not found.</Text>
-      </View>
-    );
+    return <View style={styles.center}><Text>Exercise not found.</Text></View>;
   }
 
   const alternatives = EXERCISES.filter((e) => exercise.alternatives.includes(e.id));
-  const ytId        = getYouTubeId(exercise.videoUrl);
-  const thumbUri    = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null;
+  const ytId = getYouTubeId(exercise.videoUrl);
+  const thumbUri = ytId ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null;
 
   const SectionCard = ({
-    icon,
-    title,
-    children,
-  }: {
-    icon: React.ComponentProps<typeof Ionicons>['name'];
-    title: string;
-    children: React.ReactNode;
-  }) => (
+    icon, title, children,
+  }: { icon: React.ComponentProps<typeof Ionicons>['name']; title: string; children: React.ReactNode }) => (
     <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
       <View style={styles.cardHeader}>
         <Ionicons name={icon} size={18} color={theme.colors.primary} />
-        <Text variant="titleSmall" style={[styles.cardTitle, { color: theme.colors.primary }]}>
-          {title}
-        </Text>
+        <Text variant="titleSmall" style={[styles.cardTitle, { color: theme.colors.primary }]}>{title}</Text>
       </View>
       <Divider style={{ marginBottom: 12 }} />
       {children}
@@ -149,7 +183,7 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           />
         </Surface>
 
-        {/* ── 3. Exercise Animation (YouTube thumbnail, full width) ── */}
+        {/* ── 3. Exercise Animation ── */}
         <Surface style={[styles.card, { backgroundColor: theme.colors.surface }]} elevation={1}>
           <View style={styles.cardHeader}>
             <Ionicons name="play-circle" size={18} color={theme.colors.primary} />
@@ -158,24 +192,53 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
             </Text>
           </View>
           <Divider style={{ marginBottom: 12 }} />
-          <TouchableOpacity onPress={openVideo} activeOpacity={0.85} style={styles.thumbWrap}>
-            {thumbUri ? (
-              <Image source={{ uri: thumbUri }} style={styles.thumb} resizeMode="cover" />
-            ) : (
-              <View style={[styles.thumb, styles.thumbFallback, { backgroundColor: theme.colors.surfaceVariant }]}>
-                <Ionicons name="videocam-outline" size={40} color={theme.colors.onSurfaceVariant} />
-              </View>
-            )}
-            {/* Play button overlay */}
-            <View style={styles.playOverlay}>
-              <View style={styles.playBtn}>
-                <Ionicons name="logo-youtube" size={28} color="#fff" />
-              </View>
+
+          {/* GIF from oss.exercisedb.dev (cached locally after first load) */}
+          {gifLoading && (
+            <View style={styles.animBox}>
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+              <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 10 }}>
+                Loading animation…
+              </Text>
             </View>
-            <View style={[styles.watchLabel, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>Tap to watch on YouTube</Text>
-            </View>
-          </TouchableOpacity>
+          )}
+
+          {!gifLoading && gifUri && (
+            <Image source={{ uri: gifUri }} style={styles.gif} resizeMode="contain" />
+          )}
+
+          {/* Fallback: YouTube thumbnail when gif unavailable */}
+          {!gifLoading && gifError && (
+            <TouchableOpacity onPress={openVideo} activeOpacity={0.85} style={styles.thumbWrap}>
+              {thumbUri ? (
+                <Image source={{ uri: thumbUri }} style={styles.thumb} resizeMode="cover" />
+              ) : (
+                <View style={[styles.thumb, styles.thumbFallback, { backgroundColor: theme.colors.surfaceVariant }]}>
+                  <Ionicons name="videocam-outline" size={40} color={theme.colors.onSurfaceVariant} />
+                </View>
+              )}
+              <View style={styles.playOverlay}>
+                <View style={styles.playBtn}>
+                  <Ionicons name="logo-youtube" size={28} color="#fff" />
+                </View>
+              </View>
+              <View style={[styles.watchLabel, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
+                <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>Tap to watch on YouTube</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {/* YouTube button always shown below gif */}
+          {!gifLoading && gifUri && (
+            <TouchableOpacity
+              style={[styles.ytBtn, { backgroundColor: '#FF0000' }]}
+              onPress={openVideo}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="logo-youtube" size={18} color="#fff" />
+              <Text style={styles.ytBtnText}>Watch on YouTube</Text>
+            </TouchableOpacity>
+          )}
         </Surface>
 
         {/* ── 4. Technique ── */}
@@ -263,7 +326,12 @@ const styles = StyleSheet.create({
   cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
   cardTitle:  { fontWeight: '700', letterSpacing: 0.3 },
 
-  // YouTube thumbnail
+  // Animation
+  animBox:    { height: 180, alignItems: 'center', justifyContent: 'center' },
+  gif:        { width: '100%', height: 220, borderRadius: 12 },
+  ytBtn:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 10, paddingVertical: 10, borderRadius: 10 },
+  ytBtnText:  { color: '#fff', fontWeight: '700', fontSize: 13 },
+  // YouTube thumbnail fallback
   thumbWrap:  { borderRadius: 12, overflow: 'hidden', position: 'relative' },
   thumb:      { width: '100%', height: 200, borderRadius: 12 },
   thumbFallback: { alignItems: 'center', justifyContent: 'center' },
