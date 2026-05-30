@@ -8,6 +8,7 @@ import { WorkoutStackParamList } from '@/navigation/types';
 import { EXERCISES, CATEGORY_LABELS } from '@/constants/exercises';
 import ExerciseMuscleMap from '@/components/workout/ExerciseMuscleMap';
 import * as FileSystem from 'expo-file-system';
+import EXERCISE_GIFS from '@/constants/exercise_gifs.json';
 
 type Props = NativeStackScreenProps<WorkoutStackParamList, 'ExerciseDetail'>;
 
@@ -38,35 +39,21 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
     if (!exercise) return;
     let cancelled = false;
 
+    const cdnUrl = (EXERCISE_GIFS as Record<string, string>)[exercise.id];
+    if (!cdnUrl) return;
+
     (async () => {
-      // Check local cache first
       const cacheFile = `${FileSystem.cacheDirectory}exgif_${exercise.id}.gif`;
       const info = await FileSystem.getInfoAsync(cacheFile);
       if (info.exists) {
         if (!cancelled) setGifUri(cacheFile);
         return;
       }
-
-      // Try oss.exercisedb.dev with a strict 10s timeout
       try {
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), 10000);
-        const name = exercise.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
-        const res = await fetch(
-          `https://oss.exercisedb.dev/api/v1/exercises/name/${encodeURIComponent(name)}?limit=1`,
-          { headers: { Accept: 'application/json' }, signal: controller.signal }
-        );
-        clearTimeout(timer);
-        if (!res.ok) throw new Error(`status ${res.status}`);
-        const json = await res.json();
-        const items = Array.isArray(json) ? json : (json.data ?? json.exercises ?? []);
-        const gifUrl: string | undefined = items[0]?.gifUrl;
-        if (!gifUrl) throw new Error('no gif');
-        const dl = await FileSystem.downloadAsync(gifUrl, cacheFile);
-        if (dl.status !== 200) throw new Error(`dl ${dl.status}`);
-        if (!cancelled) setGifUri(dl.uri);
+        const dl = await FileSystem.downloadAsync(cdnUrl, cacheFile);
+        if (dl.status === 200 && !cancelled) setGifUri(dl.uri);
       } catch {
-        // silently ignore — YouTube thumbnail already shown as default
+        // silently ignore — YouTube thumbnail shown as default
       }
     })();
 
