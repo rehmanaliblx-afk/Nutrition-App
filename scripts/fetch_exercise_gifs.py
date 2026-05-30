@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """
-Run this script on your LOCAL machine (PC/laptop), NOT in any cloud environment.
-RapidAPI blocks datacenter IPs — your home IP will work fine.
-
 Usage:
   pip install requests
   python fetch_exercise_gifs.py
 
-Output: exercise_gifs.json  (place this file in src/constants/ of the app)
+Output: exercise_gifs.json
 """
 
 import json
+import os
 import time
 import requests
 
-API_KEY = "f4058533c4msh7e143cec42fd316p105734jsne3baf10e7a9c"
+API_KEY = os.environ.get("RAPIDAPI_KEY", "f4058533c4msh7e143cec42fd316p105734jsne3baf10e7a9c")
 
 HEADERS = {
     "x-rapidapi-host": "exercisedb.p.rapidapi.com",
