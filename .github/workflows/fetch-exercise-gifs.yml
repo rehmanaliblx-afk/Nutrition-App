@@ -27,7 +27,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          cp scripts/exercise_gifs.json src/constants/exercise_gifs.json
+          cp exercise_gifs.json src/constants/exercise_gifs.json
           git add src/constants/exercise_gifs.json
           git diff --cached --quiet || git commit -m "Add exercise GIF URLs from ExerciseDB"
           git push origin claude/api-response-error-ZxyrV
