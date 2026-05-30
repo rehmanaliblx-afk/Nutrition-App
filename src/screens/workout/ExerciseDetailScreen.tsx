@@ -32,16 +32,14 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
   const theme = useTheme();
   const exercise = EXERCISES.find((e) => e.id === route.params.exerciseId);
 
-  const [gifUri, setGifUri]       = useState<string | null>(null);
-  const [gifLoading, setGifLoading] = useState(false);
-  const [gifError, setGifError]   = useState(false);
+  const [gifUri, setGifUri] = useState<string | null>(null);
 
   useEffect(() => {
     if (!exercise) return;
     let cancelled = false;
 
     (async () => {
-      // 1. Check local cache first
+      // Check local cache first
       const cacheFile = `${FileSystem.cacheDirectory}exgif_${exercise.id}.gif`;
       const info = await FileSystem.getInfoAsync(cacheFile);
       if (info.exists) {
@@ -49,28 +47,26 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
         return;
       }
 
-      // 2. Fetch from oss.exercisedb.dev (free, no API key)
-      setGifLoading(true);
+      // Try oss.exercisedb.dev with a strict 10s timeout
       try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 10000);
         const name = exercise.name.toLowerCase().replace(/[^a-z0-9 ]/g, '').trim();
         const res = await fetch(
           `https://oss.exercisedb.dev/api/v1/exercises/name/${encodeURIComponent(name)}?limit=1`,
-          { headers: { 'Accept': 'application/json' } }
+          { headers: { Accept: 'application/json' }, signal: controller.signal }
         );
+        clearTimeout(timer);
         if (!res.ok) throw new Error(`status ${res.status}`);
         const json = await res.json();
         const items = Array.isArray(json) ? json : (json.data ?? json.exercises ?? []);
         const gifUrl: string | undefined = items[0]?.gifUrl;
         if (!gifUrl) throw new Error('no gif');
-
-        // 3. Download and cache gif
         const dl = await FileSystem.downloadAsync(gifUrl, cacheFile);
         if (dl.status !== 200) throw new Error(`dl ${dl.status}`);
         if (!cancelled) setGifUri(dl.uri);
       } catch {
-        if (!cancelled) setGifError(true);
-      } finally {
-        if (!cancelled) setGifLoading(false);
+        // silently ignore — YouTube thumbnail already shown as default
       }
     })();
 
@@ -193,22 +189,21 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
           </View>
           <Divider style={{ marginBottom: 12 }} />
 
-          {/* GIF from oss.exercisedb.dev (cached locally after first load) */}
-          {gifLoading && (
-            <View style={styles.animBox}>
-              <ActivityIndicator size="large" color={theme.colors.primary} />
-              <Text variant="labelSmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 10 }}>
-                Loading animation…
-              </Text>
-            </View>
-          )}
-
-          {!gifLoading && gifUri && (
-            <Image source={{ uri: gifUri }} style={styles.gif} resizeMode="contain" />
-          )}
-
-          {/* Fallback: YouTube thumbnail when gif unavailable */}
-          {!gifLoading && gifError && (
+          {/* GIF shown if loaded from cache or API */}
+          {gifUri ? (
+            <>
+              <Image source={{ uri: gifUri }} style={styles.gif} resizeMode="contain" />
+              <TouchableOpacity
+                style={[styles.ytBtn, { backgroundColor: '#FF0000' }]}
+                onPress={openVideo}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="logo-youtube" size={18} color="#fff" />
+                <Text style={styles.ytBtnText}>Watch on YouTube</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            /* Default: YouTube thumbnail — always visible, tapping opens full video */
             <TouchableOpacity onPress={openVideo} activeOpacity={0.85} style={styles.thumbWrap}>
               {thumbUri ? (
                 <Image source={{ uri: thumbUri }} style={styles.thumb} resizeMode="cover" />
@@ -225,18 +220,6 @@ export default function ExerciseDetailScreen({ route, navigation }: Props) {
               <View style={[styles.watchLabel, { backgroundColor: 'rgba(0,0,0,0.55)' }]}>
                 <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>Tap to watch on YouTube</Text>
               </View>
-            </TouchableOpacity>
-          )}
-
-          {/* YouTube button always shown below gif */}
-          {!gifLoading && gifUri && (
-            <TouchableOpacity
-              style={[styles.ytBtn, { backgroundColor: '#FF0000' }]}
-              onPress={openVideo}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="logo-youtube" size={18} color="#fff" />
-              <Text style={styles.ytBtnText}>Watch on YouTube</Text>
             </TouchableOpacity>
           )}
         </Surface>
